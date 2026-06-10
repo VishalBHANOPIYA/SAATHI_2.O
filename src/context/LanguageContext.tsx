@@ -1,0 +1,172 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+export type Language = "en" | "hi" | "gu";
+
+export const translations = {
+  en: {
+    appTitle: "Saathi",
+    tagline: "Your AI Health Companion",
+    disclaimer: "Saathi is a prototype for screening and awareness only — not a medical diagnosis. Always consult a qualified doctor.",
+    home: "Home",
+    screen: "Screen",
+    vitals: "Vitals",
+    talk: "Talk",
+    records: "Records",
+    welcome: "Welcome to Saathi",
+    selectLanguage: "Select Language",
+    vitalSigns: "Vital Signs",
+    diseaseScreening: "Disease Screening",
+    voiceSymptomCheck: "Voice Symptom Check",
+    telemedicine: "Telemedicine",
+    healthRecords: "Health Records",
+    diseaseScreeningDesc: "Pre-screen for common health risks and disease conditions using AI assistance.",
+    vitalSignsDesc: "Track and visualize your vitals like blood pressure, pulse, and oxygen levels.",
+    voiceSymptomCheckDesc: "Speak your symptoms in your language and get instant analysis.",
+    telemedicineDesc: "Connect with virtual health consultants or get AI triage recommendations.",
+    healthRecordsDesc: "Store and analyze your prescriptions, lab reports, and medical history.",
+    screeningHeader: "AI Disease Screening",
+    screeningDesc: "Answer the questions below to receive an AI screening assessment. This is not a diagnosis.",
+    startScreeningBtn: "Start Assessment",
+    submitting: "Analyzing symptoms...",
+    vitalsHeader: "Vitals Tracker",
+    vitalsDesc: "Monitor your health patterns over time. Log your metrics below.",
+    addVitalBtn: "Log Vital Metric",
+    bloodPressure: "Blood Pressure",
+    heartRate: "Heart Rate (BPM)",
+    bloodOxygen: "Blood Oxygen (SpO2)",
+    talkHeader: "AI Symptom Talk",
+    talkDesc: "Speak or type your symptoms. Our AI companion will help screen and guide you.",
+    tapToSpeak: "Tap to Speak",
+    listening: "Listening...",
+    recordsHeader: "Health Records",
+    recordsDesc: "Manage and keep track of your clinical files and reports.",
+    uploadRecordBtn: "Upload Report/Prescription",
+    quickHealthTip: "Quick Health Tip",
+    healthTipText: "Drinking sufficient water and maintaining 150 minutes of moderate activity weekly helps keep cardiovascular vitals in optimal range.",
+  },
+  hi: {
+    appTitle: "साथी",
+    tagline: "आपका एआई स्वास्थ्य साथी",
+    disclaimer: "साथी केवल स्क्रीनिंग और जागरूकता के लिए एक प्रोटोटाइप है - कोई चिकित्सा निदान नहीं। हमेशा एक योग्य डॉक्टर से परामर्श करें।",
+    home: "होम",
+    screen: "जांच",
+    vitals: "वाइल्स",
+    talk: "बातचीत",
+    records: "रिकॉर्ड्स",
+    welcome: "साथी में आपका स्वागत है",
+    selectLanguage: "भाषा चुनें",
+    vitalSigns: "महत्वपूर्ण संकेत",
+    diseaseScreening: "रोग स्क्रीनिंग",
+    voiceSymptomCheck: "आवाज लक्षण जांच",
+    telemedicine: "टेलीमेडिसिन",
+    healthRecords: "स्वास्थ्य रिकॉर्ड",
+    diseaseScreeningDesc: "एआई सहायता का उपयोग करके सामान्य स्वास्थ्य जोखिमों और बीमारियों की पूर्व-जांच करें।",
+    vitalSignsDesc: "रक्तचाप, पल्स और ऑक्सीजन स्तर जैसे अपने महत्वपूर्ण संकेतों को ट्रैक और विज़ुअलाइज़ करें।",
+    voiceSymptomCheckDesc: "अपनी भाषा में अपने लक्षण बोलें और तुरंत विश्लेषण प्राप्त करें।",
+    telemedicineDesc: "वर्चुअल स्वास्थ्य सलाहकारों से जुड़ें या एआई ट्राइएज सिफारिशें प्राप्त करें।",
+    healthRecordsDesc: "अपने नुस्खे, लैब रिपोर्ट और चिकित्सा इतिहास को सहेजें और उनका विश्लेषण करें।",
+    screeningHeader: "एआई रोग स्क्रीनिंग",
+    screeningDesc: "एआई स्क्रीनिंग मूल्यांकन प्राप्त करने के लिए नीचे दिए गए प्रश्नों के उत्तर दें। यह कोई निदान नहीं है।",
+    startScreeningBtn: "मूल्यांकन शुरू करें",
+    submitting: "लक्षणों का विश्लेषण किया जा रहा है...",
+    vitalsHeader: "वाइल्स ट्रैकर",
+    vitalsDesc: "समय के साथ अपने स्वास्थ्य पैटर्न की निगरानी करें। नीचे अपने मेट्रिक्स लॉग करें।",
+    addVitalBtn: "वाइटल लॉग करें",
+    bloodPressure: "रक्तचाप (BP)",
+    heartRate: "हृदय गति (BPM)",
+    bloodOxygen: "रक्त ऑक्सीजन (SpO2)",
+    talkHeader: "एआई लक्षण बातचीत",
+    talkDesc: "अपने लक्षण बोलें या टाइप करें। हमारा एआई साथी स्क्रीनिंग और मार्गदर्शन में मदद करेगा।",
+    tapToSpeak: "बोलने के लिए टैप करें",
+    listening: "सुन रहा हूँ...",
+    recordsHeader: "स्वास्थ्य रिकॉर्ड",
+    recordsDesc: "अपनी नैदानिक ​​फाइलों और रिपोर्टों को प्रबंधित करें और उन पर नज़र रखें।",
+    uploadRecordBtn: "रिपोर्ट/पर्चा अपलोड करें",
+    quickHealthTip: "त्वरित स्वास्थ्य सलाह",
+    healthTipText: "पर्याप्त पानी पीना और साप्ताहिक रूप से 150 मिनट की मध्यम गतिविधि बनाए रखना हृदय संबंधी महत्वपूर्ण अंगों को इष्टतम सीमा में रखने में मदद करता है।",
+  },
+  gu: {
+    appTitle: "સાથી",
+    tagline: "તમારો AI સ્વાસ્થ્ય સાથી",
+    disclaimer: "સાથી માત્ર સ્ક્રીનીંગ અને જાગૃતિ માટેનો એક પ્રોટોટાઇપ છે - તબીબી નિદાન નથી. હંમેશા લાયક ડૉક્ટરની સલાહ લો.",
+    home: "હોમ",
+    screen: "તપાસ",
+    vitals: "વાઇટલ્સ",
+    talk: "વાતચીત",
+    records: "રેકોર્ડ્સ",
+    welcome: "સાથીમાં આપનું સ્વાગત છે",
+    selectLanguage: "ભાષા પસંદ કરો",
+    vitalSigns: "મહત્વપૂર્ણ સંકેતો",
+    diseaseScreening: "રોગ સ્ક્રીનીંગ",
+    voiceSymptomCheck: "વોઇસ લક્ષણ તપાસ",
+    telemedicine: "ટેલિમેડિસિન",
+    healthRecords: "સ્વાસ્થ્ય રેકોર્ડ",
+    diseaseScreeningDesc: "AI સહાયનો ઉપયોગ કરીને સામાન્ય આરોગ્ય જોખમો અને રોગની સ્થિતિ માટે પૂર્વ-સ્ક્રીન કરો.",
+    vitalSignsDesc: "બ્લડ પ્રેશર, પલ્સ અને ઓક્સિજન સ્તર જેવા તમારા વાઇટલ્સને ટ્રેક અને વિઝ્યુઅલાઈઝ કરો.",
+    voiceSymptomCheckDesc: "તમારી ભાષામાં તમારા લક્ષણો બોલો અને ત્વરિત વિશ્લેષણ મેળવો.",
+    telemedicineDesc: "વર્ચ્યુઅલ હેલ્થ કન્સલ્ટન્ટ્સ સાથે કનેક્ટ થાઓ અથવા AI ટ્રાયેજ ભલામણો મેળવો.",
+    healthRecordsDesc: "તમારા પ્રિસ્ક્રિપ્શન, લેબ રિપોર્ટ્સ અને તબીબી ઇતિહાસ સંગ્રહિત કરો અને તેનું વિશ્લેષણ કરો.",
+    screeningHeader: "AI રોગ સ્ક્રીનીંગ",
+    screeningDesc: "AI સ્ક્રીનીંગ મૂલ્યાંકન મેળવવા માટે નીચેના પ્રશ્નોના જવાબ આપો. આ કોઈ નિદાન નથી.",
+    startScreeningBtn: "મૂલ્યાંકન શરૂ કરો",
+    submitting: "લક્ષણોનું વિશ્લેષણ કરી રહ્યું છે...",
+    vitalsHeader: "વાઇટલ્સ ટ્રેકર",
+    vitalsDesc: "સમય જતાં તમારા સ્વાસ્થ્ય પેટર્નનું નિરીક્ષણ કરો. નીચે તમારા મેટ્રિક્સ લોગ કરો.",
+    addVitalBtn: "વાઇટલ લોગ કરો",
+    bloodPressure: "બ્લડ પ્રેશર",
+    heartRate: "હૃદયના ધબકારા (BPM)",
+    bloodOxygen: "બ્લડ ઓક્સિજન (SpO2)",
+    talkHeader: "AI લક્ષણ વાતચીત",
+    talkDesc: "તમારા લક્ષણો બોલો અથવા ટાઇપ કરો. અમારો AI સાથી સ્ક્રીનિંગ અને માર્ગદર્શનમાં મદદ કરશે.",
+    tapToSpeak: "બોલવા માટે ટેપ કરો",
+    listening: "સાંભળી રહ્યા છીએ...",
+    recordsHeader: "સ્વાસ્થ્ય રેકોર્ડ્સ",
+    recordsDesc: "તમારી ક્લિનિકલ ફાઇલો અને રિપોર્ટ્સ મેનેજ કરો અને તેનો ટ્રૅક રાખો.",
+    uploadRecordBtn: "રિપોર્ટ/પ્રિસ્ક્રિપ્શન અપલોડ કરો",
+    quickHealthTip: "ત્વરિત આરોગ્ય ટીપ",
+    healthTipText: "પૂરતું પાણી પીવું અને સાપ્તાહિક 150 મિનિટ મધ્યમ પ્રવૃત્તિ જાળવી રાખવાથી હૃદય સંબંધિત વાઇટલ્સ યોગ્ય શ્રેણીમાં રહે છે.",
+  }
+};
+
+interface LanguageContextType {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: typeof translations.en;
+}
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLanguageState] = useState<Language>("en");
+
+  // Load language from localStorage if available
+  useEffect(() => {
+    const saved = localStorage.getItem("saathi_lang");
+    if (saved === "en" || saved === "hi" || saved === "gu") {
+      setLanguageState(saved);
+    }
+  }, []);
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem("saathi_lang", lang);
+  };
+
+  const t = translations[language];
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
+
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
+  return context;
+}
