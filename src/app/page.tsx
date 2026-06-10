@@ -14,6 +14,7 @@ import {
   Trash2,
   AlertTriangle,
   Video,
+  Camera,
   ChevronRight,
   Info,
   Calendar,
@@ -151,6 +152,84 @@ const scannerTranslations = {
   }
 };
 
+const screenTranslations = {
+  en: {
+    heroTitle: "AI Camera Screening (Hero Demo)",
+    heroDesc: "Screen for Anemia, Jaundice, or skin irregularities using interactive pixel analysis of your camera captures.",
+    selectCondition: "Select Condition to Screen",
+    anemia: "Anemia (Nail/Eye/Palm)",
+    jaundice: "Jaundice (Eye/Skin)",
+    skin: "Skin Check",
+    guideAnemia: "Align your fingernail, palm, or lower eyelid inside the box. Make sure you are in a bright, evenly lit area.",
+    guideJaundice: "Align the white of your eye (sclera) or your skin area inside the box. Ensure natural light without yellow bulbs.",
+    guideSkin: "Align the target skin rash, mole, or redness inside the box.",
+    startCamera: "Use Live Camera",
+    uploadImage: "Upload a Photo",
+    captureBtn: "Capture Photo",
+    analyzing: "Analyzing...",
+    resultsTitle: "AI Screening Result",
+    indexScore: "Analysis Index Score",
+    riskLevel: "Risk Level",
+    disclaimerTitle: "Prototype Warning & Clinical Disclaimer",
+    disclaimerText: "This is a prototype color-analysis screening heuristic for demonstration purposes only. It is NOT a medical diagnosis. A production system would utilize a trained TensorFlow Lite CNN. If Moderate or High risk is detected, please consult a qualified healthcare professional.",
+    saveReport: "Save to Health Records",
+    retake: "Retake Scan",
+    cancel: "Cancel",
+    tapROI: "Interactive ROI Selection",
+    tapInstructions: "Tap directly on the region of interest (e.g., your nail bed, eye sclera, or skin patch) on the image above, then click Analyze."
+  },
+  hi: {
+    heroTitle: "AI कैमरा स्क्रीनिंग (हीरो डेमो)",
+    heroDesc: "कैमरा कैप्चर के इंटरैक्टिव पिक्सेल विश्लेषण का उपयोग करके एनीमिया, पीलिया, या त्वचा की अनियमितताओं की जांच करें।",
+    selectCondition: "जांच के लिए स्थिति चुनें",
+    anemia: "एनीमिया (नाखून/आँख/हथेली)",
+    jaundice: "पीलिया (आँख/त्वचा)",
+    skin: "त्वचा की जांच",
+    guideAnemia: "अपने नाखून, हथेली या निचली पलक को बॉक्स के अंदर संरेखित करें। सुनिश्चित करें कि आप अच्छी रोशनी वाले क्षेत्र में हैं।",
+    guideJaundice: "अपनी आँख के सफेद भाग (स्केलेरा) या त्वचा के क्षेत्र को बॉक्स के अंदर रखें। पीली लाइट से बचें।",
+    guideSkin: "लक्षित त्वचा रैश, तिल, या लाली को बॉक्स के अंदर संरेखित करें।",
+    startCamera: "लाइव कैमरे का उपयोग करें",
+    uploadImage: "फोटो अपलोड करें",
+    captureBtn: "फोटो खींचें",
+    analyzing: "विश्लेषण किया जा रहा है...",
+    resultsTitle: "AI स्क्रीनिंग परिणाम",
+    indexScore: "विश्लेषण इंडेक्स स्कोर",
+    riskLevel: "जोखिम स्तर",
+    disclaimerTitle: "प्रोटोटाइप चेतावनी और नैदानिक अस्वीकरण",
+    disclaimerText: "यह केवल प्रदर्शन के लिए एक प्रोटोटाइप रंग-विश्लेषण स्क्रीनिंग एल्गोरिदम है। यह कोई चिकित्सा निदान नहीं है। एक वास्तविक उत्पादन प्रणाली प्रशिक्षित TensorFlow Lite CNN का उपयोग करेगी। यदि मध्यम या उच्च जोखिम पाया जाता है, तो कृपया डॉक्टर से परामर्श लें।",
+    saveReport: "स्वास्थ्य रिकॉर्ड में सहेजें",
+    retake: "दोबारा स्कैन करें",
+    cancel: "रद्द करें",
+    tapROI: "इंटरैक्टिव क्षेत्र चयन (ROI)",
+    tapInstructions: "ऊपर दी गई छवि पर विश्लेषण के विशिष्ट क्षेत्र (जैसे, नाखून, आँख का सफेद भाग, या त्वचा) पर सीधे टैप करें, फिर विश्लेषण पर क्लिक करें।"
+  },
+  gu: {
+    heroTitle: "AI કેમેરા સ્ક્રીનીંગ (હીરો ડેમો)",
+    heroDesc: "કેમેરા કેપ્ચરના ઇન્ટરેક્ટિવ પિક્સેલ વિશ્લેષણનો ઉપયોગ કરીને એનિમિયા, કમળો અથવા ત્વચાની અનિયમિતતાઓ શોધો.",
+    selectCondition: "સ્ક્રીનીંગ માટે સ્થિતિ પસંદ કરો",
+    anemia: "એનિમિયા (નખ/આંખ/હથેળી)",
+    jaundice: "કમળો (આંખ/ત્વચા)",
+    skin: "ત્વચા તપાસ",
+    guideAnemia: "તમારા નખ, હથેળી અથવા નીચેની પોપચાને બોક્સની અંદર લાવો. ખાતરી કરો કે તમે પૂરતા પ્રકાશ વાળા સ્થળે છો.",
+    guideJaundice: "તમારી આંખના સફેદ ભાગ (સ્ક્લેરા) અથવા ત્વચાના ભાગને બોક્સની અંદર રાખો. પીળા પ્રકાશથી બચો.",
+    guideSkin: "ચામડીના લાલ ભાગ કે નિશાનને બોક્સની અંદર ગોઠવો.",
+    startCamera: "લાઇવ કેમેરા વાપરો",
+    uploadImage: "ફોટો અપલોડ કરો",
+    captureBtn: "ફોટો કેપ્ચર કરો",
+    analyzing: "વિશ્લેષણ ચાલુ છે...",
+    resultsTitle: "AI સ્ક્રીનીંગ પરિણામ",
+    indexScore: "વિશ્લેષણ ઇન્ડેક્સ સ્કોર",
+    riskLevel: "જોખમ સ્તર",
+    disclaimerTitle: "પ્રોટોટાઇપ ચેતવણી અને તબીબી અસ્વીકરણ",
+    disclaimerText: "આ માત્ર પ્રદર્શન માટેનો પ્રોટોટાઇપ કલર-એનાલિસિસ સ્ક્રીનીંગ એલ્ગોરિધમ છે. આ કોઈ તબીબી નિદાન નથી. વાસ્તવિક ઉત્પાદન સિસ્ટમ પ્રશિક્ષિત TensorFlow Lite CNN નો ઉપયોગ કરશે. જો મધ્યમ અથવા ઉચ્ચ જોખમ જણાય, તો તબીબનો સંપર્ક કરો.",
+    saveReport: "આરોગ્ય રેકોર્ડમાં સાચવો",
+    retake: "ફરી સ્કેન કરો",
+    cancel: "રદ કરો",
+    tapROI: "ઇન્ટરેક્ટિવ વિસ્તાર પસંદગી (ROI)",
+    tapInstructions: "ઉપરના ચિત્ર પર વિશ્લેષણ માટેના વિશિષ્ટ ભાગ (નખ, આંખનો સફેદ ભાગ અથવા ચામડી) પર સીધો ટેપ કરો, પછી વિશ્લેષણ પર ક્લિક કરો."
+  }
+};
+
 export default function MainApp() {
   const { language, setLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"home" | "screen" | "vitals" | "talk" | "records">("home");
@@ -170,6 +249,25 @@ export default function MainApp() {
   const [temperature, setTemperature] = useState<string>("98.6");
   const [screeningResult, setScreeningResult] = useState<string | null>(null);
   const [isScreeningLoading, setIsScreeningLoading] = useState(false);
+
+  // --- CAMERA SCREENING STATES ---
+  const [screenMode, setScreenMode] = useState<"camera" | "symptoms">("camera");
+  const [selectedCondition, setSelectedCondition] = useState<"anemia" | "jaundice" | "skin">("anemia");
+  const [screenStep, setScreenStep] = useState<"select" | "capture" | "roi" | "results">("select");
+  
+  const [screenImage, setScreenImage] = useState<string | null>(null);
+  const [roiCoords, setRoiCoords] = useState<{ x: number; y: number } | null>(null);
+  const [avgColor, setAvgColor] = useState<{ r: number; g: number; b: number } | null>(null);
+  const [screenResults, setScreenResults] = useState<{
+    condition: string;
+    riskBand: "Low" | "Moderate" | "High";
+    indexVal: number;
+    description: string;
+  } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
+  const screenVideoRef = useRef<HTMLVideoElement | null>(null);
+  const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // --- VITALS STATE ---
   const [vitalsHistory, setVitalsHistory] = useState([
@@ -580,11 +678,286 @@ export default function MainApp() {
     alert(language === "hi" ? "वाइटल्स रिकॉर्ड में सफलतापूर्वक सहेज लिए गए हैं!" : language === "gu" ? "વાઇટલ્સ રેકોર્ડ્સમાં સફળતાપૂર્વક સાચવવામાં આવ્યા છે!" : "Vitals saved successfully to history and records!");
   };
 
+  // --- CAMERA SCREENING ACTIONS ---
+  const stopScreenCameraStream = () => {
+    if (screenVideoRef.current && screenVideoRef.current.srcObject) {
+      const stream = screenVideoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      screenVideoRef.current.srcObject = null;
+    }
+  };
+
+  const startScreenCamera = async () => {
+    setScreenStep("capture");
+    setScreenImage(null);
+    setRoiCoords(null);
+    setAvgColor(null);
+    setScreenResults(null);
+    
+    // Wait briefly for elements to mount
+    setTimeout(async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 480 }, height: { ideal: 480 } }
+        });
+        if (screenVideoRef.current) {
+          screenVideoRef.current.srcObject = stream;
+          screenVideoRef.current.play();
+        }
+      } catch (err) {
+        console.error("Failed to open camera for screening:", err);
+        alert("Failed to access camera. You can still upload a photo instead.");
+        setScreenStep("select");
+      }
+    }, 100);
+  };
+
+  const captureScreenPhoto = () => {
+    const video = screenVideoRef.current;
+    if (!video) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 480;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL("image/jpeg");
+      setScreenImage(dataUrl);
+      stopScreenCameraStream();
+      setScreenStep("roi");
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setScreenImage(reader.result as string);
+        setScreenStep("roi");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = screenCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    
+    setRoiCoords({ x, y });
+    
+    const ctx = canvas.getContext("2d");
+    if (!ctx || !screenImage) return;
+    
+    const img = new Image();
+    img.src = screenImage;
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      const boxSize = 32;
+      ctx.strokeStyle = "#14b8a6"; // teal-500
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x - boxSize / 2, y - boxSize / 2, boxSize, boxSize);
+      
+      ctx.fillStyle = "#14b8a6";
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      try {
+        const imgData = ctx.getImageData(
+          Math.max(0, Math.min(canvas.width - boxSize, x - boxSize / 2)),
+          Math.max(0, Math.min(canvas.height - boxSize, y - boxSize / 2)),
+          boxSize,
+          boxSize
+        );
+        const data = imgData.data;
+        let rSum = 0, gSum = 0, bSum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          rSum += data[i];
+          gSum += data[i + 1];
+          bSum += data[i + 2];
+        }
+        const pixelsCount = data.length / 4;
+        setAvgColor({
+          r: Math.round(rSum / pixelsCount),
+          g: Math.round(gSum / pixelsCount),
+          b: Math.round(bSum / pixelsCount)
+        });
+      } catch (err) {
+        console.error("ROI selection out of bounds or cross-origin issue:", err);
+      }
+    };
+  };
+
+  const runScreenAnalysis = () => {
+    if (!avgColor) {
+      alert("Please tap on the image to select a region of interest first.");
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    
+    setTimeout(() => {
+      const { r, g, b } = avgColor;
+      
+      let riskBand: "Low" | "Moderate" | "High" = "Low";
+      let indexVal = 0;
+      let description = "";
+      
+      // NOTE: This is a prototype heuristic for demonstration. Production systems would use a trained TensorFlow Lite CNN.
+      if (selectedCondition === "anemia") {
+        const redness = r / (r + g + b + 0.001);
+        const palenessIndex = Math.max(0, 1 - (redness / 0.40));
+        indexVal = Math.min(100, Math.round(palenessIndex * 100));
+        
+        if (indexVal < 20) {
+          riskBand = "Low";
+          description = language === "hi" 
+            ? "कम जोखिम: नाखूनों/त्वचा का रंग स्वस्थ हीमोग्लोबिन स्तर का संकेत देता है।" 
+            : language === "gu" 
+              ? "ઓછું જોખમ: નખ/ત્વચાનો રંગ સામાન્ય હિમોગ્લોબિન સ્તર સૂચવે છે." 
+              : "Low Risk: Color channels show healthy pinkish undertones, suggesting adequate blood perfusion and hemoglobin levels.";
+        } else if (indexVal < 45) {
+          riskBand = "Moderate";
+          description = language === "hi" 
+            ? "मध्यम जोखिम: हल्का पीलापन पाया गया है। संतुलित आहार लें और डॉक्टर से परामर्श करें।" 
+            : language === "gu" 
+              ? "મધ્યમ જોખમ: સહેજ ફીકાશ જોવા મળી છે. સંતુલિત આહાર લો અને ડોક્ટરની સલાહ લો." 
+              : "Moderate Risk: Mild paleness detected. This could indicate borderline anemia or low iron. We recommend consulting a clinician.";
+        } else {
+          riskBand = "High";
+          description = language === "hi" 
+            ? "उच्च जोखिम: अधिक पीलापन पाया गया है। यह गंभीर एनीमिया का संकेत हो सकता है। तुरंत डॉक्टर से संपर्क करें।" 
+            : language === "gu" 
+              ? "ઉચ્ચ જોખમ: ગંભીર ફીકાશ જોવા મળી છે. આ ગંભીર એનિમિયા હોઈ શકે છે. તાત્કાલિક ડોક્ટરનો સંપર્ક કરો." 
+              : "High Risk: Significant paleness detected in the region of interest. This may indicate severe anemia. A clinical blood test (CBC) is strongly advised.";
+        }
+      } else if (selectedCondition === "jaundice") {
+        const yellownessIndex = Math.max(0, (r + g) / (2 * b + 1) - 0.85);
+        indexVal = Math.min(100, Math.round(yellownessIndex * 100));
+        
+        if (indexVal < 25) {
+          riskBand = "Low";
+          description = language === "hi" 
+            ? "कम जोखिम: कोई पीलापन नहीं मिला। बिलीरुबिन का स्तर सामान्य प्रतीत होता है।" 
+            : language === "gu" 
+              ? "ઓછું જોખમ: પીળાશ જોવા મળી નથી. બિલીરૂબીનનું સ્તર સામાન્ય જણાય છે." 
+              : "Low Risk: Natural coloration detected. No significant yellow tint found in the selected region (sclera/skin).";
+        } else if (indexVal < 55) {
+          riskBand = "Moderate";
+          description = language === "hi" 
+            ? "मध्यम जोखिम: हल्का पीलापन पाया गया है। कृपया अपने खान-पान पर ध्यान दें और चिकित्सक से परामर्श करें।" 
+            : language === "gu" 
+              ? "મધ્યમ જોખમ: સહેજ પીળાશ જોવા મળી છે. કૃપા કરીને ડોક્ટરની સલાહ લો." 
+              : "Moderate Risk: Mild yellowish tone detected. This could be early-stage jaundice or bilirubin accumulation. Consider consulting a doctor.";
+        } else {
+          riskBand = "High";
+          description = language === "hi" 
+            ? "उच्च जोखिम: आँखों/त्वचा में अत्यधिक पीलापन मिला है। यह पीलिया या लिवर रोग का लक्षण हो सकता है।" 
+            : language === "gu" 
+              ? "ઉચ્ચ જોખમ: ભારે પીળાશ જોવા મળી છે. આ કમળો અથવા લીવરની ગંભીર બીમારી હોઈ શકે છે." 
+              : "High Risk: Pronounced yellow tone detected. This strongly suggests elevated bilirubin levels (jaundice), often linked to liver or gallbladder issues. Please seek medical evaluation immediately.";
+        }
+      } else {
+        const rednessIndex = Math.max(0, (r / (g + b + 1)) - 0.65);
+        indexVal = Math.min(100, Math.round(rednessIndex * 100));
+        
+        if (indexVal < 30) {
+          riskBand = "Low";
+          description = language === "hi" 
+            ? "कम जोखिम: सामान्य त्वचा टोन। कोई असाधारण लाली या सूजन के लक्षण नहीं हैं।" 
+            : language === "gu" 
+              ? "ઓછું જોખમ: સામાન્ય ત્વચા. કોઈ અસાધારણ લાલાશ કે સોજો જોવા મળ્યો નથી." 
+              : "Low Risk: Normal pigmentation patterns. No unusual erythema or hyper-redness detected in the selected area.";
+        } else if (indexVal < 60) {
+          riskBand = "Moderate";
+          description = language === "hi" 
+            ? "मध्यम जोखिम: त्वचा में लाली/उत्तेजना। यह किसी एलर्जी या हल्के त्वचा रोग का संकेत हो सकता है।" 
+            : language === "gu" 
+              ? "મધ્યમ જોખમ: ત્વચામાં લાલાશ/બળતરા. આ એલર્જી અથવા ત્વચાનો સોજો હોઈ છે." 
+              : "Moderate Risk: Elevated redness index. This could indicate skin irritation, mild rash, dermatitis, or sunburn.";
+        } else {
+          riskBand = "High";
+          description = language === "hi" 
+            ? "उच्च जोखिम: त्वचा में अत्यधिक लाली या असामान्यता। चिकित्सक या त्वचा रोग विशेषज्ञ को दिखाएं।" 
+            : language === "gu" 
+              ? "ઉચ્ચ જોખમ: અતિશય લાલાશ કે અનિયમિતતા. ચર્મરોગ નિષ્ણાત (Dermatologist) નો સંપર્ક કરો." 
+              : "High Risk: Highly elevated redness or color irregularity. This might indicate severe inflammation, infection, or chronic erythema. Dermatological assessment recommended.";
+        }
+      }
+      
+      setScreenResults({
+        condition: selectedCondition,
+        riskBand,
+        indexVal,
+        description
+      });
+      setIsAnalyzing(false);
+      setScreenStep("results");
+    }, 1200);
+  };
+
+  const saveScreeningResults = () => {
+    if (!screenResults) return;
+    
+    const conditionLabel = 
+      screenResults.condition === "anemia" ? "Anemia Screening" :
+      screenResults.condition === "jaundice" ? "Jaundice Screening" :
+      "Skin Check Scan";
+      
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0];
+    
+    const newRecordItem = {
+      id: Date.now(),
+      title: `${conditionLabel} (${screenResults.riskBand} Risk)`,
+      date: dateStr,
+      category: "Lab Test",
+      doctor: "Saathi Camera AI Screening",
+      notes: `Condition: ${screenResults.condition.toUpperCase()} | Index Score: ${screenResults.indexVal}% | Color RGB: (${avgColor?.r}, ${avgColor?.g}, ${avgColor?.b}) | Recommendation: ${screenResults.riskBand === 'Low' ? 'Routine follow-up' : 'Consult a doctor'}`
+    };
+    
+    const updatedRecords = [newRecordItem, ...recordsList];
+    setRecordsList(updatedRecords);
+    localStorage.setItem("saathi_records", JSON.stringify(updatedRecords));
+    
+    alert(language === "hi" ? "स्क्रीनिंग रिपोर्ट सफलतापूर्वक सहेज ली गई है!" : language === "gu" ? "સ્ક્રીનિંગ રીપોર્ટ સફળતાપૂર્વક સાચવવામાં આવ્યો છે!" : "Screening report saved successfully to health records!");
+    
+    setScreenStep("select");
+    setScreenImage(null);
+    setRoiCoords(null);
+    setAvgColor(null);
+    setScreenResults(null);
+  };
+
+  useEffect(() => {
+    if (screenStep === "roi" && screenImage && screenCanvasRef.current) {
+      const canvas = screenCanvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const img = new Image();
+        img.src = screenImage;
+        img.onload = () => {
+          canvas.width = 320;
+          canvas.height = 320;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+      }
+    }
+  }, [screenStep, screenImage]);
+
   // Cleanup effects
   useEffect(() => {
     if (activeTab !== "vitals") {
       stopCameraStream();
       setScanState("idle");
+    }
+    if (activeTab !== "screen") {
+      stopScreenCameraStream();
     }
   }, [activeTab]);
 
@@ -1008,137 +1381,449 @@ export default function MainApp() {
   );
 
   // 2. SCREEN VIEW RENDER (DISEASE SCREENING)
-  const renderScreenView = () => (
-    <div className="p-4 space-y-4 animate-fadeIn">
-      {/* Header Info */}
-      <div className="space-y-1">
-        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <ShieldAlert className="w-5 h-5 text-teal-600" />
-          {t.screeningHeader}
-        </h2>
-        <p className="text-xs text-slate-500 leading-normal">{t.screeningDesc}</p>
-      </div>
+  const renderScreenView = () => {
+    const sTrans = screenTranslations[language] || screenTranslations.en;
+    
+    return (
+      <div className="p-4 space-y-4 animate-fadeIn">
+        {/* Toggle between Hero Demo and Questionnaire */}
+        <div className="flex bg-slate-100 p-1 rounded-xl">
+          <button
+            onClick={() => {
+              stopScreenCameraStream();
+              setScreenMode("camera");
+              setScreenStep("select");
+            }}
+            className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
+              screenMode === "camera"
+                ? "bg-white text-teal-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {sTrans.heroTitle}
+          </button>
+          <button
+            onClick={() => {
+              stopScreenCameraStream();
+              setScreenMode("symptoms");
+            }}
+            className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
+              screenMode === "symptoms"
+                ? "bg-white text-teal-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {language === "hi" ? "लक्षण प्रश्नावली" : language === "gu" ? "લક્ષણ પ્રશ્નાવલી" : "AI Symptom Checker"}
+          </button>
+        </div>
 
-      {/* Screening Panel */}
-      {!screeningResult && !isScreeningLoading ? (
-        <form onSubmit={handleStartScreening} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-4">
-          {/* Symptoms List */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-              {language === "hi" ? "लक्षण चुनें" : language === "gu" ? "લક્ષણો પસંદ કરો" : "Select Symptoms"}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { key: "fever", label: language === "hi" ? "बुखार" : language === "gu" ? "તાવ" : "Fever" },
-                { key: "cough", label: language === "hi" ? "सूखी खांसी" : language === "gu" ? "સૂકી ઉધરસ" : "Dry Cough" },
-                { key: "fatigue", label: language === "hi" ? "थकान" : language === "gu" ? "થાક" : "Fatigue" },
-                { key: "soreThroat", label: language === "hi" ? "गले में खराश" : language === "gu" ? "ગળામાં દુખાવો" : "Sore Throat" },
-                { key: "breath", label: language === "hi" ? "सांस फूलना" : language === "gu" ? "શ્વાસ ચડવો" : "Shortness of Breath" },
-                { key: "bodyAche", label: language === "hi" ? "बदन दर्द" : language === "gu" ? "શરીરનો દુખાવો" : "Body Ache" },
-                { key: "lossTaste", label: language === "hi" ? "स्वाद/गंध की कमी" : language === "gu" ? "સ્વાદ ગુમાવવો" : "Loss of Taste/Smell" },
-              ].map((symptom) => {
-                const k = symptom.key as keyof typeof symptoms;
-                return (
+        {screenMode === "camera" ? (
+          <div className="space-y-4">
+            {/* 1. SELECT CONDITION STEP */}
+            {screenStep === "select" && (
+              <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                    {sTrans.selectCondition}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: "anemia", label: sTrans.anemia, color: "border-teal-200 bg-teal-50/20 text-teal-700" },
+                      { key: "jaundice", label: sTrans.jaundice, color: "border-amber-200 bg-amber-50/20 text-amber-700" },
+                      { key: "skin", label: sTrans.skin, color: "border-rose-200 bg-rose-50/20 text-rose-700" },
+                    ].map(opt => (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setSelectedCondition(opt.key as "anemia" | "jaundice" | "skin")}
+                        className={`p-2.5 rounded-xl border text-xs font-bold text-center flex flex-col items-center justify-center gap-1.5 transition-all ${
+                          selectedCondition === opt.key
+                            ? "bg-teal-600 border-teal-600 text-white shadow-md scale-[1.02]"
+                            : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                        }`}
+                      >
+                        <ShieldAlert className={`w-4 h-4 ${selectedCondition === opt.key ? "text-white" : "text-slate-400"}`} />
+                        <span className="leading-tight">{opt.label.split(" ")[0]}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Instructions based on selection */}
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-normal flex gap-2">
+                  <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                  <span>
+                    {selectedCondition === "anemia" && sTrans.guideAnemia}
+                    {selectedCondition === "jaundice" && sTrans.guideJaundice}
+                    {selectedCondition === "skin" && sTrans.guideSkin}
+                  </span>
+                </div>
+
+                {/* Capture or Upload Options */}
+                <div className="grid grid-cols-2 gap-3 pt-2">
                   <button
-                    key={symptom.key}
-                    type="button"
-                    onClick={() => handleSymptomToggle(k)}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg border text-left flex justify-between items-center transition-all ${
-                      symptoms[k]
-                        ? "bg-teal-50 border-teal-500 text-teal-700 shadow-sm"
-                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
-                    }`}
+                    onClick={startScreenCamera}
+                    className="flex items-center justify-center gap-2 bg-teal-600 text-white font-bold text-xs py-3 rounded-xl hover:bg-teal-700 shadow-sm active:scale-[0.98] transition-all"
                   >
-                    <span>{symptom.label}</span>
-                    {symptoms[k] && <div className="w-2 h-2 rounded-full bg-teal-500" />}
+                    <Camera className="w-4 h-4" />
+                    {sTrans.startCamera}
                   </button>
-                );
-              })}
-            </div>
-          </div>
+                  <label className="flex items-center justify-center gap-2 bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-3 rounded-xl hover:bg-slate-200 cursor-pointer shadow-sm active:scale-[0.98] transition-all text-center">
+                    <UploadCloud className="w-4 h-4" />
+                    <span>{sTrans.uploadImage}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
 
-          {/* Age & Temperature Inputs */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-500 uppercase">
-                {language === "hi" ? "आयु" : language === "gu" ? "ઉંમર" : "Age"}
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="120"
-                value={age}
-                onChange={(e) => setAge(parseInt(e.target.value) || 0)}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold text-slate-700 focus:outline-none focus:border-teal-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-500 uppercase">
-                {language === "hi" ? "तापमान (°F)" : language === "gu" ? "તાપમાન (°F)" : "Temp (°F)"}
-              </label>
-              <input
-                type="text"
-                value={temperature}
-                onChange={(e) => setTemperature(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold text-slate-700 focus:outline-none focus:border-teal-500"
-              />
-            </div>
-          </div>
+            {/* 2. CAMERA CAPTURE STEP */}
+            {screenStep === "capture" && (
+              <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg relative flex flex-col items-center p-4 space-y-4">
+                <div className="relative w-full aspect-square max-w-[320px] rounded-xl overflow-hidden bg-black border-2 border-slate-800">
+                  <video
+                    ref={screenVideoRef}
+                    className="w-full h-full object-cover transform -scale-x-100"
+                    playsInline
+                    muted
+                  />
+                  {/* Absolute guide box overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-[180px] h-[180px] border-2 border-dashed border-teal-400 rounded-xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+                      <div className="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-teal-400"></div>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-teal-400"></div>
+                      <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-teal-400"></div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-teal-400"></div>
+                    </div>
+                  </div>
+                </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-md flex items-center justify-center gap-2 hover:from-teal-700 hover:to-emerald-700 transition-all active:scale-[0.98] mt-2"
-          >
-            <Sparkles className="w-4 h-4 fill-teal-100" />
-            {t.startScreeningBtn}
-          </button>
-        </form>
-      ) : isScreeningLoading ? (
-        <div className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-4 min-h-[300px]">
-          <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
-          <p className="text-sm text-slate-600 font-semibold animate-pulse">{t.submitting}</p>
-          <p className="text-[10px] text-slate-400 text-center max-w-[200px]">
-            Saathi is analyzing safety parameters using Groq LLM screening models.
-          </p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4 animate-scaleUp">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-              {language === "hi" ? "स्क्रीनिंग रिपोर्ट" : language === "gu" ? "સ્ક્રીનીંગ રીપોર્ટ" : "Screening Report"}
-            </span>
-            <span className="bg-teal-100 text-teal-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
-              AI Screened
-            </span>
-          </div>
+                <div className="text-center space-y-2 max-w-[280px]">
+                  <p className="text-xs text-slate-300 font-semibold leading-normal">
+                    {selectedCondition === "anemia" && sTrans.guideAnemia}
+                    {selectedCondition === "jaundice" && sTrans.guideJaundice}
+                    {selectedCondition === "skin" && sTrans.guideSkin}
+                  </p>
+                </div>
 
-          <div className="text-xs text-slate-700 leading-relaxed font-medium space-y-3 whitespace-pre-line bg-slate-50 p-4 rounded-xl border border-slate-100">
-            {screeningResult}
-          </div>
+                <div className="flex gap-2 w-full max-w-[320px]">
+                  <button
+                    onClick={() => {
+                      stopScreenCameraStream();
+                      setScreenStep("select");
+                    }}
+                    className="flex-1 bg-slate-800 text-slate-300 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-700"
+                  >
+                    {sTrans.cancel}
+                  </button>
+                  <button
+                    onClick={captureScreenPhoto}
+                    className="flex-1 bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-500 shadow-md active:scale-[0.98] transition-all"
+                  >
+                    {sTrans.captureBtn}
+                  </button>
+                </div>
+              </div>
+            )}
 
-          <div className="bg-amber-50 border border-amber-200/50 rounded-xl p-3 text-[10px] text-amber-700 leading-normal flex gap-2">
-            <Info className="w-4 h-4 shrink-0 text-amber-500" />
-            <span>
-              {language === "hi" 
-                ? "यह रिपोर्ट केवल शैक्षिक उद्देश्यों के लिए है। किसी भी स्वास्थ्य चिंताओं के लिए डॉक्टर से संपर्क करें।" 
-                : language === "gu" 
-                ? "આ અહેવાલ માત્ર શૈક્ષણિક હેતુઓ માટે છે. કોઈપણ આરોગ્ય સમસ્યાઓ માટે ડૉક્ટરનો સંપર્ક કરો." 
-                : "This recommendation is an informational risk pre-screening. For any serious conditions, seek medical advice."
-              }
-            </span>
-          </div>
+            {/* 3. ROI SELECTION STEP */}
+            {screenStep === "roi" && (
+              <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-teal-600" />
+                    {sTrans.tapROI}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 leading-normal">
+                    {sTrans.tapInstructions}
+                  </p>
+                </div>
 
-          <button
-            onClick={resetScreening}
-            className="w-full bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 transition-colors"
-          >
-            {language === "hi" ? "नई जांच शुरू करें" : language === "gu" ? "નવી તપાસ શરૂ કરો" : "Start New Assessment"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
+                <div className="flex justify-center">
+                  <canvas
+                    ref={screenCanvasRef}
+                    onClick={handleCanvasClick}
+                    className="max-w-full rounded-xl border border-slate-200 cursor-crosshair shadow-sm aspect-square bg-slate-50"
+                    style={{ width: "320px", height: "320px" }}
+                  />
+                </div>
+
+                {avgColor && (
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full border border-slate-300 shadow-inner shrink-0"
+                      style={{ backgroundColor: `rgb(${avgColor.r}, ${avgColor.g}, ${avgColor.b})` }}
+                    />
+                    <div className="text-left space-y-0.5">
+                      <p className="text-xs font-bold text-slate-700">Selected Color</p>
+                      <p className="text-[10px] font-mono text-slate-500">
+                        RGB({avgColor.r}, {avgColor.g}, {avgColor.b})
+                      </p>
+                      {roiCoords && (
+                        <p className="text-[9px] text-slate-400">
+                          ROI Center: X:{Math.round(roiCoords.x)}, Y:{Math.round(roiCoords.y)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setScreenStep("select");
+                      setScreenImage(null);
+                      setRoiCoords(null);
+                      setAvgColor(null);
+                    }}
+                    className="bg-slate-100 text-slate-600 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-200"
+                  >
+                    {sTrans.retake}
+                  </button>
+                  <button
+                    onClick={runScreenAnalysis}
+                    disabled={!avgColor || isAnalyzing}
+                    className="bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 shadow-sm active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {sTrans.analyzing}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        {language === "hi" ? "विश्लेषण करें" : language === "gu" ? "વિશ્લેષણ કરો" : "Analyze"}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 4. RESULTS STEP */}
+            {screenStep === "results" && screenResults && (
+              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4 animate-scaleUp">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                    {sTrans.resultsTitle}
+                  </span>
+                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                    screenResults.riskBand === "Low" ? "bg-emerald-100 text-emerald-800" :
+                    screenResults.riskBand === "Moderate" ? "bg-amber-100 text-amber-800" :
+                    "bg-rose-100 text-rose-800"
+                  }`}>
+                    {screenResults.riskBand} Risk
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div
+                      className="w-10 h-10 rounded-full border border-slate-200 shadow-sm shrink-0"
+                      style={{ backgroundColor: `rgb(${avgColor?.r}, ${avgColor?.g}, ${avgColor?.b})` }}
+                    />
+                    <div className="text-left space-y-0.5">
+                      <p className="text-xs font-bold text-slate-600 capitalize">
+                        {screenResults.condition} Screening
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-mono">
+                        RGB({avgColor?.r}, {avgColor?.g}, {avgColor?.b})
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Confidence / Index Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        {sTrans.indexScore}
+                      </span>
+                      <span className="text-xs font-bold text-slate-700">{screenResults.indexVal}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          screenResults.riskBand === "Low" ? "bg-emerald-500" :
+                          screenResults.riskBand === "Moderate" ? "bg-amber-500" :
+                          "bg-rose-500"
+                        }`}
+                        style={{ width: `${screenResults.indexVal}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Result Explanation */}
+                  <div className="text-xs text-slate-700 leading-relaxed font-semibold bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    {screenResults.description}
+                  </div>
+
+                  {/* Strong Disclaimer Banner */}
+                  <div className="bg-rose-50 border border-rose-100 rounded-xl p-3.5 text-[10px] text-rose-700 leading-normal space-y-1 text-left">
+                    <div className="flex items-center gap-1.5 font-bold text-rose-800 uppercase tracking-wider mb-1">
+                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>{sTrans.disclaimerTitle}</span>
+                    </div>
+                    <p>{sTrans.disclaimerText}</p>
+                    <p className="text-[9px] font-mono text-slate-400 mt-2">
+                      {"// NOTE: This is a prototype heuristic for demonstration. Production systems would use a trained TensorFlow Lite CNN."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      setScreenStep("select");
+                      setScreenImage(null);
+                      setRoiCoords(null);
+                      setAvgColor(null);
+                      setScreenResults(null);
+                    }}
+                    className="bg-slate-100 text-slate-600 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-200"
+                  >
+                    {sTrans.retake}
+                  </button>
+                  <button
+                    onClick={saveScreeningResults}
+                    className="bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 shadow-md transition-all active:scale-[0.98]"
+                  >
+                    {sTrans.saveReport}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Symptoms Checker Panel (Existing logic) */
+          <>
+            {!screeningResult && !isScreeningLoading ? (
+              <form onSubmit={handleStartScreening} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-4">
+                {/* Symptoms List */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                    {language === "hi" ? "लक्षण चुनें" : language === "gu" ? "લક્ષણો પસંદ કરો" : "Select Symptoms"}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { key: "fever", label: language === "hi" ? "बुखार" : language === "gu" ? "તાવ" : "Fever" },
+                      { key: "cough", label: language === "hi" ? "सूखी खांसी" : language === "gu" ? "સૂકી ઉધરસ" : "Dry Cough" },
+                      { key: "fatigue", label: language === "hi" ? "थकान" : language === "gu" ? "થાક" : "Fatigue" },
+                      { key: "soreThroat", label: language === "hi" ? "गले में खराश" : language === "gu" ? "ગળામાં દુખાવો" : "Sore Throat" },
+                      { key: "breath", label: language === "hi" ? "सांस फूलना" : language === "gu" ? "શ્વાસ ચડવો" : "Shortness of Breath" },
+                      { key: "bodyAche", label: language === "hi" ? "बदन दर्द" : language === "gu" ? "શરીરનો દુખાવો" : "Body Ache" },
+                      { key: "lossTaste", label: language === "hi" ? "स्वाद/गंध की कमी" : language === "gu" ? "સ્વાદ ગુમાવવો" : "Loss of Taste/Smell" },
+                    ].map((symptom) => {
+                      const k = symptom.key as keyof typeof symptoms;
+                      return (
+                        <button
+                          key={symptom.key}
+                          type="button"
+                          onClick={() => handleSymptomToggle(k)}
+                          className={`py-2 px-3 text-xs font-semibold rounded-lg border text-left flex justify-between items-center transition-all ${
+                            symptoms[k]
+                              ? "bg-teal-50 border-teal-500 text-teal-700 shadow-sm"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          <span>{symptom.label}</span>
+                          {symptoms[k] && <div className="w-2 h-2 rounded-full bg-teal-500" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Age & Temperature Inputs */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">
+                      {language === "hi" ? "आयु" : language === "gu" ? "ઉંમર" : "Age"}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="120"
+                      value={age}
+                      onChange={(e) => setAge(parseInt(e.target.value) || 0)}
+                      className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold text-slate-700 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">
+                      {language === "hi" ? "तापमान (°F)" : language === "gu" ? "તાપમાન (°F)" : "Temp (°F)"}
+                    </label>
+                    <input
+                      type="text"
+                      value={temperature}
+                      onChange={(e) => setTemperature(e.target.value)}
+                      className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold text-slate-700 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-md flex items-center justify-center gap-2 hover:from-teal-700 hover:to-emerald-700 transition-all active:scale-[0.98] mt-2"
+                >
+                  <Sparkles className="w-4 h-4 fill-teal-100" />
+                  {t.startScreeningBtn}
+                </button>
+              </form>
+            ) : isScreeningLoading ? (
+              <div className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-4 min-h-[300px]">
+                <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
+                <p className="text-sm text-slate-600 font-semibold animate-pulse">{t.submitting}</p>
+                <p className="text-[10px] text-slate-400 text-center max-w-[200px]">
+                  Saathi is analyzing safety parameters using Groq LLM screening models.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4 animate-scaleUp">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                    {language === "hi" ? "स्क्रीनिंग रिपोर्ट" : language === "gu" ? "સ્ક્રીનીંગ રીપોર્ટ" : "Screening Report"}
+                  </span>
+                  <span className="bg-teal-100 text-teal-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    AI Screened
+                  </span>
+                </div>
+
+                <div className="text-xs text-slate-700 leading-relaxed font-medium space-y-3 whitespace-pre-line bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  {screeningResult}
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200/50 rounded-xl p-3 text-[10px] text-amber-700 leading-normal flex gap-2">
+                  <Info className="w-4 h-4 shrink-0 text-amber-500" />
+                  <span>
+                    {language === "hi" 
+                      ? "यह रिपोर्ट केवल शैक्षिक उद्देश्यों के लिए है। किसी भी स्वास्थ्य चिंताओं के लिए डॉक्टर से संपर्क करें।" 
+                      : language === "gu" 
+                      ? "આ અહેવાલ માત્ર શૈક્ષણિક હેતુઓ માટે છે. કોઈપણ આરોગ્ય સમસ્યાઓ માટે ડૉક્ટરનો સંપર્ક કરો." 
+                      : "This recommendation is an informational risk pre-screening. For any serious conditions, seek medical advice."
+                    }
+                  </span>
+                </div>
+
+                <button
+                  onClick={resetScreening}
+                  className="w-full bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 transition-colors"
+                >
+                  {language === "hi" ? "नई जांच शुरू करें" : language === "gu" ? "નવી તપાસ શરૂ કરો" : "Start New Assessment"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
   // 3. VITALS VIEW RENDER
   const renderVitalsView = () => {
