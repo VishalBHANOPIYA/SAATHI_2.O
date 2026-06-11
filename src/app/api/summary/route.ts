@@ -3,7 +3,7 @@ import { groq } from "@/lib/groq";
 
 export async function POST(req: Request) {
   try {
-    const { symptoms, triage, screeningResults, language } = await req.json();
+    const { symptoms, triage, screeningResults, language, profile } = await req.json();
 
     const apiKey = process.env.GROQ_API_KEY;
     const isMock = !apiKey || apiKey === "your_key_here" || apiKey.trim() === "";
@@ -22,7 +22,17 @@ export async function POST(req: Request) {
         ? "Examine for underlying infections, chronic condition flare-up, or local inflammation."
         : "Perform standard diagnostic review; monitor symptoms for self-limiting patterns.";
 
-      const summaryText = `### Clinical Intake Summary\n\n` +
+      let demographicHeader = "";
+      if (profile) {
+        demographicHeader = `### Patient Demographics\n` +
+          `- **Name:** ${profile.name || "N/A"}\n` +
+          `- **Age:** ${profile.age || "N/A"} years\n` +
+          `- **Gender:** ${profile.gender || "N/A"}\n` +
+          `- **Blood Group:** ${profile.bloodGroup || "N/A"}\n` +
+          `- **Pre-existing Conditions:** ${profile.conditions?.join(", ") || "None"}\n\n`;
+      }
+
+      const summaryText = demographicHeader + `### Clinical Intake Summary\n\n` +
         `**Chief Complaint:** ${complaint}\n\n` +
         `**Triage Urgency:** ${triage || "GREEN"}\n\n` +
         `**Screening Signals:** ${signals}\n\n` +
@@ -41,7 +51,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const systemPrompt = `You are a professional medical coordinator. Your task is to review the patient's self-reported symptoms, objective screening results (if any), and triage status, and generate a highly structured, concise, clinical-style summary for an attending doctor.
+    const systemPrompt = `You are a professional medical coordinator. Your task is to review the patient's demographics, self-reported symptoms, objective screening results (if any), and triage status, and generate a highly structured, concise, clinical-style summary for an attending doctor.
     
 Write in a professional, objective medical tone. Do not use conversational text or greetings.
 
@@ -51,12 +61,17 @@ The output MUST be a valid JSON object matching the following schema:
   "screening_signals": "Summary of any objective vitals or image screening risks provided, or a statement if none were uploaded",
   "triage_level": "GREEN | YELLOW | RED",
   "suggested_focus": "Specific clinical focus area or urgent diagnostics recommended for the doctor's immediate review",
-  "formatted_summary": "A clean, formatted markdown string combining all the above sections professionally for quick reading"
+  "formatted_summary": "A clean, formatted markdown string combining a 'Patient Demographics' section (derived from the demographics provided) and all the above sections professionally for quick reading"
 }
 
 Ensure the JSON is well-formed. Output ONLY JSON, nothing else.`;
 
-    const userContent = `Patient Details:
+    const profileDetails = profile 
+      ? `\n- Name: ${profile.name || "N/A"}\n- Age: ${profile.age || "N/A"} years\n- Gender: ${profile.gender || "N/A"}\n- Blood Group: ${profile.bloodGroup || "N/A"}\n- Pre-existing Conditions: ${profile.conditions?.join(", ") || "None"}`
+      : "Not provided";
+
+    const userContent = `Patient Demographics: ${profileDetails}
+Patient Details:
 - Symptoms reported: "${symptoms || "None provided"}"
 - Screening signals / details: ${JSON.stringify(screeningResults || "No photo screening results recorded")}
 - Calculated Triage Priority: "${triage || "GREEN"}"
