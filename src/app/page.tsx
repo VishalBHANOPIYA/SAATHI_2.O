@@ -25,7 +25,17 @@ import {
   X,
   Loader2,
   TrendingUp,
-  Lock
+  Lock,
+  RefreshCw,
+  ArrowLeft,
+  Phone,
+  PhoneOff,
+  Star,
+  Share2,
+  CheckCircle,
+  Copy,
+  Download,
+  WifiOff
 } from "lucide-react";
 
 // Recharts dynamically imported or checked for client-side mounting
@@ -230,6 +240,163 @@ const screenTranslations = {
   }
 };
 
+interface TriageResult {
+  possible_concerns: string[];
+  triage: "GREEN" | "YELLOW" | "RED";
+  reason: string;
+  advice: string;
+  see_doctor: boolean;
+}
+
+function TriageResultCard({
+  result,
+  language,
+  onConnectDoctor,
+  onReset
+}: {
+  result: TriageResult;
+  language: string;
+  onConnectDoctor?: () => void;
+  onReset?: () => void;
+}) {
+  const isRed = result.triage === "RED";
+  const isYellow = result.triage === "YELLOW";
+  const isGreen = result.triage === "GREEN";
+
+  const labels = {
+    en: {
+      emergency: "🔴 Emergency / Urgent Care Needed",
+      yellow: "🟡 See a Doctor Soon",
+      green: "🟢 Home Care / Self-Care",
+      concerns: "Possible Concerns",
+      reason: "Reasoning",
+      advice: "Recommended Advice",
+      connect: "Connect to a Doctor",
+      checkAgain: "Check New Symptoms",
+      disclaimerTitle: "Medical Disclaimer",
+      disclaimerText: "This AI symptom triage is a prototype designed for screening and informational purposes only. It is not a clinical diagnosis. If you are experiencing a severe medical event, please contact emergency services immediately."
+    },
+    hi: {
+      emergency: "🔴 आपातकालीन सहायता / तुरंत अस्पताल जाएं",
+      yellow: "🟡 डॉक्टर से जल्द संपर्क करें",
+      green: "🟢 घरेलू उपचार / होम केयर",
+      concerns: "संभावित समस्याएं (Concerns)",
+      reason: "कारण (Reasoning)",
+      advice: "अनुशंसित सलाह (Advice)",
+      connect: "डॉक्टर से संपर्क करें",
+      checkAgain: "नए लक्षण जांचें",
+      disclaimerTitle: "चिकित्सा अस्वीकरण",
+      disclaimerText: "यह एआई लक्षण ट्राइएज केवल स्क्रीनिंग और जानकारी के लिए एक प्रोटोटाइप है। यह कोई नैदानिक निदान नहीं है। यदि आप गंभीर समस्या महसूस कर रहे हैं, तो तुरंत आपातकालीन सेवाओं से संपर्क करें।"
+    },
+    gu: {
+      emergency: "🔴 કટોકટી / તાત્કાલિક હોસ્પિટલ જાવ",
+      yellow: "🟡 ટૂંક સમયમાં ડૉક્ટરને મળો",
+      green: "🟢 ઘરેલું સારવાર / હોમ કેર",
+      concerns: "સંભવિત ચિંતાઓ",
+      reason: "કારણ",
+      advice: "ભલામણ કરેલ સલાહ",
+      connect: "ડૉક્ટર સાથે જોડાઓ",
+      checkAgain: "નવા લક્ષણો તપાસો",
+      disclaimerTitle: "તબીબી ડિસ્ક્લેમર",
+      disclaimerText: "આ AI લક્ષણ ટ્રાયેજ માત્ર સ્ક્રીનીંગ અને માહિતીના હેતુઓ માટે એક પ્રોટોટાઇપ છે. આ કોઈ તબીબી નિદાન નથી. જો તમને ગંભીર તકલીફ હોય, તો તાત્કાલિક કટોકટી સેવાઓનો સંપર્ક કરો."
+    }
+  };
+
+  const tLabels = labels[language as "en" | "hi" | "gu"] || labels.en;
+
+  let bgClass = "bg-emerald-50/70 border-emerald-200 text-emerald-800";
+  let badgeClass = "bg-emerald-600 text-white";
+  let titleText = tLabels.green;
+
+  if (isRed) {
+    bgClass = "bg-rose-50/70 border-rose-200 text-rose-800";
+    badgeClass = "bg-red-600 text-white animate-pulse";
+    titleText = tLabels.emergency;
+  } else if (isYellow) {
+    bgClass = "bg-amber-50/70 border-amber-250 text-amber-900";
+    badgeClass = "bg-amber-500 text-white";
+    titleText = tLabels.yellow;
+  }
+
+  return (
+    <div className="space-y-4 animate-scaleUp">
+      <div className={`p-4 rounded-2xl border ${bgClass} shadow-sm space-y-3`}>
+        <div className="flex items-center justify-between">
+          <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider ${badgeClass}`}>
+            Triage Level: {result.triage}
+          </span>
+          <span className="text-xs font-bold flex items-center gap-1">
+            <Heart className="w-3.5 h-3.5 fill-current text-rose-500 animate-pulse" />
+            Saathi Triage
+          </span>
+        </div>
+
+        <h3 className="text-sm font-black leading-snug">{titleText}</h3>
+        
+        <div className="space-y-2 border-t border-slate-200/50 pt-2 text-xs">
+          <div>
+            <strong className="block text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{tLabels.reason}:</strong>
+            <p className="mt-0.5 leading-relaxed font-semibold text-slate-700">{result.reason}</p>
+          </div>
+          <div className="border-t border-slate-200/20 pt-2">
+            <strong className="block text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{tLabels.advice}:</strong>
+            <p className="mt-0.5 leading-relaxed font-semibold text-slate-700">{result.advice}</p>
+          </div>
+        </div>
+      </div>
+
+      {result.possible_concerns && result.possible_concerns.length > 0 && (
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
+          <h4 className="text-xs font-bold text-slate-750 uppercase tracking-wider flex items-center gap-1.5">
+            <ShieldAlert className="w-4 h-4 text-teal-650" />
+            {tLabels.concerns}
+          </h4>
+          <div className="flex flex-wrap gap-1.5">
+            {result.possible_concerns.map((concern, idx) => (
+              <span key={idx} className="bg-teal-50 text-teal-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-teal-100">
+                {concern}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 flex gap-2 text-slate-500 leading-normal">
+        <AlertTriangle className="w-4.5 h-4.5 text-slate-400 shrink-0 mt-0.5" />
+        <div className="space-y-0.5">
+          <h5 className="text-[9px] font-extrabold uppercase tracking-wider text-slate-650">{tLabels.disclaimerTitle}</h5>
+          <p className="text-[10px] font-medium leading-relaxed">{tLabels.disclaimerText}</p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 pt-1">
+        {result.see_doctor && onConnectDoctor && (
+          <button
+            onClick={onConnectDoctor}
+            className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-650 text-white font-extrabold text-xs py-3 rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Video className="w-4 h-4" />
+            <span>{tLabels.connect}</span>
+          </button>
+        )}
+        {onReset && (
+          <button
+            onClick={onReset}
+            className={`py-3 px-4 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 ${
+              result.see_doctor 
+                ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                : "w-full bg-teal-650 text-white hover:bg-teal-700 shadow-md"
+            }`}
+          >
+            <RefreshCw className="w-3.5 h-3.5 animate-spin-hover" />
+            <span>{tLabels.checkAgain}</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MainApp() {
   const { language, setLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"home" | "screen" | "vitals" | "talk" | "records">("home");
@@ -299,14 +466,75 @@ export default function MainApp() {
   const [isListening, setIsListening] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
+  // Voice symptom checker & smart triage states
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [transcriptText, setTranscriptText] = useState("");
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
+  const [isTriaging, setIsTriaging] = useState(false);
+  const [talkError, setTalkError] = useState<string | null>(null);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // --- TELEMEDICINE STATES ---
+  const [telemedStep, setTelemedStep] = useState<"doctors" | "summary" | "call">("doctors");
+  const [selectedDoctor, setSelectedDoctor] = useState<{
+    id: number;
+    name: string;
+    type: "Doctor" | "PHC";
+    specialty: string;
+    distance: string;
+    available: boolean;
+    recommendationMatch?: string;
+  } | null>(null);
+  const [doctorSummary, setDoctorSummary] = useState<{
+    chief_complaint: string;
+    screening_signals: string;
+    triage_level: string;
+    suggested_focus: string;
+    formatted_summary: string;
+  } | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [isCallAudioOnly, setIsCallAudioOnly] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [webRTCStatus, setWebRTCStatus] = useState("Establishing secure WebRTC peer stream...");
+
   // --- RECORDS STATE ---
-  const [recordsList, setRecordsList] = useState([
-    { id: 1, title: "Complete Blood Count (CBC)", date: "2026-05-15", category: "Lab Test", doctor: "Dr. A. K. Sharma" },
-    { id: 2, title: "Chest X-Ray Screening", date: "2026-05-20", category: "Imaging", doctor: "Nirma Diagnostic Lab" },
-    { id: 3, title: "Cardiology Prescription", date: "2026-06-02", category: "Prescription", doctor: "Dr. Ritu Patel" },
+  interface HealthRecord {
+    id: number;
+    title: string;
+    date: string;
+    category: string;
+    doctor: string;
+    notes?: string;
+  }
+
+  const [recordsList, setRecordsList] = useState<HealthRecord[]>([
+    { id: 1, title: "Complete Blood Count (CBC)", date: "2026-05-15", category: "Lab Test", doctor: "Dr. A. K. Sharma", notes: "Hemoglobin: 14.2 g/dL, WBC: 6500 /mcL. All values within normal range." },
+    { id: 2, title: "Chest X-Ray Screening", date: "2026-05-20", category: "Imaging", doctor: "Nirma Diagnostic Lab", notes: "Clear lung fields. No active infiltrates or pleural effusion noted." },
+    { id: 3, title: "Cardiology Prescription", date: "2026-06-02", category: "Prescription", doctor: "Dr. Ritu Patel", notes: "Rx: Tab. Metoprolol 25mg QD, Tab. Aspirin 75mg QD. Follow-up in 4 weeks." },
   ]);
-  const [newRecord, setNewRecord] = useState({ title: "", category: "Lab Test", doctor: "" });
+  const [newRecord, setNewRecord] = useState<{ title: string; category: string; doctor: string; notes?: string }>({ title: "", category: "Lab Test", doctor: "", notes: "" });
   const [showRecordForm, setShowRecordForm] = useState(false);
+
+  // --- ABHA & RECORDS FEATURE STATES ---
+  const [abhaNumber, setAbhaNumber] = useState("");
+  const [isAbhaLinked, setIsAbhaLinked] = useState(false);
+  const [abhaError, setAbhaError] = useState<string | null>(null);
+  const [selectedRecordForDetails, setSelectedRecordForDetails] = useState<any | null>(null);
+  const [trendMetric, setTrendMetric] = useState<"heartRate" | "bp" | "oxygen" | "anemia">("heartRate");
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportedSummary, setExportedSummary] = useState<string | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  // --- PWA & OFFLINE STATES ---
+  const [isOffline, setIsOffline] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
 
   // --- MOCK CALL STATE ---
   const [activeCall, setActiveCall] = useState(false);
@@ -350,7 +578,50 @@ export default function MainApp() {
         console.error("Failed to parse saved records:", e);
       }
     }
+
+    const savedAbha = localStorage.getItem("saathi_abha_number");
+    const savedAbhaLinked = localStorage.getItem("saathi_abha_linked") === "true";
+    if (savedAbha) setAbhaNumber(savedAbha);
+    if (savedAbhaLinked) setIsAbhaLinked(true);
+    setIsMounted(true);
+
+    // Register Service Worker
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js")
+        .then((reg) => console.log("Service Worker registered scope:", reg.scope))
+        .catch((err) => console.error("Service Worker registration failed:", err));
+    }
+
+    // Monitor Online/Offline Status
+    setIsOffline(!navigator.onLine);
+    const goOnline = () => setIsOffline(false);
+    const goOffline = () => setIsOffline(true);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+
+    // Capture PWA Install Prompt
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to install: ${outcome}`);
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
 
   // Scroll chat to bottom
   useEffect(() => {
@@ -1108,52 +1379,184 @@ export default function MainApp() {
     }
   };
 
-  // Mock speak symptom checker
-  const triggerVoiceSymptomCheck = () => {
-    if (isListening) return;
-    setIsListening(true);
+  // --- VOICE SYMPTOM CHECKER & SMART TRIAGE ACTIONS ---
 
-    // After 3 seconds, insert mock voice transcript
-    setTimeout(async () => {
-      let voiceTranscript = "";
-      if (language === "hi") {
-        voiceTranscript = "मुझे पिछले दो दिनों से तेज़ बुखार, सूखी खाँसी और सांस लेने में कठिनाई हो रही है।";
-      } else if (language === "gu") {
-        voiceTranscript = "મને છેલ્લા બે દિવસથી ખૂબ તાવ, સૂકી ઉધરસ અને શ્વાસ લેવામાં તકલીફ છે.";
-      } else {
-        voiceTranscript = "I have a high fever, dry cough, and mild shortness of breath for the last two days.";
+  const startRecording = async () => {
+    setTalkError(null);
+    setAudioBlob(null);
+    setTranscriptText("");
+    setTriageResult(null);
+    audioChunksRef.current = [];
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      let options = { mimeType: "audio/webm" };
+      if (!MediaRecorder.isTypeSupported("audio/webm")) {
+        options = { mimeType: "audio/ogg" };
+      }
+      if (!MediaRecorder.isTypeSupported("audio/ogg")) {
+        options = { mimeType: "" }; // default
       }
 
-      setIsListening(false);
+      const recorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = recorder;
 
-      const userMsg = { role: "user" as const, content: voiceTranscript, timestamp: new Date() };
-      setChatMessages(prev => [...prev, userMsg]);
-      setIsChatLoading(true);
-
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [...chatMessages, userMsg].map(m => ({ role: m.role, content: m.content })),
-            language
-          })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          setChatMessages(prev => [...prev, {
-            role: "assistant",
-            content: data.reply,
-            timestamp: new Date()
-          }]);
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
         }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsChatLoading(false);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        setAudioBlob(blob);
+        
+        // Stop all tracks to release mic
+        stream.getTracks().forEach((track) => track.stop());
+        
+        // Auto transcribe
+        handleTranscribe(blob);
+      };
+
+      recorder.start();
+      setIsRecording(true);
+      setRecordingDuration(0);
+
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+
+    } catch (err) {
+      console.error("Microphone access error:", err);
+      setTalkError(
+        language === "hi" 
+          ? "माइक्रोफोन एक्सेस करने में असमर्थ। कृपया सेटिंग में अनुमति जांचें।" 
+          : language === "gu" 
+          ? "માઇક્રોફોન એક્સેસ કરવામાં અસમર્થ. કૃપા કરીને સેટિંગ્સમાં પરવાનગી તપાસો." 
+          : "Unable to access microphone. Please check permissions."
+      );
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
       }
-    }, 3000);
+    }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+      audioChunksRef.current = [];
+      setAudioBlob(null);
+    }
+  };
+
+  const handleTranscribe = async (blob: Blob) => {
+    setIsTranscribing(true);
+    setTalkError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", blob, "recording.webm");
+      formData.append("language", language);
+
+      const res = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setTranscriptText(data.text);
+      } else {
+        throw new Error(data.error || "Failed to transcribe audio.");
+      }
+    } catch (err) {
+      console.error("Transcription error:", err);
+      setTalkError(
+        language === "hi"
+          ? "ट्रांसक्रिप्शन विफल रहा। कृपया फिर से प्रयास करें या मैन्युअल रूप से टाइप करें।"
+          : language === "gu"
+          ? "ટ્રાન્સક્રિપ્શન નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયાસ કરો અથવા મેન્યુઅલી ટાઇપ કરો."
+          : "Transcription failed. Please try again or type manually."
+      );
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  const handleTriage = async () => {
+    if (!transcriptText.trim()) return;
+    setIsTriaging(true);
+    setTalkError(null);
+
+    try {
+      const res = await fetch("/api/triage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcript: transcriptText,
+          language
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.triageResult) {
+        setTriageResult(data.triageResult);
+        
+        // Save case to health records if Yellow or Red
+        if (data.triageResult.triage === "YELLOW" || data.triageResult.triage === "RED") {
+          const severityEmoji = data.triageResult.triage === "RED" ? "🚨 RED" : "⚠️ YELLOW";
+          const concern = data.triageResult.possible_concerns.join(", ") || "Symptom Check";
+          const dateStr = new Date().toISOString().split("T")[0];
+          
+          const addedItem = {
+            id: Date.now(),
+            title: `Triage: ${severityEmoji} - ${concern}`,
+            date: dateStr,
+            category: "Prescription" as const,
+            doctor: "Saathi AI Triage"
+          };
+          
+          const nextRecords = [addedItem, ...recordsList];
+          setRecordsList(nextRecords);
+          localStorage.setItem("saathi_records", JSON.stringify(nextRecords));
+        }
+      } else {
+        throw new Error(data.error || "Failed to get triage analysis.");
+      }
+    } catch (err) {
+      console.error("Triage error:", err);
+      setTalkError(
+        language === "hi"
+          ? "ट्राइएज विश्लेषण विफल रहा। कृपया पुनः प्रयास करें।"
+          : language === "gu"
+          ? "ટ્રાયેજ વિશ્લેષણ નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયાસ કરો."
+          : "Triage analysis failed. Please try again."
+      );
+    } finally {
+      setIsTriaging(false);
+    }
+  };
+
+  const resetTriageFlow = () => {
+    setAudioBlob(null);
+    setTranscriptText("");
+    setTriageResult(null);
+    setTalkError(null);
+    setIsRecording(false);
+    setIsTranscribing(false);
+    setIsTriaging(false);
   };
 
   // --- RECORDS ACTIONS ---
@@ -1188,18 +1591,314 @@ export default function MainApp() {
     localStorage.setItem("saathi_records", JSON.stringify(nextRecords));
   };
 
-  // --- TELEMEDICINE MOCK TIMER ---
+  // --- TELEMEDICINE MOCK TIMER & WebRTC LOOPBACK ---
+  const pc1Ref = useRef<RTCPeerConnection | null>(null);
+  const pc2Ref = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  const startWebRTCLoopback = async () => {
+    setWebRTCStatus("Accessing media devices...");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: !isCallAudioOnly, 
+        audio: true 
+      });
+      localStreamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+
+      setWebRTCStatus("Establishing peer connection...");
+      const pc1 = new RTCPeerConnection();
+      const pc2 = new RTCPeerConnection();
+
+      pc1Ref.current = pc1;
+      pc2Ref.current = pc2;
+
+      stream.getTracks().forEach(track => pc1.addTrack(track, stream));
+
+      pc1.onicecandidate = e => {
+        if (e.candidate) pc2.addIceCandidate(e.candidate).catch(console.error);
+      };
+      pc2.onicecandidate = e => {
+        if (e.candidate) pc1.addIceCandidate(e.candidate).catch(console.error);
+      };
+
+      pc2.ontrack = e => {
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = e.streams[0];
+        }
+      };
+
+      const offer = await pc1.createOffer();
+      await pc1.setLocalDescription(offer);
+      await pc2.setRemoteDescription(offer);
+
+      const answer = await pc2.createAnswer();
+      await pc2.setLocalDescription(answer);
+      await pc1.setRemoteDescription(answer);
+
+      setWebRTCStatus("Connected (WebRTC Sim Loopback)");
+    } catch (err) {
+      console.error("WebRTC initialization failed:", err);
+      setWebRTCStatus("Connected (Audio stream only)");
+    }
+  };
+
+  const stopWebRTCLoopback = () => {
+    if (pc1Ref.current) {
+      pc1Ref.current.close();
+      pc1Ref.current = null;
+    }
+    if (pc2Ref.current) {
+      pc2Ref.current.close();
+      pc2Ref.current = null;
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+    setWebRTCStatus("Disconnected");
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (activeCall) {
+    if (activeCall && telemedStep === "call") {
       interval = setInterval(() => {
         setCallTimer(prev => prev + 1);
       }, 1000);
+      
+      startWebRTCLoopback();
     } else {
       setCallTimer(0);
+      stopWebRTCLoopback();
     }
-    return () => clearInterval(interval);
-  }, [activeCall]);
+    return () => {
+      clearInterval(interval);
+      stopWebRTCLoopback();
+    };
+  }, [activeCall, telemedStep, isCallAudioOnly]);
+
+  const getNearbyDoctors = () => {
+    const defaultList = [
+      {
+        id: 1,
+        name: "Community PHC (Ghatlodia)",
+        type: "PHC" as const,
+        specialty: "Primary Health, Maternal & Child Care",
+        distance: "1.2 km",
+        available: true,
+        recommendationMatch: "Highly Recommended for Primary Care & Basic Diagnostics"
+      },
+      {
+        id: 2,
+        name: "Dr. Sandeep Mehta",
+        type: "Doctor" as const,
+        specialty: "General Physician & Infectious Diseases",
+        distance: "2.4 km",
+        available: true,
+        recommendationMatch: "Recommended for general wellness & acute fever checks"
+      },
+      {
+        id: 3,
+        name: "Dr. Ritu Patel (Ayan Labs)",
+        type: "Doctor" as const,
+        specialty: "Cardiologist & Hematologist",
+        distance: "3.1 km",
+        available: true,
+        recommendationMatch: "Recommended for blood reports and cardiovascular health"
+      },
+      {
+        id: 4,
+        name: "Dr. Priya Shah",
+        type: "Doctor" as const,
+        specialty: "Dermatologist & Skin Specialist",
+        distance: "4.0 km",
+        available: true,
+        recommendationMatch: "Recommended for skin irritation, rashes, or color changes"
+      },
+      {
+        id: 5,
+        name: "Sola Civil Hospital & Emergency Care",
+        type: "PHC" as const,
+        specialty: "Trauma, Diagnostics & Multi-specialty care",
+        distance: "4.8 km",
+        available: true,
+        recommendationMatch: "Recommended for high urgency or emergency care"
+      }
+    ];
+
+    const isEmergency = triageResult?.triage === "RED";
+    const isAnemia = screenResults?.condition === "anemia";
+    const isJaundice = screenResults?.condition === "jaundice";
+    const isSkin = screenResults?.condition === "skin";
+    const isYellow = triageResult?.triage === "YELLOW";
+
+    return defaultList.map(doc => {
+      let score = 0;
+      let reason = "";
+
+      if (isEmergency && doc.name.includes("Civil Hospital")) {
+        score = 10;
+        reason = "⚠️ Matches RED Emergency Triage: 24/7 Trauma & Emergency Diagnostics";
+      } else if (isAnemia && doc.name.includes("Dr. Ritu Patel")) {
+        score = 8;
+        reason = "🩸 Matches Anemia Screening: Specialist Hematology";
+      } else if (isJaundice && doc.name.includes("Mehta")) {
+        score = 8;
+        reason = "🟡 Matches Jaundice screening: Infectious diseases specialist";
+      } else if (isSkin && doc.name.includes("Dr. Priya Shah")) {
+        score = 9;
+        reason = "🧴 Matches Skin screening: Specialist Dermatologist";
+      } else if (isYellow && doc.name.includes("Mehta")) {
+        score = 7;
+        reason = "🩺 Matches YELLOW Triage: Available for prompt clinical diagnosis";
+      } else if (doc.name.includes("PHC")) {
+        score = 5;
+        reason = "🏠 Nearest primary health center for general triage";
+      }
+
+      return {
+        ...doc,
+        recommendationScore: score,
+        recommendationMatch: reason || doc.recommendationMatch
+      };
+    }).sort((a, b) => (b.recommendationScore || 0) - (a.recommendationScore || 0));
+  };
+
+  const handleGenerateSummary = async (doctor: any) => {
+    setSelectedDoctor(doctor);
+    setTelemedStep("summary");
+    setIsSummaryLoading(true);
+    setDoctorSummary(null);
+
+    try {
+      const screeningInfo = screenResults 
+        ? {
+            condition: screenResults.condition,
+            riskBand: screenResults.riskBand,
+            indexVal: screenResults.indexVal,
+            description: screenResults.description
+          }
+        : null;
+
+      const response = await fetch("/api/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          symptoms: transcriptText || chatInput || "Patient requested telemedicine consultation.",
+          triage: triageResult?.triage || "GREEN",
+          screeningResults: screeningInfo,
+          language
+        })
+      });
+
+      const data = await response.json();
+      if (data.success && data.summary) {
+        setDoctorSummary(data.summary);
+      } else {
+        throw new Error(data.error || "Failed to generate medical summary.");
+      }
+    } catch (error) {
+      console.error("Summary error:", error);
+      setDoctorSummary({
+        chief_complaint: transcriptText || "Symptom check",
+        screening_signals: screenResults ? `${screenResults.condition} (${screenResults.riskBand})` : "None recorded",
+        triage_level: triageResult?.triage || "GREEN",
+        suggested_focus: "General practitioner intake consultation.",
+        formatted_summary: `### Clinical Intake Summary (Offline Fallback)\n\n**Chief Complaint:** ${transcriptText || "General symptoms"}\n\n**Triage Urgency:** ${triageResult?.triage || "GREEN"}\n\n**Screening Results:** ${screenResults ? `${screenResults.condition} - ${screenResults.riskBand} risk` : "No image screening files uploaded"}\n\n**Suggested Focus:** Direct physician evaluation of reported symptoms.`
+      });
+    } finally {
+      setIsSummaryLoading(false);
+    }
+  };
+
+  // --- ABHA & RECORDS ACTION HANDLERS ---
+  const formatAbha = (value: string) => {
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length <= 2) return cleaned;
+    if (cleaned.length <= 6) return `${cleaned.slice(0, 2)}-${cleaned.slice(2)}`;
+    if (cleaned.length <= 10) return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+    return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}-${cleaned.slice(6, 10)}-${cleaned.slice(10, 14)}`;
+  };
+
+  const handleAbhaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const cleaned = rawValue.replace(/\D/g, "");
+    if (cleaned.length <= 14) {
+      setAbhaNumber(formatAbha(cleaned));
+      setAbhaError(null);
+    }
+  };
+
+  const handleLinkAbha = () => {
+    const cleaned = abhaNumber.replace(/\D/g, "");
+    if (cleaned.length !== 14) {
+      setAbhaError("Please enter a valid 14-digit ABHA ID.");
+      return;
+    }
+    setAbhaError(null);
+    setIsAbhaLinked(true);
+    localStorage.setItem("saathi_abha_number", abhaNumber);
+    localStorage.setItem("saathi_abha_linked", "true");
+  };
+
+  const handleUnlinkAbha = () => {
+    setIsAbhaLinked(false);
+    setAbhaNumber("");
+    localStorage.removeItem("saathi_abha_number");
+    localStorage.removeItem("saathi_abha_linked");
+  };
+
+  const handleExportSummary = async () => {
+    setIsExporting(true);
+    setExportedSummary(null);
+    setShowExportModal(true);
+
+    try {
+      const recordsText = recordsList.map((r, idx) => {
+        return `[Record #${idx + 1}] Title: ${r.title} | Date: ${r.date} | Category: ${r.category} | Clinician: ${r.doctor} | Notes: ${r.notes || "None"}`;
+      }).join("\n");
+
+      const vitalsText = vitalsHistory.map(v => {
+        return `Date: ${v.date} | HR: ${v.heartRate} bpm | BP: ${v.systolic}/${v.diastolic} mmHg | SpO2: ${v.oxygen}%`;
+      }).join("\n");
+
+      const consolidatedIntake = `Patient health history export requested.\n\n` +
+        `**Vitals History Logs:**\n${vitalsText || "No recorded vitals logs available."}\n\n` +
+        `**Session Logs & Diagnostic Records:**\n${recordsText || "No saved session logs available."}`;
+
+      const response = await fetch("/api/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          symptoms: consolidatedIntake,
+          triage: triageResult?.triage || "GREEN",
+          screeningResults: screenResults ? { condition: screenResults.condition, riskBand: screenResults.riskBand } : null,
+          language
+        })
+      });
+
+      const data = await response.json();
+      if (data.success && data.summary) {
+        setExportedSummary(data.summary.formatted_summary);
+      } else {
+        throw new Error(data.error || "Failed to generate records summary.");
+      }
+    } catch (err) {
+      console.error("Export summary error:", err);
+      const fallbackReport = `### Saathi Patient Health Export (Fallback Mode)\n\n` +
+        `**Generated on:** ${new Date().toLocaleDateString()}\n\n` +
+        `**Vitals Log:**\n` + vitalsHistory.map(v => `- ${v.date}: HR ${v.heartRate} bpm, BP ${v.systolic}/${v.diastolic}, SpO2 ${v.oxygen}%`).join("\n") + `\n\n` +
+        `**Saved Diagnostic Sessions:**\n` + recordsList.map(r => `- ${r.date}: ${r.title} (${r.category})`).join("\n") + `\n\n` +
+        `*Note: LLM summary failed to compile. Reconnect to the internet or check Groq API configuration.*`;
+      setExportedSummary(fallbackReport);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const formatCallTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -2230,247 +2929,753 @@ export default function MainApp() {
   };
 
   // 4. TALK VIEW RENDER (CHAT)
-  const renderTalkView = () => (
-    <div className="h-full flex flex-col justify-between bg-slate-50 animate-fadeIn">
-      {/* Description Info */}
-      <div className="p-3 bg-white border-b border-slate-100 flex items-center justify-between shadow-sm shrink-0">
-        <div>
-          <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-            <Mic className="w-4 h-4 text-teal-600" />
-            {t.talkHeader}
-          </h2>
-          <p className="text-[10px] text-slate-500">{t.talkDesc}</p>
-        </div>
-        <button
-          onClick={triggerVoiceSymptomCheck}
-          disabled={isListening}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${
-            isListening
-              ? "bg-red-500 text-white animate-pulse"
-              : "bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-100"
-          }`}
-        >
-          <Volume2 className="w-3.5 h-3.5" />
-          <span>{isListening ? t.listening : t.tapToSpeak}</span>
-        </button>
-      </div>
+  const renderTalkView = () => {
+    const talkLabels = {
+      en: {
+        header: "AI Voice Symptom Checker",
+        desc: "Speak your symptoms in your language and get an instant, intelligent health screening.",
+        tapRecord: "Tap to record symptoms",
+        recording: "Recording symptoms...",
+        processing: "Transcribing your voice...",
+        triaging: "Analyzing symptoms...",
+        editingTitle: "Verify & Edit Symptoms",
+        editingDesc: "Please check the transcript below. You can edit it to add or correct details.",
+        btnAnalyze: "Analyze Symptoms",
+        btnRecordAgain: "Record Again",
+        textPlaceholder: "Or type your symptoms here manually...",
+        btnSubmitText: "Submit Symptoms",
+        recordingError: "Recording Error",
+        microphoneNeeded: "Microphone access is required to use voice check.",
+        stop: "Stop",
+        cancel: "Cancel",
+        secRemaining: "seconds recorded",
+        speakLangNotice: "Speak in Hindi, Gujarati, or English. Ensure your microphone is clear."
+      },
+      hi: {
+        header: "एआई आवाज लक्षण जांच",
+        desc: "अपनी भाषा में अपने लक्षण बोलें और तुरंत एआई लक्षण जांच का लाभ उठाएं।",
+        tapRecord: "लक्षणों को रिकॉर्ड करने के लिए टैप करें",
+        recording: "लक्षण रिकॉर्ड किए जा रहे हैं...",
+        processing: "आवाज को शब्दों में बदला जा रहा है...",
+        triaging: "लक्षणों का विश्लेषण किया जा रहा है...",
+        editingTitle: "लक्षणों को सत्यापित और संपादित करें",
+        editingDesc: "कृपया नीचे दिए गए शब्दों की जांच करें। आप विवरण जोड़ने या सही करने के लिए इसे संपादित कर सकते हैं।",
+        btnAnalyze: "लक्षणों का विश्लेषण करें",
+        btnRecordAgain: "फिर से रिकॉर्ड करें",
+        textPlaceholder: "या अपने लक्षणों को यहाँ मैन्युअल रूप से टाइप करें...",
+        btnSubmitText: "लक्षण जमा करें",
+        recordingError: "रिकॉर्डिंग त्रुटि",
+        microphoneNeeded: "वॉयस चेक का उपयोग करने के लिए माइक्रोफोन अनुमति आवश्यक है।",
+        stop: "रोकें",
+        cancel: "रद्द करें",
+        secRemaining: "सेकंड रिकॉर्ड किए गए",
+        speakLangNotice: "हिंदी, गुजराती या अंग्रेजी में बोलें। सुनिश्चित करें कि आपका माइक्रोफ़ोन साफ़ है।"
+      },
+      gu: {
+        header: "AI વોઇસ લક્ષણ તપાસ",
+        desc: "તમારી ભાષામાં તમારા લક્ષણો બોલો અને ત્વરિત AI લક્ષણ તપાસનો લાભ મેળવો.",
+        tapRecord: "લક્ષણો રેકોર્ડ કરવા માટે ટેપ કરો",
+        recording: "લક્ષણો રેકોર્ડ થઈ રહ્યા છે...",
+        processing: "અવાજ ટ્રાન્સક્રાઇબ થઈ રહ્યો છે...",
+        triaging: "લક્ષણોનું વિશ્લેષણ થઈ રહ્યું છે...",
+        editingTitle: "લક્ષણો ચકાસો અને સંપાદિત કરો",
+        editingDesc: "કૃપા કરીને નીચે આપેલા લખાણની તપાસ કરો. તમે સુધારા કરવા માટે તેને સંપાદિત કરી શકો છો.",
+        btnAnalyze: "લક્ષણોનું વિશ્લેષણ કરો",
+        btnRecordAgain: "ફરીથી રેકોર્ડ કરો",
+        textPlaceholder: "અથવા તમારા લક્ષણો અહીં મેન્યુઅલી ટાઇપ કરો...",
+        btnSubmitText: "લક્ષણો સબમિટ કરો",
+        recordingError: "રેકોર્ડિંગ ભૂલ",
+        microphoneNeeded: "વોઇસ ચેકનો ઉપયોગ કરવા માટે માઇક્રોફોનની પરવાનગી જરૂરી છે.",
+        stop: "બંધ કરો",
+        cancel: "રદ કરો",
+        secRemaining: "સેકંડ રેકોર્ડ થઈ",
+        speakLangNotice: "હિન્દી, ગુજરાતી અથવા અંગ્રેજીમાં બોલો. ખાતરી કરો કે તમારો માઇક્રોફોન સાફ છે."
+      }
+    };
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar min-h-[300px]">
-        {chatMessages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex items-start gap-2 max-w-[85%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}
-          >
-            <div className={`p-2 rounded-full shrink-0 ${msg.role === "user" ? "bg-slate-200 text-slate-600" : "bg-teal-600 text-white shadow-sm"}`}>
-              <User className="w-4 h-4" />
-            </div>
-            <div className="space-y-1">
-              <div
-                className={`p-3 rounded-2xl text-xs font-medium leading-relaxed shadow-sm ${
-                  msg.role === "user"
-                    ? "bg-white text-slate-800 rounded-tr-none border border-slate-100"
-                    : "bg-teal-50 text-teal-900 border border-teal-100/50 rounded-tl-none"
-                }`}
-              >
-                {msg.content}
-              </div>
-              <div className={`text-[9px] text-slate-400 px-1 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                {formatTime(msg.timestamp)}
-              </div>
-            </div>
-          </div>
-        ))}
+    const l = talkLabels[language as "en" | "hi" | "gu"] || talkLabels.en;
 
-        {/* Listening wave simulation */}
-        {isListening && (
-          <div className="mr-auto flex items-center gap-2 max-w-[85%] animate-pulse">
-            <div className="p-2 rounded-full shrink-0 bg-red-500 text-white animate-bounce">
-              <Mic className="w-4 h-4" />
-            </div>
-            <div className="p-3 bg-red-50 border border-red-100 rounded-2xl rounded-tl-none space-y-1">
-              <p className="text-xs text-red-800 font-bold">{t.listening}</p>
-              {/* Pulsing waveforms */}
-              <div className="flex items-center gap-1 h-3 mt-1 px-1">
-                <div className="w-0.5 bg-red-400 rounded animate-bounce h-2" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-0.5 bg-red-500 rounded animate-bounce h-3" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-0.5 bg-red-400 rounded animate-bounce h-1.5" style={{ animationDelay: '0.3s' }}></div>
-                <div className="w-0.5 bg-red-600 rounded animate-bounce h-2.5" style={{ animationDelay: '0.4s' }}></div>
-                <div className="w-0.5 bg-red-400 rounded animate-bounce h-1" style={{ animationDelay: '0.5s' }}></div>
-              </div>
-            </div>
-          </div>
-        )}
+    const formatDuration = (secs: number) => {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    };
 
-        {/* Loading Bubble */}
-        {isChatLoading && (
-          <div className="mr-auto flex items-start gap-2 max-w-[85%]">
-            <div className="p-2 rounded-full shrink-0 bg-teal-600 text-white">
-              <Loader2 className="w-4 h-4 animate-spin" />
-            </div>
-            <div className="p-3 bg-slate-100 rounded-2xl rounded-tl-none">
-              <div className="flex gap-1 py-1">
-                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div ref={chatBottomRef} />
-      </div>
-
-      {/* Input bar */}
-      <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-slate-100 flex gap-2 items-center shrink-0 mb-12">
-        <input
-          type="text"
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          placeholder={language === "hi" ? "लक्षण लिखें..." : language === "gu" ? "લક્ષણો લખો..." : "Describe how you feel..."}
-          className="flex-grow p-2.5 border border-slate-200 bg-slate-50 text-xs rounded-xl focus:outline-none focus:border-teal-500 font-medium text-slate-700"
-        />
-        <button
-          type="submit"
-          disabled={!chatInput.trim()}
-          className="bg-teal-600 text-white p-2.5 rounded-xl hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center shadow-md active:scale-95"
-        >
-          <Send className="w-4.5 h-4.5" />
-        </button>
-      </form>
-    </div>
-  );
-
-  // 5. RECORDS VIEW RENDER
-  const renderRecordsView = () => (
-    <div className="p-4 space-y-4 animate-fadeIn">
-      {/* Header Info */}
-      <div className="flex justify-between items-center">
+    return (
+      <div className="p-4 space-y-4 animate-fadeIn">
         <div className="space-y-1">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-teal-600" />
-            {t.recordsHeader}
+            <Mic className="w-5 h-5 text-teal-600" />
+            {l.header}
           </h2>
-          <p className="text-xs text-slate-500 leading-normal">{t.recordsDesc}</p>
+          <p className="text-xs text-slate-500 leading-normal">{l.desc}</p>
         </div>
-        <button
-          onClick={() => setShowRecordForm(!showRecordForm)}
-          className="bg-teal-50 text-teal-600 p-2 rounded-full border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center"
-        >
-          {showRecordForm ? <X className="w-4.5 h-4.5" /> : <Plus className="w-4.5 h-4.5" />}
-        </button>
-      </div>
 
-      {/* Upload Record Form */}
-      {showRecordForm && (
-        <form onSubmit={handleAddRecord} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3 animate-scaleUp">
-          <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <UploadCloud className="w-4 h-4 text-teal-600" />
-            {language === "hi" ? "दस्तावेज़ अपलोड करें" : language === "gu" ? "દસ્તાવેજ અપલોડ કરો" : "Upload Report / Prescription"}
-          </h3>
-          <div className="space-y-2">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase">Document Title</label>
-              <input
-                type="text"
-                placeholder="e.g. Blood Sugar Report"
-                value={newRecord.title}
-                onChange={e => setNewRecord(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500"
-              />
+        {talkError && (
+          <div className="bg-red-50 border border-red-200 text-red-800 rounded-2xl p-3 flex gap-2 animate-scaleUp">
+            <AlertTriangle className="w-4.5 h-4.5 text-red-500 shrink-0 mt-0.5" />
+            <div className="flex-grow space-y-1">
+              <span className="text-xs font-bold block">{l.recordingError}</span>
+              <p className="text-[10px] font-medium leading-normal">{talkError}</p>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase">Category</label>
-                <select
-                  value={newRecord.category}
-                  onChange={e => setNewRecord(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500"
-                >
-                  <option value="Lab Test">Lab Test</option>
-                  <option value="Prescription">Prescription</option>
-                  <option value="Imaging">Imaging</option>
-                  <option value="Vaccine">Vaccine Card</option>
-                </select>
+            <button onClick={() => setTalkError(null)} className="text-slate-400 hover:text-slate-600 self-start">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {triageResult && (
+          <TriageResultCard
+            result={triageResult}
+            language={language}
+            onConnectDoctor={() => setActiveCall(true)}
+            onReset={resetTriageFlow}
+          />
+        )}
+
+        {!triageResult && isTriaging && (
+          <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 animate-fadeIn">
+            <div className="relative">
+              <div className="absolute inset-0 bg-teal-500/10 rounded-full animate-ping scale-150 duration-1000" />
+              <div className="bg-teal-50 border border-teal-100 p-5 rounded-full relative z-10 text-teal-600">
+                <Loader2 className="w-10 h-10 animate-spin" />
               </div>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">{l.triaging}</h3>
+              <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                {language === "hi"
+                  ? "साथी एआई लक्षणों का विश्लेषण कर रहा है और सुरक्षित कदम सुझा रहा है..."
+                  : language === "gu"
+                  ? "સાથી AI લક્ષણોનું વિશ્લેષણ કરી રહ્યું છે અને યોગ્ય સૂચનો મેળવી રહ્યું છે..."
+                  : "Saathi AI is evaluating your symptoms and checking guidelines..."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!triageResult && !isTriaging && isTranscribing && (
+          <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 animate-fadeIn">
+            <div className="bg-teal-50 border border-teal-100 p-5 rounded-full text-teal-600 animate-bounce">
+              <Mic className="w-10 h-10 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">{l.processing}</h3>
+              <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                {language === "hi"
+                  ? "ग्रॉक व्हिस्पर एआई आपकी आवाज को पाठ में बदल रहा है..."
+                  : language === "gu"
+                  ? "ગ્રોક વ્હીસ્પર AI તમારા અવાજને લખાણમાં રૂપાંતરિત કરી રહ્યું છે..."
+                  : "Groq Whisper AI is converting your voice into editable text..."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!triageResult && !isTriaging && !isTranscribing && isRecording && (
+          <div className="bg-white rounded-3xl p-6 border border-red-100 shadow-sm flex flex-col items-center justify-center min-h-[300px] text-center space-y-5 animate-fadeIn">
+            <div className="relative">
+              <div className="absolute inset-0 bg-red-500/10 rounded-full animate-ping scale-150 duration-700" />
+              <div className="bg-red-50 border border-red-100 p-6 rounded-full relative z-10 text-red-500">
+                <Mic className="w-12 h-12 animate-pulse" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[10px] font-extrabold text-red-500 uppercase tracking-widest">{l.recording}</span>
+              <div className="text-3xl font-black text-slate-800 tracking-wider font-mono">
+                {formatDuration(recordingDuration)}
+              </div>
+            </div>
+
+            <div className="flex justify-center items-center gap-1.5 h-10 w-full px-4 my-2">
+              <span className="w-1 h-4 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }} />
+              <span className="w-1 h-7 bg-red-600 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }} />
+              <span className="w-1 h-9 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <span className="w-1 h-6 bg-red-600 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+              <span className="w-1 h-3 bg-red-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+            </div>
+
+            <div className="flex gap-2 w-full max-w-xs pt-2">
+              <button
+                onClick={stopRecording}
+                className="flex-grow bg-emerald-605 hover:bg-emerald-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5"
+              >
+                <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
+                <span>{l.stop}</span>
+              </button>
+              <button
+                onClick={cancelRecording}
+                className="px-5 border border-slate-200 text-slate-500 font-extrabold text-xs rounded-xl hover:bg-slate-55 transition-colors"
+              >
+                {l.cancel}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!triageResult && !isTriaging && !isTranscribing && !isRecording && transcriptText && (
+          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 animate-fadeIn">
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <Info className="w-4.5 h-4.5 text-teal-600" />
+                {l.editingTitle}
+              </h3>
+              <p className="text-[10px] text-slate-500 leading-normal">{l.editingDesc}</p>
+            </div>
+
+            <textarea
+              value={transcriptText}
+              onChange={(e) => setTranscriptText(e.target.value)}
+              className="w-full h-32 p-3 border border-slate-200 bg-slate-50 rounded-2xl text-xs font-semibold focus:outline-none focus:border-teal-500 text-slate-700 leading-relaxed resize-none shadow-inner"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleTriage}
+                className="flex-grow bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+              >
+                <span>{l.btnAnalyze}</span>
+                <Sparkles className="w-4 h-4" />
+              </button>
+              <button
+                onClick={resetTriageFlow}
+                className="px-4 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-50 transition-colors"
+              >
+                {l.btnRecordAgain}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!triageResult && !isTriaging && !isTranscribing && !isRecording && !transcriptText && (
+          <div className="space-y-4">
+            <div className="bg-gradient-to-br from-teal-600 to-emerald-600 rounded-3xl p-6 text-white shadow-md flex flex-col items-center text-center space-y-5 relative overflow-hidden">
+              <div className="absolute -right-8 -bottom-8 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
+              <div className="absolute -left-8 -top-8 w-20 h-20 bg-white/10 rounded-full blur-lg pointer-events-none" />
+
+              <div className="space-y-1 relative z-10">
+                <span className="bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-widest border border-white/10">
+                  Multilingual AI Screening
+                </span>
+                <p className="text-[11px] text-teal-100 font-medium leading-relaxed max-w-[90%] mx-auto pt-1">
+                  {l.speakLangNotice}
+                </p>
+              </div>
+
+              <button
+                onClick={startRecording}
+                className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 border-4 border-teal-500/20 group relative z-10"
+              >
+                <Mic className="w-10 h-10 text-teal-600 group-hover:scale-110 transition-transform" />
+              </button>
+
+              <span className="text-xs font-black tracking-wide text-white/90 relative z-10">
+                {l.tapRecord}
+              </span>
+            </div>
+
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-3">
+              <div className="flex items-center gap-1.5 px-0.5">
+                <Info className="w-4 h-4 text-teal-600" />
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Or type your symptoms</span>
+              </div>
+              <textarea
+                placeholder={l.textPlaceholder}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                className="w-full h-24 p-3 border border-slate-200 bg-slate-50 rounded-2xl text-xs font-semibold focus:outline-none focus:border-teal-500 text-slate-700 leading-normal resize-none shadow-inner"
+              />
+              <button
+                onClick={() => {
+                  if (chatInput.trim()) {
+                    setTranscriptText(chatInput.trim());
+                    setChatInput("");
+                  }
+                }}
+                disabled={!chatInput.trim()}
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{l.btnSubmitText}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // 5. RECORDS VIEW RENDER
+  const renderRecordsView = () => {
+    // Render Trend Chart inside the container
+    const renderTrendChart = () => {
+      if (!isMounted) return <div className="h-40 bg-slate-50 animate-pulse rounded-xl" />;
+
+      let chartData: any[] = [];
+      let strokeColor = "#0d9488";
+      let yKey = "value";
+      let yName = "Value";
+
+      if (trendMetric === "heartRate") {
+        chartData = vitalsHistory.length > 0 
+          ? vitalsHistory.map(v => ({ date: v.date.split("-").slice(1).join("/"), value: v.heartRate }))
+          : [
+              { date: "06/01", value: 72 },
+              { date: "06-05", value: 78 },
+              { date: "06/10", value: 74 },
+            ];
+        yKey = "value";
+        yName = language === "hi" ? "धड़कन (bpm)" : language === "gu" ? "ધબકારા (bpm)" : "Pulse (bpm)";
+        strokeColor = "#0d9488";
+      } else if (trendMetric === "bp") {
+        chartData = vitalsHistory.length > 0 
+          ? vitalsHistory.map(v => ({ date: v.date.split("-").slice(1).join("/"), systolic: v.systolic, diastolic: v.diastolic }))
+          : [
+              { date: "06/01", systolic: 120, diastolic: 80 },
+              { date: "06/05", systolic: 125, diastolic: 82 },
+              { date: "06/10", systolic: 118, diastolic: 78 },
+            ];
+        yName = "BP (mmHg)";
+      } else if (trendMetric === "oxygen") {
+        chartData = vitalsHistory.length > 0 
+          ? vitalsHistory.map(v => ({ date: v.date.split("-").slice(1).join("/"), value: v.oxygen }))
+          : [
+              { date: "06/01", value: 98 },
+              { date: "06/05", value: 97 },
+              { date: "06/10", value: 99 },
+            ];
+        yKey = "value";
+        yName = language === "hi" ? "ऑक्सीजन (SpO2%)" : language === "gu" ? "ઓક્સિજન (SpO2%)" : "SpO2 (%)";
+        strokeColor = "#3b82f6";
+      } else if (trendMetric === "anemia") {
+        const scans = recordsList
+          .filter(r => r.title.toLowerCase().includes("anemia") || r.notes?.toLowerCase().includes("anemia"))
+          .map(r => {
+            const scoreMatch = r.notes?.match(/Index Score:\s*(\d+)%/i) || r.notes?.match(/(\d+)%/);
+            const score = scoreMatch ? parseInt(scoreMatch[1]) : 15;
+            return { date: r.date.split("-").slice(1).join("/"), value: score };
+          });
+        chartData = scans.length > 0 
+          ? scans.reverse()
+          : [
+              { date: "06/01", value: 14 },
+              { date: "06/05", value: 11 },
+              { date: "06/10", value: 13 },
+            ];
+        yKey = "value";
+        yName = language === "hi" ? "एनीमिया स्कोर" : language === "gu" ? "એનિમિયા સ્કોર" : "Anemia Index";
+        strokeColor = "#f59e0b";
+      }
+
+      return (
+        <div className="h-44 w-full pt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={strokeColor} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={strokeColor} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="date" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} domain={trendMetric === 'oxygen' ? [90, 100] : ['auto', 'auto']} />
+              <Tooltip 
+                contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
+                labelStyle={{ fontWeight: 800, color: '#1e293b' }}
+              />
+              {trendMetric === "bp" ? (
+                <>
+                  <Area type="monotone" name="Systolic" dataKey="systolic" stroke="#ec4899" fill="rgba(236, 72, 153, 0.1)" strokeWidth={2.5} />
+                  <Area type="monotone" name="Diastolic" dataKey="diastolic" stroke="#3b82f6" fill="rgba(59, 130, 246, 0.05)" strokeWidth={2.5} />
+                </>
+              ) : (
+                <Area type="monotone" name={yName} dataKey={yKey} stroke={strokeColor} fill="url(#colorMetric)" strokeWidth={2.5} />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      );
+    };
+
+    return (
+      <div className="p-4 space-y-4 animate-fadeIn overflow-y-auto flex-1 h-full pb-24">
+        {/* Header Info */}
+        <div className="flex justify-between items-center">
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-teal-600" />
+              {t.recordsHeader}
+            </h2>
+            <p className="text-xs text-slate-500 leading-normal">{t.recordsDesc}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportSummary}
+              className="bg-teal-50 text-teal-600 p-2.5 rounded-full border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm"
+              title="Export Summary"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowRecordForm(!showRecordForm)}
+              className="bg-teal-600 text-white p-2.5 rounded-full hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm"
+            >
+              {showRecordForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* ABHA HEALTH ID CARD (ABDM) */}
+        <div className="bg-gradient-to-r from-blue-650 to-indigo-650 rounded-2xl p-4 text-white shadow-md relative overflow-hidden border border-blue-500/10">
+          <div className="absolute right-[-10px] top-[-10px] w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-100">National Health Authority</span>
+              <h4 className="text-sm font-extrabold flex items-center gap-1">
+                {language === "hi" ? "ABHA स्वास्थ्य पहचान पत्र" : language === "gu" ? "ABHA સ્વાસ્થ્ય આઈડી" : "ABHA Health ID"}
+              </h4>
+            </div>
+            {isAbhaLinked ? (
+              <span className="bg-emerald-500 text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm uppercase tracking-wide">
+                <CheckCircle className="w-2.5 h-2.5 fill-white text-emerald-500" />
+                Linked
+              </span>
+            ) : (
+              <span className="bg-amber-500 text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                Unlinked
+              </span>
+            )}
+          </div>
+
+          {isAbhaLinked ? (
+            <div className="space-y-2">
+              <div className="bg-white/10 px-3 py-2 rounded-xl border border-white/10">
+                <div className="text-[10px] text-blue-100 font-semibold">Ayushman Bharat Health Account</div>
+                <div className="font-mono text-base font-extrabold tracking-widest mt-0.5">{abhaNumber}</div>
+              </div>
+              <div className="flex justify-between items-center text-[10px] pt-1">
+                <span className="text-blue-100 font-bold">Holder: Vishal Bhanopiya</span>
+                <button 
+                  onClick={handleUnlinkAbha}
+                  className="text-red-200 hover:text-red-100 underline font-extrabold transition-colors active:scale-95"
+                >
+                  Unlink ID
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-[10px] text-blue-100 leading-normal">
+                {language === "hi" 
+                  ? "डिजिटल स्वास्थ्य मिशन के अंतर्गत अपने 14-अंकों के ABHA कार्ड को जोड़ें।"
+                  : language === "gu"
+                  ? "ડિજિટલ હેલ્થ મિશન અંતર્ગત તમારા 14-આંકડાના ABHA કાર્ડને કનેક્ટ કરો."
+                  : "Link your 14-digit National ABHA Health ID to synchronize diagnostic records across facilities."}
+              </p>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder="e.g. 12-3456-7890-1234"
+                    value={abhaNumber}
+                    onChange={handleAbhaChange}
+                    className="w-full text-xs p-2.5 rounded-xl border border-white/20 bg-white/10 font-bold placeholder-white/40 text-white focus:outline-none focus:border-white focus:bg-white/15 tracking-wider"
+                  />
+                  {abhaError && (
+                    <span className="absolute left-1 bottom-[-14px] text-[8px] text-red-300 font-bold">{abhaError}</span>
+                  )}
+                </div>
+                <button
+                  onClick={handleLinkAbha}
+                  className="bg-white text-blue-700 font-extrabold text-xs px-4 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+                >
+                  Link
+                </button>
+              </div>
+              <div className="text-[8px] text-blue-200/90 leading-tight border-t border-white/5 pt-2 flex items-start gap-1">
+                <Info className="w-2.5 h-2.5 shrink-0 mt-0.5" />
+                <span><strong>ABDM Prototype:</strong> Real integrations require ABDM sandbox access keys. Card linking is simulated here.</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Upload Record Form */}
+        {showRecordForm && (
+          <form onSubmit={handleAddRecord} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3 animate-scaleUp">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <UploadCloud className="w-4 h-4 text-teal-600" />
+              {language === "hi" ? "दस्तावेज़ अपलोड करें" : language === "gu" ? "દસ્તાવેજ અપલોડ કરો" : "Upload Report / Prescription"}
+            </h3>
+            <div className="space-y-2">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase">Physician / Lab</label>
+                <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Document Title</label>
                 <input
                   type="text"
-                  placeholder="e.g. Dr. Ray"
-                  value={newRecord.doctor}
-                  onChange={e => setNewRecord(prev => ({ ...prev, doctor: e.target.value }))}
+                  placeholder="e.g. Blood Sugar Report"
+                  value={newRecord.title}
+                  onChange={e => setNewRecord(prev => ({ ...prev, title: e.target.value }))}
                   className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Category</label>
+                  <select
+                    value={newRecord.category}
+                    onChange={e => setNewRecord(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500"
+                  >
+                    <option value="Lab Test">Lab Test</option>
+                    <option value="Prescription">Prescription</option>
+                    <option value="Imaging">Imaging</option>
+                    <option value="Vaccine">Vaccine Card</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Physician / Lab</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Dr. Ray"
+                    value={newRecord.doctor}
+                    onChange={e => setNewRecord(prev => ({ ...prev, doctor: e.target.value }))}
+                    className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Notes / Summary</label>
+                <textarea
+                  placeholder="Paste report summary, values, or prescriptions here..."
+                  value={newRecord.notes}
+                  onChange={e => setNewRecord(prev => ({ ...prev, notes: e.target.value }))}
+                  className="w-full h-16 text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-medium focus:outline-none focus:border-teal-500 resize-none"
                 />
               </div>
             </div>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-teal-600 text-white font-bold text-xs py-2 rounded-lg hover:bg-teal-700 transition-colors mt-2"
-          >
-            {t.uploadRecordBtn}
-          </button>
-        </form>
-      )}
-
-      {/* Vault List */}
-      <div className="space-y-3">
-        {recordsList.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 border border-slate-100 text-center text-slate-400 text-xs">
-            No health records saved. Click &quot;+&quot; to add reports.
-          </div>
-        ) : (
-          recordsList.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between gap-3 hover:border-slate-200 transition-colors"
+            <button
+              type="submit"
+              className="w-full bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 transition-colors shadow-sm"
             >
-              <div className="bg-slate-50 p-2.5 rounded-lg text-slate-500 shrink-0">
-                <FileText className="w-5 h-5 text-teal-600" />
-              </div>
-              <div className="flex-grow space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-slate-800 text-xs leading-normal">{item.title}</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
-                    item.category === "Prescription" 
-                      ? "bg-purple-100 text-purple-700" 
-                      : item.category === "Imaging" 
-                      ? "bg-blue-100 text-blue-700" 
-                      : "bg-teal-100 text-teal-700"
-                  }`}>
-                    {item.category}
-                  </span>
+              {t.uploadRecordBtn}
+            </button>
+          </form>
+        )}
+
+        {/* TRENDS CHART DASHBOARD */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-teal-650" />
+              {language === "hi" ? "वाइटल्स एवं स्वास्थ्य रुझान" : language === "gu" ? "વાઇટલ્સ અને સ્વાસ્થ્ય વલણો" : "Vitals & Health Trends"}
+            </h3>
+            <select
+              value={trendMetric}
+              onChange={e => setTrendMetric(e.target.value as any)}
+              className="text-[10px] font-bold text-slate-650 bg-slate-50 px-2 py-1 rounded-lg border border-slate-250 focus:outline-none cursor-pointer focus:border-teal-500"
+            >
+              <option value="heartRate">Heart Rate</option>
+              <option value="bp">Blood Pressure</option>
+              <option value="oxygen">SpO2 (Oxygen)</option>
+              <option value="anemia">Anemia Index</option>
+            </select>
+          </div>
+          {renderTrendChart()}
+        </div>
+
+        {/* VAULT SESSION LIST */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider px-0.5">
+            {language === "hi" ? "कालानुक्रमिक सत्र इतिहास" : language === "gu" ? "ક્રમબદ્ધ સત્ર ઇતિહાસ" : "Chronological Session History"}
+          </h3>
+          {recordsList.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 border border-slate-100 text-center text-slate-400 text-xs font-medium">
+              No health records saved. Click &quot;+&quot; to add reports.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recordsList.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedRecordForDetails(item)}
+                  className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between gap-3 hover:border-teal-100 cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
+                >
+                  <div className="bg-teal-50 p-2.5 rounded-lg text-teal-600 shrink-0">
+                    <FileText className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="flex-grow space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-extrabold text-slate-800 text-xs truncate leading-normal">{item.title}</span>
+                      <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                        item.category === "Prescription" 
+                          ? "bg-purple-50 text-purple-700 border border-purple-100" 
+                          : item.category === "Imaging" 
+                          ? "bg-blue-50 text-blue-700 border border-blue-100" 
+                          : "bg-teal-50 text-teal-700 border border-teal-105"
+                      }`}>
+                        {item.category}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-450 font-bold flex items-center gap-2.5">
+                      <span className="flex items-center gap-1 shrink-0">
+                        <Calendar className="w-3 h-3 text-slate-400" />
+                        {item.date}
+                      </span>
+                      <span className="truncate">Provider: {item.doctor}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteRecord(item.id);
+                    }}
+                    className="text-slate-300 hover:text-red-500 p-1.5 transition-colors self-center active:scale-90"
+                    title="Delete Record"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <div className="text-[10px] text-slate-500 flex items-center gap-3">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {item.date}
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Cloud Backup status */}
+        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3.5 border border-teal-100/40 flex items-center justify-between text-[10px] text-teal-850">
+          <span className="font-bold flex items-center gap-1.5">
+            <Lock className="w-4 h-4 text-teal-650" />
+            End-to-End Encrypted Cloud Storage Active
+          </span>
+          <span className="font-extrabold underline cursor-pointer hover:text-teal-700">Manage Vault</span>
+        </div>
+
+        {/* DETAILS OVERLAY MODAL */}
+        {selectedRecordForDetails && (
+          <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 border border-slate-100 shadow-2xl animate-scaleUp">
+              <div className="flex justify-between items-start">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-teal-650 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full">
+                    {selectedRecordForDetails.category}
                   </span>
-                  <span>Issued By: {item.doctor}</span>
+                  <h3 className="font-extrabold text-slate-800 text-sm mt-1">{selectedRecordForDetails.title}</h3>
+                </div>
+                <button 
+                  onClick={() => setSelectedRecordForDetails(null)} 
+                  className="bg-slate-50 text-slate-450 hover:bg-slate-100 hover:text-slate-700 p-1.5 rounded-full transition-all active:scale-90"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-2.5 text-xs text-slate-650 border-t border-slate-100 pt-3">
+                <div className="flex justify-between">
+                  <span className="font-bold text-slate-400">Date Recorded:</span>
+                  <span className="font-bold text-slate-800">{selectedRecordForDetails.date}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-bold text-slate-400">Provider / Lab:</span>
+                  <span className="font-bold text-slate-800">{selectedRecordForDetails.doctor}</span>
+                </div>
+                <div className="space-y-1 pt-1.5 border-t border-slate-100/80">
+                  <span className="font-bold text-slate-400 block uppercase text-[9px] tracking-wider">Detailed breakdown / Notes</span>
+                  <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-2xl text-[10px] font-medium leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+                    {selectedRecordForDetails.notes || "No additional records notes entered."}
+                  </div>
                 </div>
               </div>
+
               <button
-                onClick={() => deleteRecord(item.id)}
-                className="text-slate-300 hover:text-red-500 p-1 transition-colors self-center active:scale-90"
+                onClick={() => setSelectedRecordForDetails(null)}
+                className="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs py-3 rounded-xl transition-all shadow-sm active:scale-95"
               >
-                <Trash2 className="w-4 h-4" />
+                Close Details
               </button>
             </div>
-          ))
+          </div>
+        )}
+
+        {/* EXPORT OVERLAY MODAL */}
+        {showExportModal && (
+          <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 border border-slate-100 shadow-2xl animate-scaleUp flex flex-col max-h-[85vh]">
+              <div className="flex justify-between items-start shrink-0">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-650 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+                    Health Summary Report
+                  </span>
+                  <h3 className="font-extrabold text-slate-800 text-sm mt-1">Export Clinical Records</h3>
+                </div>
+                <button 
+                  onClick={() => setShowExportModal(false)} 
+                  className="bg-slate-50 text-slate-450 hover:bg-slate-100 hover:text-slate-700 p-1.5 rounded-full transition-all active:scale-90"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {isExporting ? (
+                <div className="flex-1 flex flex-col items-center justify-center py-12 space-y-3">
+                  <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+                  <p className="text-[10px] font-extrabold text-slate-655 text-center max-w-[200px] uppercase tracking-wider animate-pulse">
+                    Compiling clinical database summary via Groq Llama 3.3...
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto bg-slate-50 border border-slate-200/60 p-3.5 rounded-2xl text-[10px] font-medium leading-relaxed prose prose-slate max-h-72">
+                    {exportedSummary ? (
+                      <div className="space-y-2 whitespace-pre-wrap font-sans">
+                        {exportedSummary}
+                      </div>
+                    ) : (
+                      <p className="text-slate-400 italic">No summary compiled.</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2 shrink-0">
+                    <button
+                      onClick={() => {
+                        if (exportedSummary) {
+                          navigator.clipboard.writeText(exportedSummary);
+                          alert("Clinical report summary copied to clipboard!");
+                        }
+                      }}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy Text
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (exportedSummary) {
+                          const element = document.createElement("a");
+                          const file = new Blob([exportedSummary], { type: "text/plain" });
+                          element.href = URL.createObjectURL(file);
+                          element.download = `Saathi_Health_Report_${new Date().toISOString().split("T")[0]}.txt`;
+                          document.body.appendChild(element);
+                          element.click();
+                          document.body.removeChild(element);
+                        }
+                      }}
+                      className="bg-teal-650 hover:bg-teal-700 text-white font-extrabold text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Download TXT
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Cloud Backup status */}
-      <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3 border border-teal-100/30 flex items-center justify-between text-[10px] text-teal-800">
-        <span className="font-bold flex items-center gap-1.5">
-          <Lock className="w-3.5 h-3.5 text-teal-600" />
-          End-to-End Encrypted Cloud Storage Active
-        </span>
-        <span className="font-semibold underline cursor-pointer">Manage Vault</span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <main className="w-full max-w-[430px] h-[100dvh] bg-white sm:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-slate-200">
@@ -2482,6 +3687,20 @@ export default function MainApp() {
         </p>
       </div>
 
+      {/* OFFLINE BANNER */}
+      {isOffline && (
+        <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 text-[10px] text-red-800 flex items-center gap-2 shrink-0 z-30 animate-fadeIn">
+          <WifiOff className="w-4 h-4 text-red-600 shrink-0" />
+          <span className="font-extrabold tracking-wide">
+            {language === "hi" 
+              ? "आप ऑफ़लाइन हैं। कैमरा और वाइटल्स जांच काम करेंगे; वॉयस एआई को इंटरनेट चाहिए।" 
+              : language === "gu" 
+              ? "તમે ઓફલાઇન છો. કેમેરા અને વાઇટલ્સ કામ કરશે; વોઇસ એઆઇ માટે ઇન્ટરનેટ જરૂરી છે." 
+              : "You're offline — camera screening & vitals still work; voice/triage needs internet."}
+          </span>
+        </div>
+      )}
+
       {/* HEADER */}
       <header className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-4 py-3 shrink-0 shadow-md flex justify-between items-center z-20">
         <div>
@@ -2492,32 +3711,44 @@ export default function MainApp() {
           <p className="text-[10px] text-teal-100 font-light mt-0.5">{t.tagline}</p>
         </div>
 
-        {/* Language Selector in Header */}
-        <div className="flex items-center gap-1 bg-teal-700/50 p-0.5 rounded-full border border-teal-500/30">
-          <button
-            onClick={() => setLanguage("en")}
-            className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full transition-all ${
-              language === "en" ? "bg-white text-teal-700 shadow-sm" : "text-teal-100 hover:text-white"
-            }`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => setLanguage("hi")}
-            className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full transition-all ${
-              language === "hi" ? "bg-white text-teal-700 shadow-sm" : "text-teal-100 hover:text-white"
-            }`}
-          >
-            हिंदी
-          </button>
-          <button
-            onClick={() => setLanguage("gu")}
-            className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full transition-all ${
-              language === "gu" ? "bg-white text-teal-700 shadow-sm" : "text-teal-100 hover:text-white"
-            }`}
-          >
-            ગુજ
-          </button>
+        <div className="flex items-center gap-2">
+          {isInstallable && (
+            <button
+              onClick={handleInstallClick}
+              className="bg-white text-teal-700 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0"
+            >
+              <Download className="w-3 h-3" />
+              {language === "hi" ? "इंस्टॉल" : language === "gu" ? "ઇન્સ્ટોલ" : "Install"}
+            </button>
+          )}
+
+          {/* Language Selector in Header */}
+          <div className="flex items-center gap-1 bg-teal-700/50 p-0.5 rounded-full border border-teal-500/30">
+            <button
+              onClick={() => setLanguage("en")}
+              className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full transition-all ${
+                language === "en" ? "bg-white text-teal-700 shadow-sm" : "text-teal-100 hover:text-white"
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLanguage("hi")}
+              className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full transition-all ${
+                language === "hi" ? "bg-white text-teal-700 shadow-sm" : "text-teal-100 hover:text-white"
+              }`}
+            >
+              हिंदी
+            </button>
+            <button
+              onClick={() => setLanguage("gu")}
+              className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full transition-all ${
+                language === "gu" ? "bg-white text-teal-700 shadow-sm" : "text-teal-100 hover:text-white"
+              }`}
+            >
+              ગુજ
+            </button>
+          </div>
         </div>
       </header>
 
@@ -2583,32 +3814,295 @@ export default function MainApp() {
         </button>
       </nav>
 
-      {/* MOCK TELEMEDICINE POPUP */}
+      {/* TELEMEDICINE OVERLAY POPUP */}
       {activeCall && (
-        <div className="absolute inset-0 bg-slate-900/95 z-50 flex flex-col items-center justify-between p-6 text-white animate-scaleUp">
-          <div className="text-center space-y-2 mt-10">
-            <div className="bg-teal-500/10 p-5 rounded-full inline-block border border-teal-500/20 animate-pulse-ring">
-              <User className="w-16 h-16 text-teal-400" />
+        <div className="absolute inset-0 bg-slate-900/98 z-50 flex flex-col p-4 text-white overflow-y-auto no-scrollbar animate-fadeIn">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mt-4 shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+              <h3 className="text-sm font-black tracking-wide uppercase text-teal-400">
+                Saathi Telemedicine Connect
+              </h3>
             </div>
-            <h3 className="text-lg font-bold">Saathi Health Consultant</h3>
-            <p className="text-teal-400 text-xs font-semibold animate-pulse">Connecting to doctor...</p>
-            <p className="text-[10px] text-slate-400 max-w-[250px] mx-auto">
-              You are being connected to an AI-Simulated virtual medical assistant for consultation.
-            </p>
+            <button
+              onClick={() => {
+                setActiveCall(false);
+                setTelemedStep("doctors");
+                setSelectedDoctor(null);
+                setDoctorSummary(null);
+              }}
+              className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 transition-colors text-slate-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <div className="text-center space-y-4 mb-10 w-full">
-            <span className="text-sm font-semibold font-mono tracking-wider bg-slate-800 px-3 py-1.5 rounded-full">
-              {formatCallTimer(callTimer)}
-            </span>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setActiveCall(false)}
-                className="bg-red-600 text-white p-4 rounded-full shadow-lg hover:bg-red-700 transition-colors flex items-center justify-center w-14 h-14"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+          {/* Steps Breadcrumbs */}
+          <div className="flex justify-center gap-4 text-[10px] font-bold uppercase tracking-wider py-3 border-b border-slate-800/40 shrink-0 text-slate-400">
+            <span className={telemedStep === "doctors" ? "text-teal-400 font-extrabold" : ""}>1. Doctors List</span>
+            <span>&bull;</span>
+            <span className={telemedStep === "summary" ? "text-teal-400 font-extrabold" : ""}>2. Doctor Summary</span>
+            <span>&bull;</span>
+            <span className={telemedStep === "call" ? "text-teal-400 font-extrabold" : ""}>3. Consultation Call</span>
+          </div>
+
+          {/* Content panel */}
+          <div className="flex-1 py-4 flex flex-col justify-between">
+            {/* Step 1: Doctors List */}
+            {telemedStep === "doctors" && (
+              <div className="space-y-4 flex-1">
+                <div className="space-y-1">
+                  <h4 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider">Nearby Medical Facilities</h4>
+                  <p className="text-[10px] text-slate-500">
+                    We detected the following healthcare options. For YELLOW or RED triage, the most relevant specialist or emergency service is listed first.
+                  </p>
+                </div>
+
+                <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1 no-scrollbar animate-fadeIn">
+                  {getNearbyDoctors().map((doc) => {
+                    const isHighlyRecommended = doc.recommendationScore > 5;
+                    return (
+                      <div
+                        key={doc.id}
+                        className={`p-3.5 rounded-2xl border transition-all ${
+                          isHighlyRecommended
+                            ? "bg-slate-800/80 border-amber-500/30 shadow-md ring-1 ring-amber-500/20 animate-pulse-border"
+                            : "bg-slate-850/60 border-slate-800"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md ${
+                                doc.type === "PHC" ? "bg-teal-900/60 text-teal-400 border border-teal-850" : "bg-blue-900/60 text-blue-400 border border-blue-850"
+                              }`}>
+                                {doc.type}
+                              </span>
+                              <h5 className="text-xs font-bold text-slate-200">{doc.name}</h5>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-1 font-semibold">{doc.specialty}</p>
+                            <div className="flex gap-3 text-[9px] text-slate-500 mt-2 font-bold uppercase">
+                              <span>Distance: {doc.distance}</span>
+                              <span>&bull;</span>
+                              <span className="text-emerald-500 font-extrabold">Available Now</span>
+                            </div>
+                          </div>
+
+                          {isHighlyRecommended && (
+                            <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 p-1.5 rounded-lg shrink-0">
+                              <Star className="w-4 h-4 fill-current" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Recommendation match text */}
+                        <div className={`mt-2.5 pt-2 border-t text-[9px] font-bold ${
+                          isHighlyRecommended 
+                            ? "border-amber-500/10 text-amber-400 font-extrabold" 
+                            : "border-slate-805/40 text-slate-500"
+                        }`}>
+                          {doc.recommendationMatch}
+                        </div>
+
+                        <button
+                          onClick={() => handleGenerateSummary(doc)}
+                          className="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-[10px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
+                        >
+                          <Phone className="w-3.5 h-3.5 animate-pulse" />
+                          <span>Request Consultation</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Doctor Summary Review */}
+            {telemedStep === "summary" && (
+              <div className="space-y-4 flex-1 flex flex-col justify-between animate-fadeIn">
+                <div className="space-y-4 flex-1 overflow-y-auto no-scrollbar pr-1">
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider">Clinical Intake Summary</h4>
+                    <p className="text-[10px] text-slate-500">
+                      Generating intake record using Groq Llama 3.3 to compile symptoms, triage priority, and camera screening results.
+                    </p>
+                  </div>
+
+                  {isSummaryLoading && (
+                    <div className="bg-slate-850/40 border border-slate-800 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
+                      <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+                      <span className="text-xs font-bold text-slate-400">Consulting AI coordinator...</span>
+                    </div>
+                  )}
+
+                  {!isSummaryLoading && doctorSummary && (
+                    <div className="space-y-3">
+                      {/* Highlight summary fields */}
+                      <div className="bg-slate-850 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs leading-normal">
+                        <div>
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">Chief Complaint:</span>
+                          <p className="font-semibold text-slate-200 mt-0.5">{doctorSummary.chief_complaint}</p>
+                        </div>
+                        <div className="border-t border-slate-800/60 pt-2">
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">Calculated Urgency:</span>
+                          <p className="font-bold text-teal-405 mt-0.5">{doctorSummary.triage_level}</p>
+                        </div>
+                        <div className="border-t border-slate-800/60 pt-2">
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">Screening Signals:</span>
+                          <p className="font-semibold text-slate-300 mt-0.5">{doctorSummary.screening_signals}</p>
+                        </div>
+                        <div className="border-t border-slate-800/60 pt-2">
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">Primary Diagnostic Focus:</span>
+                          <p className="font-semibold text-amber-400 mt-0.5">{doctorSummary.suggested_focus}</p>
+                        </div>
+                      </div>
+
+                      {/* Low bandwidth support toggle */}
+                      <div className="bg-slate-850/60 border border-slate-800 rounded-2xl p-3 flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <span className="text-[10px] font-bold text-slate-200 block">Low-Bandwidth Mode</span>
+                          <span className="text-[9px] text-slate-550 block">Disable camera; run voice consultation fallback</span>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={isCallAudioOnly}
+                          onChange={(e) => setIsCallAudioOnly(e.target.checked)}
+                          className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 focus:ring-offset-slate-900 border-slate-800 bg-slate-900"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-slate-800/50 shrink-0">
+                  <button
+                    onClick={() => setTelemedStep("call")}
+                    disabled={isSummaryLoading}
+                    className="flex-grow bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs py-3.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <Video className="w-4 h-4" />
+                    <span>Send to Doctor & Connect</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTelemedStep("doctors");
+                      setSelectedDoctor(null);
+                      setDoctorSummary(null);
+                    }}
+                    className="px-4 border border-slate-800 text-slate-400 hover:bg-slate-850 hover:text-white font-bold text-xs rounded-xl transition-colors"
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Call Screen */}
+            {telemedStep === "call" && (
+              <div className="flex-1 flex flex-col justify-between space-y-4 animate-scaleUp">
+                {/* Connection Status Banner */}
+                <div className="bg-slate-850/80 border border-slate-800 rounded-2xl p-3 flex items-center justify-between text-xs font-bold">
+                  <span className="text-slate-450">Consultation Partner:</span>
+                  <span className="text-teal-400">{selectedDoctor?.name || "Saathi Consultant"}</span>
+                </div>
+
+                {/* Webcam/Video Area */}
+                <div className="flex-grow relative bg-slate-950 rounded-3xl overflow-hidden border border-slate-850 shadow-inner flex flex-col items-center justify-center min-h-[300px]">
+                  {isCallAudioOnly ? (
+                    /* Audio Mode UI */
+                    <div className="text-center space-y-4 p-6 animate-scaleUp">
+                      <div className="w-20 h-20 bg-teal-500/10 rounded-full flex items-center justify-center border border-teal-500/20 mx-auto animate-pulse-ring">
+                        <Mic className="w-10 h-10 text-teal-400 animate-pulse" />
+                      </div>
+                      <div className="space-y-1">
+                        <h5 className="text-sm font-bold text-slate-200">Audio-Only Fallback Connected</h5>
+                        <p className="text-[10px] text-slate-500 max-w-xs mx-auto leading-normal">
+                          Low bandwidth connection detected. Video stream has been disabled to prioritize audio quality.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Video Mode UI (Real WebRTC Loopback Video box) */
+                    <div className="w-full h-full relative">
+                      {/* Remote Video Stream (Main screen) */}
+                      <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className="w-full h-full object-cover rounded-3xl"
+                      />
+                      
+                      {/* Local Webcam overlay (Bottom right corner) */}
+                      <div className="absolute right-4 bottom-4 w-28 h-40 bg-slate-900 border-2 border-slate-800 rounded-2xl overflow-hidden shadow-lg z-20">
+                        <video
+                          ref={localVideoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-1 left-2 text-[8px] bg-slate-950/80 px-1.5 py-0.5 rounded text-slate-400 font-extrabold uppercase">
+                          You (WebRTC)
+                        </div>
+                      </div>
+
+                      {/* Status indicator overlay */}
+                      <div className="absolute top-4 left-4 bg-slate-950/80 px-2.5 py-1.5 rounded-full text-[9px] font-bold text-teal-400 flex items-center gap-1.5 shadow-sm border border-slate-800/40 z-20">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                        <span>{webRTCStatus}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Call Controller Bottom Bar */}
+                <div className="space-y-4 mb-4">
+                  <div className="text-center">
+                    <span className="text-xs font-mono font-bold tracking-widest bg-slate-850 border border-slate-800 px-3.5 py-1.5 rounded-full shadow-sm text-slate-200">
+                      {formatCallTimer(callTimer)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-center items-center gap-4">
+                    <button
+                      onClick={() => setIsMuted(!isMuted)}
+                      className={`p-4 rounded-full border shadow-md transition-all active:scale-95 flex items-center justify-center w-14 h-14 ${
+                        isMuted
+                          ? "bg-amber-500 border-amber-600 text-white"
+                          : "bg-slate-850 border-slate-800 text-slate-300 hover:bg-slate-800"
+                      }`}
+                    >
+                      <Mic className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveCall(false);
+                        setTelemedStep("doctors");
+                        setSelectedDoctor(null);
+                        setDoctorSummary(null);
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white p-4.5 rounded-full shadow-lg transition-all active:scale-95 flex items-center justify-center w-16 h-16 border border-red-700"
+                    >
+                      <PhoneOff className="w-7 h-7 animate-pulse" />
+                    </button>
+
+                    <button
+                      onClick={() => setIsCallAudioOnly(!isCallAudioOnly)}
+                      className={`p-4 rounded-full border shadow-md transition-all active:scale-95 flex items-center justify-center w-14 h-14 ${
+                        isCallAudioOnly
+                          ? "bg-teal-600 border-teal-700 text-white"
+                          : "bg-slate-850 border-slate-800 text-slate-300 hover:bg-slate-800"
+                      }`}
+                    >
+                      <Video className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

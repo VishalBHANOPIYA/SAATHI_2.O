@@ -15,6 +15,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Saathi - Your AI Health Companion",
   description: "AI-powered disease screening, vitals tracking, voice symptoms, and health records companion.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Saathi",
+  },
 };
 
 export default function RootLayout({

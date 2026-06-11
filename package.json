@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tunnel": "npx cloudflared tunnel --url http://localhost:3000"
   },
   "dependencies": {
     "groq-sdk": "^1.2.1",
