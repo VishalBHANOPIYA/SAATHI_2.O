@@ -22,6 +22,10 @@ import {
   User,
   Volume2,
   UploadCloud,
+  Users,
+  UserPlus,
+  MapPin,
+  Search,
   X,
   Loader2,
   TrendingUp,
@@ -561,6 +565,25 @@ export default function MainApp() {
   const [reminderActive, setReminderActive] = useState(false);
   const [pendingReminderAlert, setPendingReminderAlert] = useState<{ name: string; dose: string; frequency: string } | null>(null);
 
+  // --- ASHA WORKER MODE STATES ---
+  interface Patient {
+    id: string;
+    name: string;
+    age: number;
+    gender: string;
+    village: string;
+    lastScreeningDate?: string;
+    lastRiskBand?: "GREEN" | "YELLOW" | "RED";
+    records: any[];
+  }
+  const [ashaModeActive, setAshaModeActive] = useState(false);
+  const [patientsList, setPatientsList] = useState<Patient[]>([]);
+  const [activePatientId, setActivePatientId] = useState<string | null>(null);
+  const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+  const [selectedPatientForProfile, setSelectedPatientForProfile] = useState<Patient | null>(null);
+  const [newPatientData, setNewPatientData] = useState({ name: "", age: "", gender: "Male", village: "" });
+  const [ashaSearchQuery, setAshaSearchQuery] = useState("");
+
   // --- CAMERA SCANNER STATE & REFS ---
   const [scanState, setScanState] = useState<"idle" | "permissions" | "scanning" | "completed" | "error">("idle");
   const [secondsLeft, setSecondsLeft] = useState(30);
@@ -632,6 +655,30 @@ export default function MainApp() {
       navigator.serviceWorker.register("/sw.js")
         .then((reg) => console.log("Service Worker registered scope:", reg.scope))
         .catch((err) => console.error("Service Worker registration failed:", err));
+    }
+
+    // Load ASHA worker settings
+    const savedAshaMode = localStorage.getItem("saathi_asha_mode_active") === "true";
+    setAshaModeActive(savedAshaMode);
+    const savedActiveId = localStorage.getItem("saathi_asha_active_patient_id");
+    if (savedActiveId) {
+      setActivePatientId(savedActiveId);
+    }
+    const savedPatients = localStorage.getItem("saathi_asha_patients");
+    if (savedPatients) {
+      try {
+        setPatientsList(JSON.parse(savedPatients));
+      } catch (e) {
+        console.error("Failed to parse saved patients:", e);
+      }
+    } else {
+      const initialPatients = [
+        { id: "p1", name: "Kanta Devi", age: 45, gender: "Female", village: "Rampur", lastScreeningDate: "2026-06-01", lastRiskBand: "RED" as const, records: [{ id: 101, title: "Anemia Risk Check (High)", date: "2026-06-01", category: "Lab Test", doctor: "Saathi Camera AI Screening", notes: "Anemia index: 32% (High Risk)" }] },
+        { id: "p2", name: "Ramesh Kumar", age: 52, gender: "Male", village: "Gopalpur", lastScreeningDate: "2026-06-05", lastRiskBand: "YELLOW" as const, records: [{ id: 102, title: "Triage: ⚠️ YELLOW - Persistent cough", date: "2026-06-05", category: "Prescription", doctor: "Saathi AI Triage" }] },
+        { id: "p3", name: "Sita Patel", age: 28, gender: "Female", village: "Rampur", lastScreeningDate: "2026-06-09", lastRiskBand: "GREEN" as const, records: [{ id: 103, title: "Camera Vitals Scan (Normal)", date: "2026-06-09", category: "Lab Test", doctor: "Saathi Camera AI Scanner" }] },
+      ];
+      setPatientsList(initialPatients);
+      localStorage.setItem("saathi_asha_patients", JSON.stringify(initialPatients));
     }
 
     // Monitor Online/Offline Status
@@ -980,12 +1027,17 @@ export default function MainApp() {
       title: "rPPG Contactless Vitals Scan",
       date: today.toISOString().split("T")[0],
       category: "Lab Test",
-      doctor: "Saathi Camera AI Scanner"
+      doctor: "Saathi Camera AI Scanner",
+      notes: `Heart Rate: ${capturedVitals.hr} bpm | SpO2: ${capturedVitals.spo2}% | Resp Rate: ${capturedVitals.br} bpm`
     };
     
     const updatedRecords = [newRecordItem, ...recordsList];
     setRecordsList(updatedRecords);
     localStorage.setItem("saathi_records", JSON.stringify(updatedRecords));
+    
+    // Attach to active ASHA patient if mode is active
+    const vitalsRisk = (capturedVitals.spo2 < 95 || capturedVitals.hr > 100 || capturedVitals.hr < 55) ? "YELLOW" as const : "GREEN" as const;
+    attachRecordToActivePatient(newRecordItem, vitalsRisk);
     
     setScanState("idle");
     alert(language === "hi" ? "वाइटल्स रिकॉर्ड में सफलतापूर्वक सहेज लिए गए हैं!" : language === "gu" ? "વાઇટલ્સ રેકોર્ડ્સમાં સફળતાપૂર્વક સાચવવામાં આવ્યા છે!" : "Vitals saved successfully to history and records!");
@@ -1237,6 +1289,10 @@ export default function MainApp() {
     const updatedRecords = [newRecordItem, ...recordsList];
     setRecordsList(updatedRecords);
     localStorage.setItem("saathi_records", JSON.stringify(updatedRecords));
+    
+    // Attach to active ASHA patient if mode is active
+    const risk = screenResults.riskBand === "High" ? "RED" as const : screenResults.riskBand === "Medium" ? "YELLOW" as const : "GREEN" as const;
+    attachRecordToActivePatient(newRecordItem, risk);
     
     alert(language === "hi" ? "स्क्रीनिंग रिपोर्ट सफलतापूर्वक सहेज ली गई है!" : language === "gu" ? "સ્ક્રીનિંગ રીપોર્ટ સફળતાપૂર્વક સાચવવામાં આવ્યો છે!" : "Screening report saved successfully to health records!");
     
@@ -1557,23 +1613,27 @@ export default function MainApp() {
         setTriageResult(data.triageResult);
         
         // Save case to health records if Yellow or Red
+        const severityEmoji = data.triageResult.triage === "RED" ? "🚨 RED" : data.triageResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
+        const concern = data.triageResult.possible_concerns.join(", ") || "Symptom Check";
+        const dateStr = new Date().toISOString().split("T")[0];
+        
+        const addedItem = {
+          id: Date.now(),
+          title: `Triage: ${severityEmoji} - ${concern}`,
+          date: dateStr,
+          category: "Prescription" as const,
+          doctor: "Saathi AI Triage",
+          notes: `Urgency: ${data.triageResult.triage} | Reason: ${data.triageResult.reason} | Advice: ${data.triageResult.advice}`
+        };
+
         if (data.triageResult.triage === "YELLOW" || data.triageResult.triage === "RED") {
-          const severityEmoji = data.triageResult.triage === "RED" ? "🚨 RED" : "⚠️ YELLOW";
-          const concern = data.triageResult.possible_concerns.join(", ") || "Symptom Check";
-          const dateStr = new Date().toISOString().split("T")[0];
-          
-          const addedItem = {
-            id: Date.now(),
-            title: `Triage: ${severityEmoji} - ${concern}`,
-            date: dateStr,
-            category: "Prescription" as const,
-            doctor: "Saathi AI Triage"
-          };
-          
           const nextRecords = [addedItem, ...recordsList];
           setRecordsList(nextRecords);
           localStorage.setItem("saathi_records", JSON.stringify(nextRecords));
         }
+
+        // Attach to active ASHA patient if mode is active
+        attachRecordToActivePatient(addedItem, data.triageResult.triage);
       } else {
         throw new Error(data.error || "Failed to get triage analysis.");
       }
@@ -1854,6 +1914,51 @@ export default function MainApp() {
       });
     } finally {
       setIsSummaryLoading(false);
+    }
+  };
+
+  // --- ASHA WORKER HELPER ACTIONS ---
+  const attachRecordToActivePatient = (record: any, riskBand?: "GREEN" | "YELLOW" | "RED") => {
+    if (typeof window === "undefined") return;
+    
+    const savedActiveId = localStorage.getItem("saathi_asha_active_patient_id");
+    const currentActiveId = activePatientId || savedActiveId;
+    if (!ashaModeActive || !currentActiveId) return;
+
+    const savedPatients = localStorage.getItem("saathi_asha_patients");
+    let currentPatients = patientsList;
+    if (savedPatients) {
+      try {
+        currentPatients = JSON.parse(savedPatients);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    const updated = currentPatients.map(p => {
+      if (p.id === currentActiveId) {
+        const todayStr = new Date().toISOString().split("T")[0];
+        return {
+          ...p,
+          lastScreeningDate: todayStr,
+          lastRiskBand: riskBand || p.lastRiskBand || "GREEN",
+          records: [record, ...(p.records || [])]
+        };
+      }
+      return p;
+    });
+
+    setPatientsList(updated);
+    localStorage.setItem("saathi_asha_patients", JSON.stringify(updated));
+    console.log(`Attached record to ASHA patient ${currentActiveId}:`, record);
+  };
+
+  const selectActivePatientForASHA = (id: string | null) => {
+    setActivePatientId(id);
+    if (id) {
+      localStorage.setItem("saathi_asha_active_patient_id", id);
+    } else {
+      localStorage.removeItem("saathi_asha_active_patient_id");
     }
   };
 
@@ -3864,6 +3969,489 @@ export default function MainApp() {
     );
   };
 
+  const renderAshaPortalView = () => {
+    const totalPatients = patientsList.length;
+    const redPatients = patientsList.filter(p => p.lastRiskBand === "RED");
+    const yellowPatients = patientsList.filter(p => p.lastRiskBand === "YELLOW");
+    const greenPatients = patientsList.filter(p => p.lastRiskBand === "GREEN");
+
+    const redCount = redPatients.length;
+    const yellowCount = yellowPatients.length;
+    const greenCount = greenPatients.length;
+
+    const redPct = totalPatients > 0 ? (redCount / totalPatients) * 100 : 0;
+    const yellowPct = totalPatients > 0 ? (yellowCount / totalPatients) * 100 : 0;
+    const greenPct = totalPatients > 0 ? (greenCount / totalPatients) * 100 : 0;
+
+    const filteredPatients = patientsList.filter(p => {
+      const q = ashaSearchQuery.toLowerCase();
+      return p.name.toLowerCase().includes(q) || p.village.toLowerCase().includes(q);
+    });
+
+    const handleAddNewPatient = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newPatientData.name.trim() || !newPatientData.age || !newPatientData.village.trim()) {
+        alert("Please fill in all patient fields.");
+        return;
+      }
+      const newP: Patient = {
+        id: "p_" + Date.now(),
+        name: newPatientData.name,
+        age: parseInt(newPatientData.age),
+        gender: newPatientData.gender,
+        village: newPatientData.village,
+        records: []
+      };
+      const updated = [newP, ...patientsList];
+      setPatientsList(updated);
+      localStorage.setItem("saathi_asha_patients", JSON.stringify(updated));
+      setShowAddPatientModal(false);
+      setNewPatientData({ name: "", age: "", gender: "Male", village: "" });
+    };
+
+    const handleDeletePatient = (id: string) => {
+      if (confirm("Are you sure you want to delete this patient profile?")) {
+        const updated = patientsList.filter(p => p.id !== id);
+        setPatientsList(updated);
+        localStorage.setItem("saathi_asha_patients", JSON.stringify(updated));
+        if (activePatientId === id) {
+          selectActivePatientForASHA(null);
+        }
+      }
+    };
+
+    return (
+      <div className="p-4 space-y-6 animate-fadeIn">
+        {/* Portal Header */}
+        <div className="bg-gradient-to-r from-teal-700 to-emerald-700 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+          <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="bg-emerald-500/30 text-emerald-300 font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-400/20">
+                Health Worker Portal
+              </span>
+              <h2 className="text-xl font-black tracking-tight mt-1">
+                {language === "hi" ? "आशा कार्यकर्ता पोर्टल" : language === "gu" ? "આશા કાર્યકર્તા પોર્ટલ" : "ASHA Worker Portal"}
+              </h2>
+              <p className="text-xs text-teal-100 max-w-xs leading-normal">
+                {language === "hi" 
+                  ? "मरीजों की स्क्रीनिंग प्रबंधित करें, जोखिम स्तर ट्रैक करें और रेफरल देखें।" 
+                  : language === "gu" 
+                  ? "દર્દીઓની સ્ક્રિનિંગ મેનેજ કરો, જોખમનું સ્તર ટ્રેક કરો અને રેફરલ જુઓ." 
+                  : "Manage patient screenings, track community risk thresholds, and check referral flags."}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setAshaModeActive(false);
+                localStorage.setItem("saathi_asha_mode_active", "false");
+                selectActivePatientForASHA(null);
+              }}
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all"
+            >
+              Exit Mode
+            </button>
+          </div>
+        </div>
+
+        {/* Dashboard Analytics Card */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
+              {language === "hi" ? "समुदाय स्वास्थ्य डैशबोर्ड" : language === "gu" ? "સમુદાય આરોગ્ય ડેશબોર્ડ" : "Community Health Dashboard"}
+            </h3>
+            <span className="text-[10px] text-slate-500 font-bold bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
+              Total Screened: <strong className="text-slate-800">{totalPatients}</strong>
+            </span>
+          </div>
+
+          {/* SVG proportion chart or multi-color bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500">
+              <span>Risk Proportion</span>
+              <span>{greenCount} Green | {yellowCount} Yellow | {redCount} Red</span>
+            </div>
+            
+            {/* Visual Bar */}
+            <div className="w-full h-5 bg-slate-100 rounded-full overflow-hidden flex shadow-inner border border-slate-200/50">
+              {totalPatients === 0 ? (
+                <div className="w-full h-full bg-slate-150 flex items-center justify-center text-[10px] text-slate-400 font-bold">
+                  No patient data available
+                </div>
+              ) : (
+                <>
+                  {greenPct > 0 && (
+                    <div style={{ width: `${greenPct}%` }} className="bg-emerald-500 h-full transition-all flex items-center justify-center text-[9px] text-white font-extrabold" title={`Green: ${greenCount}`}>
+                      {greenPct > 15 && `${greenCount}`}
+                    </div>
+                  )}
+                  {yellowPct > 0 && (
+                    <div style={{ width: `${yellowPct}%` }} className="bg-amber-500 h-full transition-all flex items-center justify-center text-[9px] text-white font-extrabold" title={`Yellow: ${yellowCount}`}>
+                      {yellowPct > 15 && `${yellowCount}`}
+                    </div>
+                  )}
+                  {redPct > 0 && (
+                    <div style={{ width: `${redPct}%` }} className="bg-rose-500 h-full transition-all flex items-center justify-center text-[9px] text-white font-extrabold" title={`Red: ${redCount}`}>
+                      {redPct > 15 && `${redCount}`}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            
+            {/* Legend grid */}
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="bg-emerald-50 rounded-2xl p-2.5 border border-emerald-100/50 text-center space-y-0.5">
+                <span className="text-[9px] font-extrabold text-emerald-600 block uppercase">Low Risk</span>
+                <span className="text-base font-black text-emerald-700">{greenCount}</span>
+              </div>
+              <div className="bg-amber-50 rounded-2xl p-2.5 border border-amber-100/50 text-center space-y-0.5">
+                <span className="text-[9px] font-extrabold text-amber-600 block uppercase">Medium Risk</span>
+                <span className="text-base font-black text-amber-700">{yellowCount}</span>
+              </div>
+              <div className="bg-rose-50 rounded-2xl p-2.5 border border-rose-100/50 text-center space-y-0.5">
+                <span className="text-[9px] font-extrabold text-rose-600 block uppercase">High Risk</span>
+                <span className="text-base font-black text-rose-700">{redCount}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* High Risk Follow Up List */}
+        {redCount > 0 && (
+          <div className="bg-rose-50 border border-rose-100 rounded-3xl p-5 space-y-3">
+            <div className="flex items-center gap-2 text-rose-600">
+              <AlertTriangle className="w-5 h-5 animate-pulse" />
+              <h4 className="text-xs font-black uppercase tracking-wider">
+                {language === "hi" ? "उच्च जोखिम वाले मरीज़ (तुरंत फॉलो-अप)" : language === "gu" ? "ઉચ્ચ જોખમ ધરાવતા દર્દીઓ (ત્વરિત ફોલો-અપ)" : "Urgent Follow-up Required"}
+              </h4>
+            </div>
+            <p className="text-[10px] text-slate-500 leading-normal">
+              {language === "hi" 
+                ? "निम्नलिखित मरीजों को गंभीर रिस्क फ्लैग मिला है। कृपया इनसे संपर्क करें या टेलीमेडिसिन सलाह शुरू करें।" 
+                : language === "gu" 
+                ? "નીચેના દર્દીઓને ગંભીર જોખમ ફ્લેગ મળ્યો છે. કૃપા કરીને તેમનો સંપર્ક કરો અથવા ટેલિમેડિસિન પરામર્શ શરૂ કરો." 
+                : "The following patients have triggered red screening flags and require immediate doctor consultations."}
+            </p>
+            <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
+              {redPatients.map(p => (
+                <div key={p.id} className="bg-white p-3 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="font-extrabold text-xs text-slate-800">{p.name}</span>
+                    <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-bold">
+                      <span>{p.age} y / {p.gender}</span>
+                      <span>&bull;</span>
+                      <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{p.village}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        selectActivePatientForASHA(p.id);
+                        setActiveTab("talk");
+                      }}
+                      className="bg-rose-600 hover:bg-rose-700 text-white text-[9px] font-bold px-2.5 py-1.5 rounded-xl shadow-sm"
+                    >
+                      Consult Now
+                    </button>
+                    <button
+                      onClick={() => setSelectedPatientForProfile(p)}
+                      className="border border-slate-200 text-slate-600 text-[9px] font-bold px-2.5 py-1.5 rounded-xl hover:bg-slate-50"
+                    >
+                      History
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Patient Directory */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
+              {language === "hi" ? "मरीज़ निर्देशिका" : language === "gu" ? "દર્દી નિર્દેશિકા" : "Patient Directory"}
+            </h3>
+            <button
+              onClick={() => setShowAddPatientModal(true)}
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-extrabold text-[10px] py-2 px-3 rounded-xl shadow-md hover:from-teal-700 hover:to-emerald-700 transition-all flex items-center gap-1"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Add Patient</span>
+            </button>
+          </div>
+
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              placeholder={language === "hi" ? "मरीज़ का नाम या गाँव खोजें..." : language === "gu" ? "દર્દીનું નામ અથવા ગામ શોધો..." : "Search by name or village..."}
+              value={ashaSearchQuery}
+              onChange={(e) => setAshaSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 border border-slate-100 rounded-2xl bg-slate-50 focus:outline-none focus:border-teal-500 font-medium text-xs text-slate-800"
+            />
+          </div>
+
+          {/* Patients directory list */}
+          <div className="space-y-3">
+            {filteredPatients.length === 0 ? (
+              <div className="text-center py-8 text-slate-400 space-y-1">
+                <Users className="w-10 h-10 mx-auto text-slate-200" />
+                <p className="text-xs font-bold">No patients found</p>
+                <p className="text-[10px]">Add a patient or refine your search query.</p>
+              </div>
+            ) : (
+              filteredPatients.map(p => {
+                const isActive = activePatientId === p.id;
+                return (
+                  <div
+                    key={p.id}
+                    className={`p-4 rounded-2xl border transition-all space-y-3 ${
+                      isActive 
+                        ? "border-teal-400 bg-teal-50/30 ring-1 ring-teal-400/50 shadow-md animate-pulseCard" 
+                        : "border-slate-100 bg-white hover:border-teal-100 hover:shadow-sm"
+                    }`}
+                  >
+                    {/* Patient Core Info */}
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-sm text-slate-800">{p.name}</span>
+                          {isActive && (
+                            <span className="bg-teal-600 text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded animate-pulse">
+                              Active Patient
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                          <span>{p.age} yrs / {p.gender}</span>
+                          <span>&bull;</span>
+                          <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{p.village}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Risk Badge */}
+                      {p.lastRiskBand ? (
+                        <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                          p.lastRiskBand === "RED" 
+                            ? "bg-rose-100 text-rose-700" 
+                            : p.lastRiskBand === "YELLOW" 
+                            ? "bg-amber-100 text-amber-700" 
+                            : "bg-emerald-100 text-emerald-700"
+                        }`}>
+                          {p.lastRiskBand} Risk
+                        </span>
+                      ) : (
+                        <span className="bg-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                          Unscreened
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Meta Info */}
+                    {p.lastScreeningDate && (
+                      <div className="text-[9px] text-slate-500 font-bold flex justify-between bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        <span>Last check: {p.lastScreeningDate}</span>
+                        <span>Attached records: {p.records?.length || 0}</span>
+                      </div>
+                    )}
+
+                    {/* Action Panel */}
+                    <div className="flex justify-between items-center gap-2 pt-1.5 border-t border-slate-100/60">
+                      <button
+                        onClick={() => {
+                          if (isActive) {
+                            selectActivePatientForASHA(null);
+                          } else {
+                            selectActivePatientForASHA(p.id);
+                            setActiveTab("screen");
+                          }
+                        }}
+                        className={`text-[9px] font-extrabold py-2 px-3 rounded-xl transition-all shadow-sm ${
+                          isActive 
+                            ? "bg-slate-800 text-white hover:bg-slate-900" 
+                            : "bg-teal-600 text-white hover:bg-teal-700"
+                        }`}
+                      >
+                        {isActive ? "Clear Selection" : "Start Screening"}
+                      </button>
+
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setSelectedPatientForProfile(p)}
+                          className="p-2 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors"
+                          title="View Patient Records"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePatient(p.id)}
+                          className="p-2 border border-slate-100 hover:border-rose-100 hover:bg-rose-50 rounded-xl text-slate-450 hover:text-rose-600 transition-colors"
+                          title="Delete Patient Profile"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Modal: Add Patient */}
+        {showAddPatientModal && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full space-y-4 animate-scaleUp">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">
+                  Add New Patient
+                </h3>
+                <button
+                  onClick={() => setShowAddPatientModal(false)}
+                  className="p-1 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddNewPatient} className="space-y-3 text-left">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Patient Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ramesh Singh"
+                    value={newPatientData.name}
+                    onChange={(e) => setNewPatientData({ ...newPatientData, name: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Age (Years)</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="e.g. 34"
+                      value={newPatientData.age}
+                      onChange={(e) => setNewPatientData({ ...newPatientData, age: e.target.value })}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Gender</label>
+                    <select
+                      value={newPatientData.gender}
+                      onChange={(e) => setNewPatientData({ ...newPatientData, gender: e.target.value })}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium bg-white"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Village / Habitation</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rampur village"
+                    value={newPatientData.village}
+                    onChange={(e) => setNewPatientData({ ...newPatientData, village: e.target.value })}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-extrabold text-xs py-3.5 rounded-xl shadow-md transition-all active:scale-95"
+                  >
+                    Create Patient Profile
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Patient Screening Records Profile */}
+        {selectedPatientForProfile && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-md w-full space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-scaleUp">
+              <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+                <div className="space-y-0.5 text-left">
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">
+                    Patient Records File
+                  </h3>
+                  <p className="text-[11px] font-bold text-slate-500">
+                    {selectedPatientForProfile.name} ({selectedPatientForProfile.age}y / {selectedPatientForProfile.gender})
+                  </p>
+                  <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-0.5">
+                    <MapPin className="w-3 h-3 text-slate-350" /> {selectedPatientForProfile.village}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedPatientForProfile(null)}
+                  className="p-1 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Records List */}
+              <div className="space-y-3 text-left">
+                <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                  Screening History
+                </h4>
+                
+                {selectedPatientForProfile.records?.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed border-slate-150 rounded-2xl text-slate-400 text-xs">
+                    No screenings recorded yet. Select this patient and run screening, vitals, or voice triage.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {selectedPatientForProfile.records.map((rec, index) => (
+                      <div key={index} className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs space-y-1">
+                        <div className="flex justify-between items-center font-extrabold text-slate-700">
+                          <span className="text-[11px]">{rec.title}</span>
+                          <span className="text-[9px] text-slate-400 font-semibold">{rec.date}</span>
+                        </div>
+                        <div className="text-[9px] text-slate-500 font-medium leading-relaxed bg-white/60 p-2 rounded-lg border border-slate-100">
+                          {rec.notes || "No details provided"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    selectActivePatientForASHA(selectedPatientForProfile.id);
+                    setSelectedPatientForProfile(null);
+                    setActiveTab("screen");
+                  }}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-sm"
+                >
+                  Select Patient for New Screening
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderMedicinesView = () => {
     return (
       <div className="p-4 space-y-4 animate-fadeIn overflow-y-auto flex-1 h-full pb-24">
@@ -4184,6 +4772,28 @@ export default function MainApp() {
             </button>
           )}
 
+          {/* ASHA Mode Toggle Button */}
+          <button
+            onClick={() => {
+              const nextVal = !ashaModeActive;
+              setAshaModeActive(nextVal);
+              localStorage.setItem("saathi_asha_mode_active", nextVal ? "true" : "false");
+              if (!nextVal) {
+                selectActivePatientForASHA(null);
+              } else {
+                setActiveTab("home");
+              }
+            }}
+            className={`font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0 ${
+              ashaModeActive 
+                ? "bg-emerald-500 text-white border border-emerald-400" 
+                : "bg-teal-700/50 text-teal-150 border border-teal-500/20 hover:text-white"
+            }`}
+          >
+            <Users className="w-3 h-3" />
+            <span className="xs:inline">{ashaModeActive ? "ASHA" : "ASHA"}</span>
+          </button>
+
           {/* Language Selector in Header */}
           <div className="flex items-center gap-1 bg-teal-700/50 p-0.5 rounded-full border border-teal-500/30">
             <button
@@ -4216,7 +4826,30 @@ export default function MainApp() {
 
       {/* CONTENT AREA */}
       <div className="flex-grow overflow-y-auto no-scrollbar bg-slate-50 pb-20 relative">
-        {activeTab === "home" && renderHomeView()}
+        {/* Sticky Patient Banner */}
+        {ashaModeActive && activePatientId && (
+          (() => {
+            const activePatient = patientsList.find(p => p.id === activePatientId);
+            if (!activePatient) return null;
+            return (
+              <div className="bg-teal-50 border-b border-teal-200 px-4 py-2 flex items-center justify-between z-10 shrink-0 sticky top-0 shadow-sm animate-slideDown">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-teal-650 rounded-full animate-pulse shrink-0" />
+                  <div className="text-[10px] text-teal-850 font-bold">
+                    Active Patient: <strong className="text-teal-900 font-extrabold">{activePatient.name}</strong> ({activePatient.age}y / {activePatient.gender})
+                  </div>
+                </div>
+                <button
+                  onClick={() => selectActivePatientForASHA(null)}
+                  className="text-[9px] font-extrabold text-teal-700 bg-teal-100 hover:bg-teal-200 px-2 py-1 rounded-lg"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            );
+          })()
+        )}
+        {activeTab === "home" && (ashaModeActive ? renderAshaPortalView() : renderHomeView())}
         {activeTab === "screen" && renderScreenView()}
         {activeTab === "vitals" && renderVitalsView()}
         {activeTab === "talk" && renderTalkView()}
