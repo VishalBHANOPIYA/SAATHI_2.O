@@ -43,6 +43,9 @@ export const translations = {
     recordsHeader: "Health Records",
     recordsDesc: "Manage and keep track of your clinical files and reports.",
     uploadRecordBtn: "Upload Report/Prescription",
+    medicines: "Meds",
+    medicinesDesc: "Scan your prescriptions using OCR, manage dosage lists, and configure reminder alarms.",
+    medicinesHeader: "Meds & Reminders",
     quickHealthTip: "Quick Health Tip",
     healthTipText: "Drinking sufficient water and maintaining 150 minutes of moderate activity weekly helps keep cardiovascular vitals in optimal range.",
   },
@@ -84,6 +87,9 @@ export const translations = {
     recordsHeader: "स्वास्थ्य रिकॉर्ड",
     recordsDesc: "अपनी नैदानिक ​​फाइलों और रिपोर्टों को प्रबंधित करें और उन पर नज़र रखें।",
     uploadRecordBtn: "रिपोर्ट/पर्चा अपलोड करें",
+    medicines: "दवाएं",
+    medicinesDesc: "ओसीआर का उपयोग करके अपने पर्चे को स्कैन करें, दवाओं की सूची प्रबंधित करें और अनुस्मारक अलार्म सेट करें।",
+    medicinesHeader: "दवाएं और अनुस्मारक",
     quickHealthTip: "त्वरित स्वास्थ्य सलाह",
     healthTipText: "पर्याप्त पानी पीना और साप्ताहिक रूप से 150 मिनट की मध्यम गतिविधि बनाए रखना हृदय संबंधी महत्वपूर्ण अंगों को इष्टतम सीमा में रखने में मदद करता है।",
   },
@@ -125,9 +131,13 @@ export const translations = {
     recordsHeader: "સ્વાસ્થ્ય રેકોર્ડ્સ",
     recordsDesc: "તમારી ક્લિનિકલ ફાઇલો અને રિપોર્ટ્સ મેનેજ કરો અને તેનો ટ્રૅક રાખો.",
     uploadRecordBtn: "રિપોર્ટ/પ્રિસ્ક્રિપ્શન અપલોડ કરો",
+    medicines: "દવાઓ",
+    medicinesDesc: "OCR નો ઉપયોગ કરીને તમારા પ્રિસ્ક્રિપ્શનને સ્કેન કરો, દવાઓની સૂચિ સંચાલિત કરો અને રીમાઇન્ડર એલાર્મ સેટ કરો.",
+    medicinesHeader: "દવાઓ અને રીમાઇન્ડર",
     quickHealthTip: "ત્વરિત આરોગ્ય ટીપ",
     healthTipText: "પૂરતું પાણી પીવું અને સાપ્તાહિક 150 મિનિટ મધ્યમ પ્રવૃત્તિ જાળવી રાખવાથી હૃદય સંબંધિત વાઇટલ્સ યોગ્ય શ્રેણીમાં રહે છે.",
   }
+
 };
 
 interface LanguageContextType {
