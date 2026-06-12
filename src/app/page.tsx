@@ -38,6 +38,14 @@ const AshaView = dynamic(() => import("@/components/AshaView").then(m => m.AshaV
 const TelemedicineOverlay = dynamic(() => import("@/components/TelemedicineOverlay").then(m => m.TelemedicineOverlay), { ssr: false });
 const BottomNav = dynamic(() => import("@/components/BottomNav").then(m => m.BottomNav), { ssr: false });
 
+const formatABHA = (raw: string) => {
+  const cleaned = raw.replace(/\D/g, "").slice(0, 14);
+  if (cleaned.length <= 2) return cleaned;
+  if (cleaned.length <= 6) return `${cleaned.slice(0, 2)}-${cleaned.slice(2)}`;
+  if (cleaned.length <= 10) return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+  return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}-${cleaned.slice(6, 10)}-${cleaned.slice(10, 14)}`;
+};
+
 export default function MainApp() {
   const { language, setLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"home" | "screen" | "vitals" | "talk" | "records" | "medicines">("home");
@@ -45,6 +53,28 @@ export default function MainApp() {
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardStep, setOnboardStep] = useState(0);
   const [agreedDisclaimer, setAgreedDisclaimer] = useState(false);
+
+  // --- ONBOARDING CAMERA STATE ---
+  const [onboardCamStream, setOnboardCamStream] = useState<MediaStream | null>(null);
+  const [onboardCamErr, setOnboardCamErr] = useState<boolean>(false);
+  const [onboardCamLoading, setOnboardCamLoading] = useState<boolean>(false);
+
+  // Stop camera stream when leaving onboard step 1
+  useEffect(() => {
+    if (onboardStep !== 1 && onboardCamStream) {
+      onboardCamStream.getTracks().forEach(track => track.stop());
+      setOnboardCamStream(null);
+    }
+  }, [onboardStep, onboardCamStream]);
+
+  // Cleanup stream on unmount
+  useEffect(() => {
+    return () => {
+      if (onboardCamStream) {
+        onboardCamStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [onboardCamStream]);
 
   // --- PROFILE STATE ---
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -62,7 +92,8 @@ export default function MainApp() {
     medications: "",
     bloodGroup: "Unknown",
     emergencyName: "",
-    emergencyPhone: ""
+    emergencyPhone: "",
+    abha: ""
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -128,7 +159,8 @@ export default function MainApp() {
           medications: parsed.medications || "",
           bloodGroup: parsed.bloodGroup || "Unknown",
           emergencyName: parsed.emergencyContact?.name || "",
-          emergencyPhone: parsed.emergencyContact?.phone || ""
+          emergencyPhone: parsed.emergencyContact?.phone || "",
+          abha: parsed.abha || ""
         });
       } catch (e) {
         console.error("Failed to parse saved user profile:", e);
@@ -428,6 +460,10 @@ export default function MainApp() {
     if (emergencyPhone && (emergencyPhone.length !== 10 || !/^\d+$/.test(emergencyPhone))) {
       errors.emergencyPhone = language === "hi" ? "आपातकालीन फोन 10 अंकों का होना चाहिए" : language === "gu" ? "ઇમરજન્સી ફોન 10 આંકડાનો હોવો જોઈએ" : "Emergency phone must be 10 digits";
     }
+    const abhaTrim = profileForm.abha.replace(/\D/g, "");
+    if (abhaTrim && abhaTrim.length !== 14) {
+      errors.abha = language === "hi" ? "कृपया 14 अंकों का मान्य आभा नंबर दर्ज करें" : language === "gu" ? "કૃપા કરીને 14 આંકડાનો માન્ય આભા નંબર દાખલ કરો" : "ABHA number must be exactly 14 digits";
+    }
     setFormErrors(prev => ({ ...prev, ...errors }));
     return Object.keys(errors).length === 0;
   };
@@ -471,6 +507,7 @@ export default function MainApp() {
         name: profileForm.emergencyName.trim(),
         phone: profileForm.emergencyPhone.trim()
       },
+      abha: profileForm.abha.replace(/\D/g, ""),
       language,
       createdAt: existingProfile.createdAt || new Date().toISOString()
     };
@@ -495,6 +532,11 @@ export default function MainApp() {
 
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab as any);
+  }, []);
+
+  const handleUpdateProfile = useCallback((updated: any) => {
+    setUserProfile(updated);
+    safeSetItem("saathi_user_profile", JSON.stringify(updated));
   }, []);
 
   const handleResetApp = useCallback(() => {
@@ -602,10 +644,83 @@ export default function MainApp() {
             </div>
             
             <div className="flex-1 flex flex-col justify-center space-y-6">
-              <div className="w-full aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden group shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/10 to-emerald-500/10" />
-                <Camera className="w-16 h-16 text-teal-300 animate-pulse relative z-10" />
-                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/50 animate-scan pointer-events-none" />
+              {/* Tappable Live Camera Demo Box */}
+              <div
+                className="w-full aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden group shrink-0 cursor-pointer active:scale-[0.98] transition-transform"
+                onClick={async () => {
+                  if (onboardCamStream || onboardCamLoading) return;
+                  setOnboardCamLoading(true);
+                  try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                      video: { facingMode: "environment", width: { ideal: 480 }, height: { ideal: 360 } }
+                    });
+                    setOnboardCamStream(stream);
+                    setOnboardCamErr(false);
+                  } catch {
+                    setOnboardCamErr(true);
+                  } finally {
+                    setOnboardCamLoading(false);
+                  }
+                }}
+              >
+                {onboardCamStream ? (
+                  /* Live camera preview */
+                  <>
+                    <video
+                      className="absolute inset-0 w-full h-full object-cover rounded-3xl"
+                      autoPlay
+                      playsInline
+                      muted
+                      ref={(el) => {
+                        if (el && el.srcObject !== onboardCamStream) {
+                          el.srcObject = onboardCamStream;
+                        }
+                      }}
+                    />
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/70 animate-scan pointer-events-none z-20" />
+                    <span className="absolute top-2 right-2 bg-emerald-500/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider z-20 animate-pulse">
+                      {language === "hi" ? "लाइव प्रीव्यू" : language === "gu" ? "લાઇવ પ્રીવ્યૂ" : "Live Preview"}
+                    </span>
+                  </>
+                ) : onboardCamErr ? (
+                  /* Animated fallback illustration (permission denied) */
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/10 to-emerald-500/10" />
+                    <div className="relative z-10 flex flex-col items-center gap-2">
+                      <div className="relative">
+                        <Camera className="w-14 h-14 text-teal-300 animate-onboard-cam-pulse" />
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-ping" />
+                        <div className="absolute -bottom-1 -left-2 w-2 h-2 bg-teal-300 rounded-full animate-onboard-float-dot" />
+                        <div className="absolute top-1/2 right-[-14px] w-2.5 h-2.5 bg-emerald-300 rounded-full animate-onboard-float-dot2" />
+                      </div>
+                      <span className="text-[9px] text-teal-200 font-bold">
+                        {language === "hi" ? "कैमरा अनुपलब्ध" : language === "gu" ? "કેમેરા અનુપલબ્ધ" : "Camera unavailable"}
+                      </span>
+                    </div>
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/50 animate-scan pointer-events-none" />
+                  </>
+                ) : (
+                  /* Default: tap to activate */
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/10 to-emerald-500/10" />
+                    {onboardCamLoading ? (
+                      <div className="relative z-10 flex flex-col items-center gap-2">
+                        <div className="w-10 h-10 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[9px] text-teal-200 font-bold">
+                          {language === "hi" ? "कैमरा खोल रहे हैं..." : language === "gu" ? "કેમેરા ખોલી રહ્યા છીએ..." : "Opening camera..."}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="relative z-10 flex flex-col items-center gap-2">
+                        <Camera className="w-14 h-14 text-teal-300 animate-onboard-cam-pulse" />
+                        <span className="text-[10px] text-teal-200 font-bold bg-white/10 px-3 py-1 rounded-full">
+                          {language === "hi" ? "लाइव डेमो के लिए टैप करें" : language === "gu" ? "લાઇવ ડેમો માટે ટેપ કરો" : "Tap for live demo"}
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/50 animate-scan pointer-events-none" />
+                  </>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -643,10 +758,22 @@ export default function MainApp() {
               <div className="w-full aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/10 to-teal-500/10" />
                 <div className="flex flex-col items-center gap-3 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-10 h-10 text-pink-400 fill-pink-500/20 animate-bounce" />
+                  <div className="flex items-center gap-3">
+                    <Heart className="w-10 h-10 text-pink-400 fill-pink-500/20 animate-onboard-heartbeat" />
                     <span className="text-xs font-bold text-slate-300">72 BPM</span>
                   </div>
+                  {/* Animated Heartbeat Waveform SVG */}
+                  <svg viewBox="0 0 200 40" className="w-48 h-8" preserveAspectRatio="none">
+                    <polyline
+                      points="0,20 20,20 30,20 38,5 46,35 54,10 62,30 70,20 80,20 100,20 110,20 118,5 126,35 134,10 142,30 150,20 160,20 200,20"
+                      fill="none"
+                      stroke="#f472b6"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="animate-onboard-ecg"
+                    />
+                  </svg>
                 </div>
               </div>
 
@@ -684,11 +811,16 @@ export default function MainApp() {
             <div className="flex-1 flex flex-col justify-center space-y-6">
               <div className="w-full aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-teal-500/10" />
-                <div className="flex flex-col items-center gap-2 relative z-10 text-center px-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
-                    <FileText className="w-6 h-6" />
+                <div className="flex flex-col items-center gap-3 relative z-10 text-center px-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-4 h-4 rounded-full bg-red-400 animate-onboard-triage-red shadow-lg shadow-red-400/40" />
+                    <div className="w-5 h-5 rounded-full bg-amber-400 animate-onboard-triage-yellow shadow-lg shadow-amber-400/40" />
+                    <div className="w-6 h-6 rounded-full bg-emerald-400 animate-onboard-triage-green shadow-lg shadow-emerald-400/40" />
                   </div>
-                  <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest mt-1">ABDM ABHA Health ID</span>
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-emerald-300" />
+                    <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">ABDM ABHA Health ID</span>
+                  </div>
                 </div>
               </div>
 
@@ -702,6 +834,13 @@ export default function MainApp() {
                     : language === "gu" 
                     ? "અલગ અલગ જોખમ બેન્ડ્સ, ડૉક્ટર સંપર્ક, ડિજિટલ આયુષ્માન ભારત હેલ્થ આઈડી કાર્ડ અને ઓફલાઇન દવા રીમાઇન્ડર્સ." 
                     : "Red/Yellow/Green triage categories, direct doctor consulting, dynamic ABHA cards, and automated offline medication reminders."}
+                </p>
+                <p className="text-[10px] text-emerald-400 font-bold italic mt-1 animate-pulse">
+                  {language === "hi" 
+                    ? "आप अगले चरण में अपनी ABHA आईडी जोड़ सकते हैं" 
+                    : language === "gu" 
+                    ? "તમે આગલા પગલામાં તમારી ABHA ID ઉમેરી શકો છો" 
+                    : "You can add your ABHA ID in the next step"}
                 </p>
               </div>
             </div>
@@ -933,6 +1072,34 @@ export default function MainApp() {
                       onChange={e => setProfileForm(p => ({ ...p, medications: e.target.value }))}
                       className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
                     />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
+                      {language === "hi" ? "आभा नंबर (वैकल्पिक)" : language === "gu" ? "આભા નંબર (વૈકલ્પિક)" : "ABHA Number (optional)"}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 12-3456-7890-1234"
+                      value={formatABHA(profileForm.abha)}
+                      onChange={e => {
+                        const raw = e.target.value.replace(/\D/g, "").slice(0, 14);
+                        setProfileForm(p => ({ ...p, abha: raw }));
+                      }}
+                      className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
+                    />
+                    <p className="text-[9px] text-teal-300 font-semibold mt-0.5">
+                      {language === "hi" 
+                        ? "आयुष्मान भारत स्वास्थ्य खाता — वैकल्पिक" 
+                        : language === "gu" 
+                        ? "આયુષ્માન ભારત હેલ્થ એકાઉન્ટ — વૈકલ્પિક" 
+                        : "Ayushman Bharat Health Account — optional"}
+                    </p>
+                    {formErrors.abha && (
+                      <p className="text-[10px] text-red-405 font-bold flex items-center gap-1 mt-1">
+                        ⚠️ {formErrors.abha}
+                      </p>
+                    )}
                   </div>
 
                   <div className="border-t border-white/10 pt-3 mt-1 space-y-3">
@@ -1223,6 +1390,32 @@ export default function MainApp() {
                 />
               </div>
 
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-slate-650 uppercase">
+                  {language === "hi" ? "आभा नंबर (वैकल्पिक)" : language === "gu" ? "આભા નંબર (વૈકલ્પિક)" : "ABHA Number (optional)"}
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 12-3456-7890-1234"
+                  value={formatABHA(profileForm.abha)}
+                  onChange={e => {
+                    const raw = e.target.value.replace(/\D/g, "").slice(0, 14);
+                    setProfileForm(p => ({ ...p, abha: raw }));
+                  }}
+                  className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                />
+                <p className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                  {language === "hi" 
+                    ? "आयुष्मान भारत स्वास्थ्य खाता — वैकल्पिक" 
+                    : language === "gu" 
+                    ? "આયુષ્માન ભારત હેલ્થ એકાઉન્ટ — વૈકલ્પિક" 
+                    : "Ayushman Bharat Health Account — optional"}
+                </p>
+                {formErrors.abha && (
+                  <p className="text-[9px] text-red-500 font-bold">⚠️ {formErrors.abha}</p>
+                )}
+              </div>
+
               <div className="border-t border-slate-100 pt-3 space-y-2">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                   {language === "hi" ? "आपातकालीन संपर्क" : language === "gu" ? "ઇમરજન્સી સંપર્ક" : "Emergency Contact"}
@@ -1408,7 +1601,8 @@ export default function MainApp() {
                     medications: userProfile.medications || "",
                     bloodGroup: userProfile.bloodGroup || "Unknown",
                     emergencyName: userProfile.emergencyContact?.name || "",
-                    emergencyPhone: userProfile.emergencyContact?.phone || ""
+                    emergencyPhone: userProfile.emergencyContact?.phone || "",
+                    abha: userProfile.abha || ""
                   });
                 }
                 setFormErrors({});
@@ -1490,7 +1684,8 @@ export default function MainApp() {
                     medications: userProfile.medications || "",
                     bloodGroup: userProfile.bloodGroup || "Unknown",
                     emergencyName: userProfile.emergencyContact?.name || "",
-                    emergencyPhone: userProfile.emergencyContact?.phone || ""
+                    emergencyPhone: userProfile.emergencyContact?.phone || "",
+                    abha: userProfile.abha || ""
                   });
                 }
                 setFormErrors({});
@@ -1510,6 +1705,7 @@ export default function MainApp() {
             patientsList={patientsList}
             setPatientsList={setPatientsList}
             activeTab={activeTab}
+            userProfile={userProfile}
           />
         )}
 
@@ -1542,6 +1738,7 @@ export default function MainApp() {
             triageResult={triageResult}
             screenResults={screenResults}
             userProfile={userProfile}
+            onUpdateProfile={handleUpdateProfile}
             onEditProfile={() => {
               if (userProfile) {
                 setProfileForm({
@@ -1555,7 +1752,8 @@ export default function MainApp() {
                   medications: userProfile.medications || "",
                   bloodGroup: userProfile.bloodGroup || "Unknown",
                   emergencyName: userProfile.emergencyContact?.name || "",
-                  emergencyPhone: userProfile.emergencyContact?.phone || ""
+                  emergencyPhone: userProfile.emergencyContact?.phone || "",
+                  abha: userProfile.abha || ""
                 });
               } else {
                 setProfileForm({
@@ -1569,7 +1767,8 @@ export default function MainApp() {
                   medications: "",
                   bloodGroup: "Unknown",
                   emergencyName: "",
-                  emergencyPhone: ""
+                  emergencyPhone: "",
+                  abha: ""
                 });
               }
               setFormErrors({});

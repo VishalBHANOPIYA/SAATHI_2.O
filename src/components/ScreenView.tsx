@@ -231,6 +231,7 @@ interface ScreenViewProps {
   patientsList: any[];
   setPatientsList: React.Dispatch<React.SetStateAction<any[]>>;
   activeTab: string;
+  userProfile?: any;
 }
 
 export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
@@ -240,7 +241,8 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   ashaModeActive,
   patientsList,
   setPatientsList,
-  activeTab
+  activeTab,
+  userProfile
 }) => {
   const { language, t } = useLanguage();
   const sTrans = screenTranslations[language] || screenTranslations.en;
@@ -266,6 +268,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const capturedFramesRef = useRef<HTMLCanvasElement[]>([]);
+  const isStaticUploadRef = useRef(false);
 
   // Symptom checker states
   const [symptoms, setSymptoms] = useState({
@@ -281,6 +284,16 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const [temperature, setTemperature] = useState("98.6");
   const [screeningResult, setScreeningResult] = useState<string | null>(null);
   const [isScreeningLoading, setIsScreeningLoading] = useState(false);
+
+  // Prefill age from userProfile if available
+  useEffect(() => {
+    if (userProfile && userProfile.age) {
+      const parsedAge = Number(userProfile.age);
+      if (!isNaN(parsedAge)) {
+        setAge(parsedAge);
+      }
+    }
+  }, [userProfile]);
 
   // Automatically clear screening toast
   useEffect(() => {
@@ -299,6 +312,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   };
 
   const startScreenCamera = async () => {
+    isStaticUploadRef.current = false;
     setScreenStep("capture");
     setScreenImage(null);
     setRoiCoords(null);
@@ -324,6 +338,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   };
 
   const captureScreenPhoto = async () => {
+    isStaticUploadRef.current = false;
     const video = screenVideoRef.current;
     if (!video) return;
     setIsCapturingMulti(true);
@@ -357,6 +372,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    isStaticUploadRef.current = true;
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -456,8 +472,71 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   };
 
   const runScreenAnalysis = () => {
-    if (!roiCoords) {
-      alert(language === "hi" ? "कृपया पहले क्षेत्र चुनने के लिए छवि पर टैप करें।" : language === "gu" ? "કૃપા કરીને પહેલા વિસ્તાર પસંદ કરવા માટે છબી પર ટેપ કરો." : "Please tap on the image to select a region of interest first.");
+    let currentRoiCoords = roiCoords;
+    let currentAvgColor = avgColor;
+
+    if (!currentRoiCoords) {
+      const centerX = 160;
+      const centerY = 160;
+      currentRoiCoords = { x: centerX, y: centerY };
+      
+      const canvas = screenCanvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const boxSize = 60;
+          const xStart = Math.max(0, Math.min(canvas.width - boxSize, centerX - boxSize / 2));
+          const yStart = Math.max(0, Math.min(canvas.height - boxSize, centerY - boxSize / 2));
+          try {
+            const imgData = ctx.getImageData(xStart, yStart, boxSize, boxSize);
+            const data = imgData.data;
+            let rSum = 0, gSum = 0, bSum = 0;
+            for (let i = 0; i < data.length; i += 4) {
+              rSum += data[i];
+              gSum += data[i + 1];
+              bSum += data[i + 2];
+            }
+            const pixelsCount = data.length / 4;
+            const computedAvgColor = {
+              r: Math.round(rSum / pixelsCount),
+              g: Math.round(gSum / pixelsCount),
+              b: Math.round(bSum / pixelsCount)
+            };
+            currentAvgColor = computedAvgColor;
+            setAvgColor(computedAvgColor);
+            setRoiCoords(currentRoiCoords);
+
+            // Draw default ROI indicator on the canvas
+            ctx.strokeStyle = "#14b8a6";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(xStart, yStart, boxSize, boxSize);
+
+            if (selectedCondition === "anemia") {
+              const refSize = 100;
+              const xStartRef = Math.max(0, Math.min(canvas.width - refSize, centerX - refSize / 2));
+              const yStartRef = Math.max(0, Math.min(canvas.height - refSize, centerY - refSize / 2));
+              ctx.strokeStyle = "rgba(20, 184, 166, 0.5)";
+              ctx.lineWidth = 2;
+              ctx.setLineDash([4, 4]);
+              ctx.strokeRect(xStartRef, yStartRef, refSize, refSize);
+              ctx.setLineDash([]);
+            }
+            ctx.fillStyle = "#14b8a6";
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI);
+            ctx.fill();
+          } catch (err) {
+            console.error("Default ROI calculation failed:", err);
+          }
+        }
+      }
+    }
+
+    if (!currentRoiCoords) {
+      setScreenToast({
+        message: language === "hi" ? "कृपया पहले क्षेत्र चुनने के लिए छवि पर टैप करें।" : language === "gu" ? "કૃપા કરીને પહેલા વિસ્તાર પસંદ કરવા માટે છબી પર ટેપ કરો." : "Please tap on the image to select a region of interest first.",
+        type: "error"
+      });
       return;
     }
 
@@ -469,7 +548,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
         ? capturedFramesRef.current
         : [screenCanvasRef.current, screenCanvasRef.current, screenCanvasRef.current, screenCanvasRef.current, screenCanvasRef.current];
 
-      const { x, y } = roiCoords;
+      const { x, y } = currentRoiCoords;
       const boxSize = 60;
       const refSize = 100;
 
@@ -478,6 +557,8 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       const frameOverexposedPercents: number[] = [];
 
       let roiCountForGate = 0;
+
+      const isStatic = isStaticUploadRef.current;
 
       // Analyze each of the 5 frames
       for (let i = 0; i < 5; i++) {
@@ -574,6 +655,13 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
         frameIndices.push(Math.max(0, Math.min(100, Math.round(frameIndex))));
       }
 
+      // Localized low quality / dark image fallback message
+      const lowQualityMsg = language === "hi"
+        ? "छवि बहुत धुंधली या खराब गुणवत्ता की है। कृपया स्पष्ट रोशनी में पुनः प्रयास करें।"
+        : language === "gu"
+          ? "ચિત્ર ખૂબ ઝાંખું અથવા ખરાબ ગુણવત્તાનું છે. કૃપા કરીને સ્પષ્ટ પ્રકાશમાં ફરી પ્રયાસ કરો."
+          : "Image too dark or low quality. Please try again with clear lighting.";
+
       // 1. Quality Gate: ROI too small
       if (roiCountForGate < 2500) {
         setScreenToast({
@@ -599,7 +687,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       // 2. Quality Gate: Mean luminance too low (<40) or too high (>220)
       if (medianLum < 40 || medianLum > 220) {
         setScreenToast({
-          message: sTrans.errLuminance || "Too dark / too bright, move to even lighting.",
+          message: lowQualityMsg || sTrans.errLuminance || "Too dark / too bright, move to even lighting.",
           type: "error"
         });
         setIsAnalyzing(false);
@@ -609,7 +697,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       // 3. Quality Gate: Overexposed pixels >10% in ROI
       if (medianOverexposedPercent > 10) {
         setScreenToast({
-          message: sTrans.errOverexposed || "Reduce direct light/flash.",
+          message: lowQualityMsg || sTrans.errOverexposed || "Reduce direct light/flash.",
           type: "error"
         });
         setIsAnalyzing(false);
@@ -621,8 +709,8 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       const indexVariance = frameIndices.reduce((sum, val) => sum + Math.pow(val - meanIndex, 2), 0) / frameIndices.length;
       const indexStdDev = Math.sqrt(indexVariance);
 
-      // 4. Quality Gate: Frame-to-frame variance too high (motion blur)
-      if (indexStdDev > 6.0) {
+      // 4. Quality Gate: Frame-to-frame variance too high (motion blur) - SKIP FOR STATIC UPLOADS
+      if (!isStatic && indexStdDev > 6.0) {
         setScreenToast({
           message: sTrans.errVariance || "Hold steady.",
           type: "error"
@@ -633,10 +721,18 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
       // Determine Signal Quality badge
       let signalQuality: "good" | "ok" | "poor" = "good";
-      if (indexStdDev > 4.0 || medianOverexposedPercent > 6.0) {
-        signalQuality = "poor";
-      } else if (indexStdDev > 2.0 || medianOverexposedPercent > 2.0) {
-        signalQuality = "ok";
+      if (isStatic) {
+        if (medianOverexposedPercent > 6.0) {
+          signalQuality = "poor";
+        } else if (medianOverexposedPercent > 2.0) {
+          signalQuality = "ok";
+        }
+      } else {
+        if (indexStdDev > 4.0 || medianOverexposedPercent > 6.0) {
+          signalQuality = "poor";
+        } else if (indexStdDev > 2.0 || medianOverexposedPercent > 2.0) {
+          signalQuality = "ok";
+        }
       }
 
       // Map to risk levels using threshold bands
@@ -812,7 +908,8 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
           symptoms,
           age,
           temperature,
-          language
+          language,
+          userProfile
         })
       });
 
@@ -1086,7 +1183,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
                 </button>
                 <button
                   onClick={runScreenAnalysis}
-                  disabled={!avgColor || isAnalyzing}
+                  disabled={isAnalyzing}
                   className="bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 shadow-sm active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-h-[36px]"
                 >
                   {isAnalyzing ? (

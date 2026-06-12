@@ -38,6 +38,7 @@ interface RecordsViewProps {
   screenResults?: any | null;
   userProfile?: any;
   onEditProfile?: () => void;
+  onUpdateProfile?: (profile: any) => void;
 }
 
 const conditionLabels = {
@@ -83,7 +84,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
   triageResult = null,
   screenResults = null,
   userProfile = null,
-  onEditProfile = () => {}
+  onEditProfile = () => {},
+  onUpdateProfile = () => {}
 }) => {
   const { language, t } = useLanguage();
 
@@ -109,11 +111,22 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
   useEffect(() => {
     setIsMounted(true);
-    const savedAbha = safeGetItem("saathi_abha_number");
-    const savedAbhaLinked = safeGetItem("saathi_abha_linked") === "true";
-    if (savedAbha) setAbhaNumber(savedAbha);
-    if (savedAbhaLinked) setIsAbhaLinked(true);
   }, []);
+
+  useEffect(() => {
+    if (userProfile && userProfile.abha) {
+      setAbhaNumber(formatAbha(userProfile.abha));
+      setIsAbhaLinked(true);
+    } else if (userProfile && !userProfile.abha) {
+      setAbhaNumber("");
+      setIsAbhaLinked(false);
+    } else {
+      const savedAbha = safeGetItem("saathi_abha_number");
+      const savedAbhaLinked = safeGetItem("saathi_abha_linked") === "true";
+      if (savedAbha) setAbhaNumber(savedAbha);
+      if (savedAbhaLinked) setIsAbhaLinked(true);
+    }
+  }, [userProfile]);
 
   const formatAbha = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -142,6 +155,9 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     setIsAbhaLinked(true);
     safeSetItem("saathi_abha_number", abhaNumber);
     safeSetItem("saathi_abha_linked", "true");
+    if (userProfile) {
+      onUpdateProfile({ ...userProfile, abha: cleaned });
+    }
   };
 
   const handleUnlinkAbha = () => {
@@ -149,6 +165,9 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     setAbhaNumber("");
     safeRemoveItem("saathi_abha_number");
     safeRemoveItem("saathi_abha_linked");
+    if (userProfile) {
+      onUpdateProfile({ ...userProfile, abha: "" });
+    }
   };
 
   const handleAddRecord = (e: React.FormEvent) => {

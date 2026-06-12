@@ -109,3 +109,75 @@ body {
 .animate-scan {
   animation: scan 2s ease-in-out infinite;
 }
+
+/* Onboarding Slide 1 — Camera pulse */
+@keyframes onboard-cam-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+.animate-onboard-cam-pulse {
+  animation: onboard-cam-pulse 2s ease-in-out infinite;
+}
+
+/* Onboarding Slide 1 — Floating scan dots */
+@keyframes onboard-float-dot {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.5; }
+  50% { transform: translateY(-8px) translateX(4px); opacity: 1; }
+}
+@keyframes onboard-float-dot2 {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+  50% { transform: translateY(6px) translateX(-6px); opacity: 1; }
+}
+.animate-onboard-float-dot {
+  animation: onboard-float-dot 2.5s ease-in-out infinite;
+}
+.animate-onboard-float-dot2 {
+  animation: onboard-float-dot2 3s ease-in-out infinite 0.5s;
+}
+
+/* Onboarding Slide 2 — Heartbeat scale */
+@keyframes onboard-heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.25); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.15); }
+  56% { transform: scale(1); }
+}
+.animate-onboard-heartbeat {
+  animation: onboard-heartbeat 1.5s ease-in-out infinite;
+}
+
+/* Onboarding Slide 2 — ECG line draw */
+@keyframes onboard-ecg {
+  0% { stroke-dashoffset: 600; opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.3; }
+}
+.animate-onboard-ecg {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: onboard-ecg 2.5s linear infinite;
+}
+
+/* Onboarding Slide 3 — Triage dots */
+@keyframes onboard-triage-red {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+@keyframes onboard-triage-yellow {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  33% { transform: scale(1.35); opacity: 1; }
+}
+@keyframes onboard-triage-green {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  66% { transform: scale(1.3); opacity: 1; }
+}
+.animate-onboard-triage-red {
+  animation: onboard-triage-red 2s ease-in-out infinite;
+}
+.animate-onboard-triage-yellow {
+  animation: onboard-triage-yellow 2s ease-in-out infinite 0.3s;
+}
+.animate-onboard-triage-green {
+  animation: onboard-triage-green 2s ease-in-out infinite 0.6s;
+}
