@@ -6,9 +6,13 @@ import {
   Camera,
   UploadCloud,
   Sparkles,
-  Loader2
+  Loader2,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
+import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
 
 const screenTranslations = {
   en: {
@@ -149,6 +153,75 @@ function rgbToLab(R: number, G: number, B: number) {
 
   return { L, a, b_star };
 }
+
+const ScreenSpeechPlayer: React.FC<{
+  text: string;
+  language: string;
+}> = ({ text, language }) => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(true);
+
+  useEffect(() => {
+    const supported = isSpeechSupported();
+    setVoiceSupported(supported);
+
+    if (supported && text) {
+      speakText(
+        text,
+        language,
+        () => setIsSpeaking(true),
+        () => setIsSpeaking(false),
+        () => setIsSpeaking(false)
+      );
+    }
+    return () => {
+      stopSpeaking();
+    };
+  }, [text, language]);
+
+  const toggleSpeech = () => {
+    if (!voiceSupported) return;
+    if (isSpeaking) {
+      stopSpeaking();
+      setIsSpeaking(false);
+    } else {
+      speakText(
+        text,
+        language,
+        () => setIsSpeaking(true),
+        () => setIsSpeaking(false),
+        () => setIsSpeaking(false)
+      );
+    }
+  };
+
+  if (!voiceSupported) {
+    return (
+      <span className="text-[9px] text-slate-400 italic">
+        {language === "hi" ? "आवाज उपलब्ध नहीं" : language === "gu" ? "અવાજ ઉપલબ્ધ નથી" : "Voice not available"}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={toggleSpeech}
+      className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-705 transition-all py-1 px-2.5 rounded-lg shadow-sm text-[10px] font-extrabold shrink-0"
+    >
+      {isSpeaking ? (
+        <>
+          <VolumeX className="w-3.5 h-3.5 text-teal-605 animate-pulse" />
+          <span>{language === "hi" ? "आवाज रोकें" : language === "gu" ? "અવાજ બંધ કરો" : "Stop Voice"}</span>
+        </>
+      ) : (
+        <>
+          <Volume2 className="w-3.5 h-3.5 text-teal-605" />
+          <span>{language === "hi" ? "आवाज सुनें" : language === "gu" ? "અવાજ સાંભળો" : "Play Voice"}</span>
+        </>
+      )}
+    </button>
+  );
+};
 
 interface ScreenViewProps {
   recordsList: any[];
@@ -657,11 +730,11 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const attachRecordToActivePatient = (record: any, riskBand?: "GREEN" | "YELLOW" | "RED") => {
     if (typeof window === "undefined") return;
 
-    const savedActiveId = localStorage.getItem("saathi_asha_active_patient_id");
+    const savedActiveId = safeGetItem("saathi_asha_active_patient_id");
     const currentActiveId = activePatientId || savedActiveId;
     if (!ashaModeActive || !currentActiveId) return;
 
-    const savedPatients = localStorage.getItem("saathi_asha_patients");
+    const savedPatients = safeGetItem("saathi_asha_patients");
     let currentPatients = patientsList;
     if (savedPatients) {
       try {
@@ -685,7 +758,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     });
 
     setPatientsList(updated);
-    localStorage.setItem("saathi_asha_patients", JSON.stringify(updated));
+    safeSetItem("saathi_asha_patients", JSON.stringify(updated));
     console.log(`Attached record to ASHA patient ${currentActiveId}:`, record);
   };
 
@@ -711,7 +784,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
     const updatedRecords = [newRecordItem, ...recordsList];
     setRecordsList(updatedRecords);
-    localStorage.setItem("saathi_records", JSON.stringify(updatedRecords));
+    safeSetItem("saathi_records", JSON.stringify(updatedRecords));
 
     // Attach to active ASHA patient if mode is active
     const risk = screenResults.riskBand === "High" ? "RED" as const : screenResults.riskBand === "Moderate" ? "YELLOW" as const : "GREEN" as const;
@@ -1035,10 +1108,31 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
           {/* 4. RESULTS STEP */}
           {screenStep === "results" && screenResults && (
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4 animate-scaleUp">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                  {sTrans.resultsTitle}
-                </span>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                    {sTrans.resultsTitle}
+                  </span>
+                  <ScreenSpeechPlayer
+                    text={(() => {
+                      const condition = screenResults.condition;
+                      const risk = screenResults.riskBand;
+                      const desc = screenResults.description;
+                      if (language === "hi") {
+                        const condName = condition === "anemia" ? "एनीमिया" : condition === "jaundice" ? "पीलिया" : "त्वचा";
+                        const riskName = risk === "Low" ? "कम" : risk === "Moderate" ? "मध्यम" : "उच्च";
+                        return `स्क्रीनिंग परिणाम: ${condName} जांच। जोखिम का स्तर ${riskName} जोखिम है। विवरण: ${desc}`;
+                      }
+                      if (language === "gu") {
+                        const condName = condition === "anemia" ? "એનિમિયા" : condition === "jaundice" ? "કમળો" : "ત્વચા";
+                        const riskName = risk === "Low" ? "ઓછું" : risk === "Moderate" ? "મધ્યમ" : "ઉચ્ચ";
+                        return `તપાસનું પરિણામ: ${condName} તપાસ. જોખમનું સ્તર ${riskName} જોખમ છે. વિગતો: ${desc}`;
+                      }
+                      return `Screening Result: ${condition} screening. Urgency level: ${risk} Risk. Description: ${desc}`;
+                    })()}
+                    language={language}
+                  />
+                </div>
                 <div className="flex gap-2">
                   <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
                     screenResults.riskBand === "Low" ? "bg-emerald-100 text-emerald-800" :
@@ -1230,10 +1324,13 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
             </div>
           ) : (
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4 animate-scaleUp text-left">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                  {language === "hi" ? "स्क्रीनिंग रिपोर्ट" : language === "gu" ? "સ્ક્રીનીંગ રીપોર્ટ" : "Screening Report"}
-                </span>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                    {language === "hi" ? "स्क्रीनिंग रिपोर्ट" : language === "gu" ? "સ્ક્રીનીંગ રીપોર્ટ" : "Screening Report"}
+                  </span>
+                  <ScreenSpeechPlayer text={screeningResult || ""} language={language} />
+                </div>
                 <span className="bg-teal-100 text-teal-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
                   AI Screened
                 </span>

@@ -3,7 +3,7 @@ import { groq } from "@/lib/groq";
 
 export async function POST(req: Request) {
   try {
-    const { transcript, history, language } = await req.json();
+    const { transcript, history, language, userProfile } = await req.json();
 
     if (!transcript || !transcript.trim()) {
       return NextResponse.json({ success: false, error: "No transcript provided" }, { status: 400 });
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
           triage,
           reason,
           advice,
-          see_doctor: triage !== "GREEN",
+          see_doctor: (triage as string) !== "GREEN",
           confidence
         }
       });
@@ -196,9 +196,29 @@ Output:
   "see_doctor": true
 }`;
 
+    let profileContext = "";
+    if (userProfile && typeof userProfile === "object") {
+      const { name, age, gender, conditions, allergies, medications, bloodGroup } = userProfile;
+      const conditionStr = conditions && conditions.length > 0 ? conditions.join(", ") : "None";
+      profileContext = `User Profile Information:
+- Name: ${name || "Unknown"}
+- Age: ${age || "Unknown"}
+- Gender: ${gender || "Unknown"}
+- Chronic Conditions: ${conditionStr}
+- Allergies: ${allergies || "None"}
+- Current Medications: ${medications || "None"}
+- Blood Group: ${bloodGroup || "Unknown"}
+
+Please factor this patient profile details into your health assessment, risk categorization, and recommendations.`;
+    }
+
     const messages: any[] = [
       { role: "system", content: systemPrompt }
     ];
+
+    if (profileContext) {
+      messages.push({ role: "system", content: profileContext });
+    }
 
     if (history && Array.isArray(history) && history.length > 0) {
       for (const msg of history) {

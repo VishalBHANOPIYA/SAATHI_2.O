@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Saathi — AI Health Companion
 
-## Getting Started
+Saathi (meaning *Companion* in Hindi) is a comprehensive, PWA-compatible, multilingual AI healthcare assistant designed to empower rural and underserved communities. By combining advanced camera heuristics, on-device algorithms, and state-of-the-art LLMs, Saathi provides non-invasive health screening, vital signs estimation, voice symptoms triage, and medication compliance management.
 
-First, run the development server:
+---
+
+## 🚀 Live App & QR Code
+
+- **Live URL**: [https://saathi-health.vercel.app](https://saathi-health.vercel.app)
+- **Scan to Open on Mobile**: 
+
+![Saathi QR Code](public/saathi-qr.png)
+
+---
+
+## 🌟 10 Core Features of Saathi
+
+1. **First-Launch Onboarding & Health Profiling**
+   An elegant onboarding experience detecting first-launch. Collects user profile metadata (age, gender, blood group, allergies, chronic conditions, and emergency contacts) in the user's preferred language.
+
+2. **Multilingual Language System**
+   Fully integrated across Hindi (हिंदी), Gujarati (ગુજરાતી), and English (en) with context-based translations for all screens, dialogs, buttons, and alerts.
+
+3. **Camera-Based Non-Invasive AI Screening**
+   Analyzes fingernail, eye, or skin photos utilizing advanced colorimetric analysis (L\*a\*b\* color space heuristics) and AI classification to screen for risk levels of Anemia and Jaundice without blood draws.
+
+4. **rPPG Contactless Vital Signs**
+   Measures Heart Rate (BPM), Blood Oxygen (SpO2), and estimates Blood Pressure (Systolic/Diastolic) using front/rear camera streams powered by a client-side CHROM (Chrominance) rPPG estimation framework.
+
+5. **Voice-Powered AI Symptom Triage**
+   Transcribes symptoms in English, Hindi, or Gujarati using OpenAI Whisper API. Analyzes symptom input with Llama-3.3-70b to evaluate clinical severity, ask follow-up questions, and assign a triage color tier (Red, Yellow, Green).
+
+6. **Offline Client-Side Triage Fallback**
+   If internet connection is lost, Saathi utilizes an on-device multilingual regex rule engine to parse red-flag keywords (e.g., chest pain, shortness of breath) and determine risk tiers entirely offline.
+
+7. **Voice Output (Speech Synthesis / TTS)**
+   Automatically speaks results and instructions aloud using browser Web Speech API with regional accent optimizations (`en-IN`, `hi-IN`, `gu-IN`), allowing low-literacy users to hear vital health warnings.
+
+8. **Prescription Parsing & Medication Management**
+   Supports snapping or uploading a prescription image. Extracts dosage, frequencies, and timings using a vision model, generates medicine reminder cards, and checks for potential drug-drug interactions.
+
+9. **ASHA Worker Mode & Community Analytics**
+   Provides a community mode for Accredited Social Health Activists (ASHA). Features multi-patient profiles, risk dashboard tracking across villages, ABHA Card linkage status, and community health statistics charts.
+
+10. **System-wide Demo Mode & PDF Exporter**
+    - **Demo Mode**: One-tap seeding of realistic patient records, medicine histories, and metrics for demonstration.
+    - **Health Card Exporter**: One-click download of a professional, print-ready, branded A4 Health Card PDF summarizing user vitals, medications, and diagnoses.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js (App Router), React, TypeScript
+- **Styling**: TailwindCSS & Vanilla CSS
+- **AI Core (via Groq API)**:
+  - Triage/Prescription Parsing: `llama-3.3-70b-specdec` / `llama-4-scout` (vision)
+  - Audio Transcription: `whisper-large-v3-turbo`
+- **Vitals Processing**: HTML5 Canvas, MediaDevices API, CHROM rPPG chrominance algorithm
+- **Diagnostic Heuristics**: CIELAB (L\*a\*b\*) Color Space Calibration
+- **PDF Generation**: `jspdf`
+- **Speech Synthesis**: Web Speech API (`SpeechSynthesis`)
+- **PWA Capabilities**: Service Worker caching, offline compatibility, installable manifest
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file in the root directory:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💻 Local Setup Instructions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/Saathi_2.O.git
+   cd Saathi_2.O
+   ```
 
-## Learn More
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. **Configure env variables**:
+   Create a `.env.local` file and paste your `GROQ_API_KEY`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. **Run development server**:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Build and test production locally**:
+   ```bash
+   npm run build
+   ```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 👥 Team E Mitra Members
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Vishal Bhanopiya** — Lead AI Engineer & Developer
+- **Team Name**: E Mitra
+
+---
+
+## ⚠️ Medical Disclaimer
+
+**IMPORTANT**: Saathi is an AI-powered prototype designed for health screening, educational, and demonstration purposes only. It **does NOT** provide professional clinical diagnosis, treatment, or medical advice. The vital sign estimations and diagnostic heuristics do not replace clinical examinations. If you are experiencing a severe medical emergency, please seek immediate help from qualified healthcare professionals.

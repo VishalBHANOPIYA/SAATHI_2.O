@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { jsPDF } from "jspdf";
 import {
   FileText,
   Share2,
@@ -27,6 +28,7 @@ import {
   Legend
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
+import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
 
 interface RecordsViewProps {
   vitalsHistory: any[];
@@ -107,8 +109,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
   useEffect(() => {
     setIsMounted(true);
-    const savedAbha = localStorage.getItem("saathi_abha_number");
-    const savedAbhaLinked = localStorage.getItem("saathi_abha_linked") === "true";
+    const savedAbha = safeGetItem("saathi_abha_number");
+    const savedAbhaLinked = safeGetItem("saathi_abha_linked") === "true";
     if (savedAbha) setAbhaNumber(savedAbha);
     if (savedAbhaLinked) setIsAbhaLinked(true);
   }, []);
@@ -138,15 +140,15 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     }
     setAbhaError(null);
     setIsAbhaLinked(true);
-    localStorage.setItem("saathi_abha_number", abhaNumber);
-    localStorage.setItem("saathi_abha_linked", "true");
+    safeSetItem("saathi_abha_number", abhaNumber);
+    safeSetItem("saathi_abha_linked", "true");
   };
 
   const handleUnlinkAbha = () => {
     setIsAbhaLinked(false);
     setAbhaNumber("");
-    localStorage.removeItem("saathi_abha_number");
-    localStorage.removeItem("saathi_abha_linked");
+    safeRemoveItem("saathi_abha_number");
+    safeRemoveItem("saathi_abha_linked");
   };
 
   const handleAddRecord = (e: React.FormEvent) => {
@@ -170,7 +172,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
     const nextRecords = [addedItem, ...recordsList];
     setRecordsList(nextRecords);
-    localStorage.setItem("saathi_records", JSON.stringify(nextRecords));
+    safeSetItem("saathi_records", JSON.stringify(nextRecords));
     setNewRecord({ title: "", category: "Lab Test", doctor: "", notes: "" });
     setShowRecordForm(false);
   };
@@ -178,7 +180,346 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
   const deleteRecord = (id: number) => {
     const nextRecords = recordsList.filter(item => item.id !== id);
     setRecordsList(nextRecords);
-    localStorage.setItem("saathi_records", JSON.stringify(nextRecords));
+    safeSetItem("saathi_records", JSON.stringify(nextRecords));
+  };
+
+  const downloadHealthCardPDF = () => {
+    // 1. Initialize jsPDF
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+
+    const activeLang = (language === "hi" || language === "gu") ? language : "en";
+
+    const tPdf = {
+      en: {
+        title: "SAATHI HEALTH CARD",
+        tagline: "Your AI Health Companion",
+        generated: "Generated",
+        profile: "PATIENT HEALTH PROFILE",
+        name: "Name",
+        ageGender: "Age / Gender",
+        bloodGroup: "Blood Group",
+        contact: "Contact",
+        allergies: "Allergies",
+        conditions: "Conditions",
+        medications: "Medications",
+        vitals: "LATEST VITAL SIGNS (rPPG Camera Scan)",
+        heartRate: "Heart Rate",
+        oxygen: "Blood Oxygen (SpO2)",
+        bp: "Blood Pressure",
+        date: "Recorded Date",
+        noVitals: "No vital sign readings logged yet.",
+        screenings: "LATEST HEALTH SCREENINGS",
+        test: "Test/Screening",
+        provider: "Provider/Source",
+        notes: "Notes",
+        noScreenings: "No camera screening or lab records logged yet.",
+        medsSchedule: "MEDICATION SCHEDULE",
+        medName: "Name",
+        medDosage: "Dosage",
+        medFrequency: "Frequency",
+        medTime: "Time",
+        noMeds: "No medications currently scheduled.",
+        disclaimerTitle: "CLINICAL DISCLAIMER & WARNING",
+        disclaimerText1: "Saathi is an AI-powered health companion prototype. All vital sign estimates, camera screenings,",
+        disclaimerText2: "and triage assessments are for educational and awareness purposes only. This report does NOT",
+        disclaimerText3: "constitute professional medical advice, diagnosis, or treatment. Consult a licensed doctor for clinical care."
+      },
+      hi: {
+        title: "साथी स्वास्थ्य कार्ड",
+        tagline: "आपका एआई स्वास्थ्य साथी",
+        generated: "तैयार किया गया",
+        profile: "रोगी स्वास्थ्य प्रोफ़ाइल",
+        name: "नाम",
+        ageGender: "आयु / लिंग",
+        bloodGroup: "रक्त समूह",
+        contact: "संपर्क",
+        allergies: "एलर्जी",
+        conditions: "स्वास्थ्य स्थितियां",
+        medications: "वर्तमान दवाएं",
+        vitals: "नवीनतम वाइटल्स रीडिंग (rPPG कैमरा स्कैन)",
+        heartRate: "हृदय गति (Heart Rate)",
+        oxygen: "रक्त ऑक्सीजन (SpO2)",
+        bp: "रक्तचाप (Blood Pressure)",
+        date: "रिकॉर्डिंग तिथि",
+        noVitals: "अभी तक कोई वाइटल्स रीडिंग दर्ज नहीं की गई है।",
+        screenings: "नवीनतम स्वास्थ्य स्क्रीनिंग",
+        test: "जांच / स्क्रीनिंग",
+        provider: "प्रदाता / स्रोत",
+        notes: "विवरण",
+        noScreenings: "अभी तक कोई कैमरा स्क्रीनिंग या लैब रिकॉर्ड दर्ज नहीं है।",
+        medsSchedule: "दवा की अनुसूची",
+        medName: "दवा का नाम",
+        medDosage: "खुराक",
+        medFrequency: "आवृत्ति",
+        medTime: "समय",
+        noMeds: "वर्तमान में कोई दवा निर्धारित नहीं है।",
+        disclaimerTitle: "नैदानिक अस्वीकरण और चेतावनी",
+        disclaimerText1: "साथी एक एआई-संचालित स्वास्थ्य साथी प्रोटोटाइप है। सभी वाइटल्स अनुमान, कैमरा स्क्रीनिंग,",
+        disclaimerText2: "और ट्राइएज मूल्यांकन केवल शैक्षिक और जागरूकता उद्देश्यों के लिए हैं। यह रिपोर्ट पेशेवर",
+        disclaimerText3: "चिकित्सा सलाह, निदान या उपचार का गठन नहीं करती है। नैदानिक देखभाल के लिए डॉक्टर से परामर्श करें।"
+      },
+      gu: {
+        title: "સાથી સ્વાસ્થ્ય કાર્ડ",
+        tagline: "તમારો એઆઈ હેલ્થ સાથી",
+        generated: "તૈયાર કરેલ",
+        profile: "દર્દી સ્વાસ્થ્ય પ્રોફાઇલ",
+        name: "નામ",
+        ageGender: "ઉંમર / લિંગ",
+        bloodGroup: "બ્લડ ગ્રુપ",
+        contact: "સંપર્ક",
+        allergies: "એલર્જી",
+        conditions: "સ્વાસ્થ્ય સ્થિતિઓ",
+        medications: "હાલની દવાઓ",
+        vitals: "નવીનતમ વાઇટલ્સ રીડીંગ (rPPG કેમેરા સ્કેન)",
+        heartRate: "હૃદય ગતિ (Heart Rate)",
+        oxygen: "બ્લડ ઓક્સિજન (SpO2)",
+        bp: "બ્લડ પ્રેશર",
+        date: "રેકોર્ડિંગ તારીખ",
+        noVitals: "હજુ સુધી કોઈ વાઇટલ્સ રેકોર્ડ કરેલ નથી.",
+        screenings: "નવીનતમ સ્વાસ્થ્ય સ્ક્રીનીંગ",
+        test: "ટેસ્ટ / સ્ક્રીનીંગ",
+        provider: "પ્રદાતા / સ્ત્રોત",
+        notes: "નોંધો",
+        noScreenings: "હજુ સુધી કોઈ કેમેરા સ્ક્રીનીંગ અથવા લેબ રેકોર્ડ નથી.",
+        medsSchedule: "દવાની અનુસૂચિ",
+        medName: "દવાનું નામ",
+        medDosage: "માત્રા",
+        medFrequency: "આવર્તન",
+        medTime: "સમય",
+        noMeds: "હાલમાં કોઈ દવાઓ નિર્ધારિત નથી.",
+        disclaimerTitle: "ક્લિનિકલ ડિસ્ક્લેમર અને ચેતવણી",
+        disclaimerText1: "સાથી એ એક AI-સંચાલિત હેલ્થ સાથી પ્રોટોટાઇપ છે. તમામ વાઇટલ્સ અંદાજ, કેમેરા સ્ક્રીનીંગ,",
+        disclaimerText2: "અને ટ્રાયેજ મૂલ્યાંકન ફક્ત શૈક્ષણિક અને જાગૃતિ હેતુ માટે છે. આ અહેવાલ કોઈ પણ રીતે વ્યાવસાયિક",
+        disclaimerText3: "તબીબી સલાહ, નિદાન કે સારવાર સમાન નથી. ક્લિનિકલ સંભાળ માટે લાઇસન્સ પ્રાપ્ત ડૉક્ટરની સલાહ લો."
+      }
+    }[activeLang];
+
+    // Color definitions
+    const primaryTeal = "#0f766e"; 
+    const secondarySlate = "#475569"; 
+    const borderSlate = "#e2e8f0"; 
+
+    // Header Background Header Block (Saathi Branding)
+    doc.setFillColor(15, 118, 110); 
+    doc.rect(0, 0, 210, 45, "F");
+
+    // Title & Logo
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text(tPdf.title, 15, 22);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(tPdf.tagline, 15, 28);
+    doc.text(`${tPdf.generated}: ${new Date().toLocaleDateString()}`, 15, 34);
+
+    // Profile Details
+    const profile = userProfile || {
+      name: "Vishal Bhanopiya",
+      age: 28,
+      gender: "Male",
+      phone: "+91 9876543210",
+      bloodGroup: "O+",
+      conditions: ["None"],
+      allergies: "None",
+      medications: "None"
+    };
+
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240); 
+    doc.roundedRect(10, 50, 190, 48, 4, 4, "FD");
+
+    doc.setTextColor(15, 118, 110);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(tPdf.profile, 15, 58);
+
+    doc.setTextColor(71, 85, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(`${tPdf.name}:`, 15, 66);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${profile.name || "N/A"}`, 30, 66);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.ageGender}:`, 15, 72);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${profile.age || "N/A"} yrs / ${profile.gender || "N/A"}`, 45, 72);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.bloodGroup}:`, 15, 78);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${profile.bloodGroup || "N/A"}`, 45, 78);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.contact}:`, 15, 84);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${profile.phone || "N/A"}`, 32, 84);
+
+    // Right Column in Profile block
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.allergies}:`, 110, 66);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${profile.allergies || "None reported"}`, 130, 66);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.conditions}:`, 110, 72);
+    doc.setFont("helvetica", "normal");
+    
+    const condsStr = Array.isArray(profile.conditions)
+      ? profile.conditions.map((cond: string) => {
+          const keyMap: Record<string, string> = {
+            "Diabetes": "diabetes",
+            "High Blood Pressure": "highBP",
+            "Heart Disease": "heartDisease",
+            "Asthma/Respiratory": "asthma",
+            "Thyroid": "thyroid",
+            "Kidney Disease": "kidney",
+            "Anemia": "anemia",
+            "Other": "other",
+            "None": "none"
+          };
+          const key = keyMap[cond];
+          return (key && (conditionLabels as any)[activeLang]?.[key])
+            ? (conditionLabels as any)[activeLang][key]
+            : cond;
+        }).join(", ")
+      : "None";
+
+    doc.text(`${condsStr || "None"}`, 134, 72);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.medications}:`, 110, 78);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${profile.medications || "None"}`, 136, 78);
+
+    // Latest Vitals Block
+    doc.roundedRect(10, 104, 190, 36, 4, 4, "FD");
+    doc.setTextColor(15, 118, 110);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(tPdf.vitals, 15, 112);
+
+    const latestVital = vitalsHistory && vitalsHistory.length > 0 ? vitalsHistory[vitalsHistory.length - 1] : null;
+    doc.setTextColor(71, 85, 105);
+    doc.setFontSize(10);
+    if (latestVital) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${tPdf.heartRate}:`, 15, 122);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${latestVital.heartRate} bpm`, 40, 122);
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`${tPdf.oxygen}:`, 15, 128);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${latestVital.oxygen}%`, 58, 128);
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`${tPdf.bp}:`, 110, 122);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${latestVital.systolic || 120}/${latestVital.diastolic || 80} mmHg`, 142, 122);
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`${tPdf.date}:`, 110, 128);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${latestVital.date || "N/A"}`, 140, 128);
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.text(tPdf.noVitals, 15, 124);
+    }
+
+    // Latest Screening Block
+    doc.roundedRect(10, 146, 190, 38, 4, 4, "FD");
+    doc.setTextColor(15, 118, 110);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(tPdf.screenings, 15, 154);
+
+    const latestScreening = recordsList.find(r => r.category === "AI Screen" || r.category === "Lab Test");
+    doc.setTextColor(71, 85, 105);
+    doc.setFontSize(10);
+    if (latestScreening) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${tPdf.test}:`, 15, 164);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${latestScreening.title}`, 48, 164);
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`${tPdf.provider}:`, 15, 170);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${latestScreening.doctor}`, 48, 170);
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`${tPdf.notes}:`, 15, 176);
+      doc.setFont("helvetica", "normal");
+      const truncatedNotes = latestScreening.notes.length > 95 ? latestScreening.notes.substring(0, 95) + "..." : latestScreening.notes;
+      doc.text(`${truncatedNotes}`, 30, 176);
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.text(tPdf.noScreenings, 15, 166);
+    }
+
+    // Active Medications List Block
+    doc.roundedRect(10, 190, 190, 52, 4, 4, "FD");
+    doc.setTextColor(15, 118, 110);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(tPdf.medsSchedule, 15, 198);
+
+    let meds: any[] = [];
+    try {
+      const savedMeds = safeGetItem("saathi_medicines");
+      if (savedMeds) meds = JSON.parse(savedMeds);
+    } catch (e) {}
+
+    doc.setTextColor(71, 85, 105);
+    doc.setFontSize(9);
+    if (meds && meds.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text(tPdf.medName, 15, 206);
+      doc.text(tPdf.medDosage, 75, 206);
+      doc.text(tPdf.medFrequency, 110, 206);
+      doc.text(tPdf.medTime, 165, 206);
+      doc.line(15, 208, 195, 208);
+
+      doc.setFont("helvetica", "normal");
+      meds.slice(0, 4).forEach((med, idx) => {
+        const yPos = 214 + idx * 6;
+        doc.text(`${med.name}`, 15, yPos);
+        doc.text(`${med.dose || "As directed"}`, 75, yPos);
+        doc.text(`${med.frequency || "Once daily"}`, 110, yPos);
+        doc.text(`${med.reminderTime || "08:00"}`, 165, yPos);
+      });
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(tPdf.noMeds, 15, 208);
+    }
+
+    // Clinical Disclaimer Section
+    doc.setFillColor(254, 242, 242); 
+    doc.setDrawColor(254, 205, 205); 
+    doc.roundedRect(10, 248, 190, 32, 4, 4, "FD");
+
+    doc.setTextColor(153, 27, 27); 
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(tPdf.disclaimerTitle, 15, 255);
+
+    doc.setTextColor(185, 28, 28); 
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(tPdf.disclaimerText1, 15, 261);
+    doc.text(tPdf.disclaimerText2, 15, 266);
+    doc.text(tPdf.disclaimerText3, 15, 271);
+
+    const filename = `${profile.name ? profile.name.toLowerCase().replace(/\s+/g, "_") : "patient"}_health_card.pdf`;
+    doc.save(filename);
   };
 
   const handleExportSummary = async () => {
@@ -332,6 +673,13 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
           <p className="text-xs text-slate-500 leading-normal">{t.recordsDesc}</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={downloadHealthCardPDF}
+            className="bg-teal-50 text-teal-600 p-2.5 rounded-full border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm"
+            title={language === "hi" ? "हेल्थ कार्ड डाउनलोड करें (PDF)" : language === "gu" ? "હેલ્થ કાર્ડ ડાઉનલોડ કરો (PDF)" : "Download Health Card (PDF)"}
+          >
+            <Download className="w-4 h-4" />
+          </button>
           <button
             onClick={handleExportSummary}
             className="bg-teal-50 text-teal-600 p-2.5 rounded-full border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm"

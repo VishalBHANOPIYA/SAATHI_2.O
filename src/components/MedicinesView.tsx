@@ -11,6 +11,7 @@ import {
   Info
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 
 interface MedicinesViewProps {
   medicinesList: any[];
@@ -21,6 +22,7 @@ interface MedicinesViewProps {
   setCaregiverAlert: (active: boolean) => void;
   drugInteractionNote: string | null;
   setDrugInteractionNote: (note: string | null) => void;
+  userProfile?: any;
 }
 
 export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
@@ -31,7 +33,8 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
   caregiverAlert,
   setCaregiverAlert,
   drugInteractionNote,
-  setDrugInteractionNote
+  setDrugInteractionNote,
+  userProfile
 }) => {
   const { language, t } = useLanguage();
 
@@ -41,9 +44,16 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
   const [caregiverContact, setCaregiverContact] = useState("");
 
   useEffect(() => {
-    const contact = localStorage.getItem("saathi_caregiver_contact") || "";
-    setCaregiverContact(contact);
-  }, []);
+    // Prefill caregiver contact from profile emergency contact if available and not already set
+    const savedContact = safeGetItem("saathi_caregiver_contact") || "";
+    if (!savedContact && userProfile?.emergencyContact?.name) {
+      const prefilled = `${userProfile.emergencyContact.name}${userProfile.emergencyContact.phone ? ` (+91 ${userProfile.emergencyContact.phone})` : ""}`;
+      setCaregiverContact(prefilled);
+      safeSetItem("saathi_caregiver_contact", prefilled);
+    } else {
+      setCaregiverContact(savedContact);
+    }
+  }, [userProfile]);
 
   const resizeImage = (file: File, maxWidth = 1024, maxHeight = 1024, quality = 0.8): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -126,9 +136,9 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
         }));
         setMedicinesList(medsWithId);
         setDrugInteractionNote(data.interactionNote || "No critical interactions flagged. Confirm safety with your doctor.");
-        localStorage.setItem("saathi_medicines", JSON.stringify(medsWithId));
+        safeSetItem("saathi_medicines", JSON.stringify(medsWithId));
         if (data.interactionNote) {
-          localStorage.setItem("saathi_drug_interactions", data.interactionNote);
+          safeSetItem("saathi_drug_interactions", data.interactionNote);
         }
       } else {
         throw new Error(data.error || "Failed to parse prescription.");
@@ -141,8 +151,8 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
       ];
       setMedicinesList(fallbackMeds);
       setDrugInteractionNote("Note: AI parser failed or is in offline fallback mode. Please review and adjust the medicine schedules manually.");
-      localStorage.setItem("saathi_medicines", JSON.stringify(fallbackMeds));
-      localStorage.setItem("saathi_drug_interactions", "Note: AI parser failed or is in offline fallback mode. Please review and adjust the medicine schedules manually.");
+      safeSetItem("saathi_medicines", JSON.stringify(fallbackMeds));
+      safeSetItem("saathi_drug_interactions", "Note: AI parser failed or is in offline fallback mode. Please review and adjust the medicine schedules manually.");
     } finally {
       setIsParsingPrescription(false);
       setIsOcrLoading(false);
@@ -209,7 +219,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
             };
             const updated = [...medicinesList, newMed];
             setMedicinesList(updated);
-            localStorage.setItem("saathi_medicines", JSON.stringify(updated));
+            safeSetItem("saathi_medicines", JSON.stringify(updated));
           }}
           className="bg-teal-600 text-white p-2.5 rounded-full hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm shrink-0"
           title="Add Medicine Manually"
@@ -273,7 +283,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
                   onClick={() => {
                     const updated = medicinesList.filter(m => m.id !== med.id);
                     setMedicinesList(updated);
-                    localStorage.setItem("saathi_medicines", JSON.stringify(updated));
+                    safeSetItem("saathi_medicines", JSON.stringify(updated));
                   }}
                   className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors text-slate-400"
                 >
@@ -292,7 +302,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
                       const updated = [...medicinesList];
                       updated[index].name = e.target.value;
                       setMedicinesList(updated);
-                      localStorage.setItem("saathi_medicines", JSON.stringify(updated));
+                      safeSetItem("saathi_medicines", JSON.stringify(updated));
                     }}
                     placeholder="Medicine Name (e.g. Paracetamol)"
                     className="text-xs font-extrabold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-b focus:border-teal-500 bg-transparent flex-1 h-[28px]"
@@ -310,7 +320,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
                         const updated = [...medicinesList];
                         updated[index].dose = e.target.value;
                         setMedicinesList(updated);
-                        localStorage.setItem("saathi_medicines", JSON.stringify(updated));
+                        safeSetItem("saathi_medicines", JSON.stringify(updated));
                       }}
                       placeholder="e.g. 500 mg / 1 tab"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 focus:outline-none focus:border-teal-500 text-slate-700 h-[32px] border-slate-200"
@@ -325,7 +335,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
                         const updated = [...medicinesList];
                         updated[index].frequency = e.target.value;
                         setMedicinesList(updated);
-                        localStorage.setItem("saathi_medicines", JSON.stringify(updated));
+                        safeSetItem("saathi_medicines", JSON.stringify(updated));
                       }}
                       placeholder="e.g. 1-0-1 / Twice daily"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 focus:outline-none focus:border-teal-500 text-slate-700 h-[32px] border-slate-200"
@@ -340,7 +350,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
                         const updated = [...medicinesList];
                         updated[index].duration = e.target.value;
                         setMedicinesList(updated);
-                        localStorage.setItem("saathi_medicines", JSON.stringify(updated));
+                        safeSetItem("saathi_medicines", JSON.stringify(updated));
                       }}
                       placeholder="e.g. 5 days / Ongoing"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 focus:outline-none focus:border-teal-500 text-slate-700 h-[32px] border-slate-200"
@@ -358,7 +368,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
                         const updated = [...medicinesList];
                         updated[index].reminderTime = e.target.value;
                         setMedicinesList(updated);
-                        localStorage.setItem("saathi_medicines", JSON.stringify(updated));
+                        safeSetItem("saathi_medicines", JSON.stringify(updated));
                       }}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1 px-2 focus:outline-none focus:border-teal-500 text-slate-700 font-bold h-[32px] border-slate-200"
                     />
@@ -408,7 +418,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
             onClick={() => {
               const updated = !caregiverAlert;
               setCaregiverAlert(updated);
-              localStorage.setItem("saathi_caregiver_alert", String(updated));
+              safeSetItem("saathi_caregiver_alert", String(updated));
             }}
             className={`w-9 h-5 rounded-full p-0.5 transition-all duration-300 shrink-0 ${
               caregiverAlert ? "bg-teal-600 flex justify-end" : "bg-slate-200 flex justify-start"
@@ -428,7 +438,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
                 value={caregiverContact}
                 onChange={(e) => {
                   setCaregiverContact(e.target.value);
-                  localStorage.setItem("saathi_caregiver_contact", e.target.value);
+                  safeSetItem("saathi_caregiver_contact", e.target.value);
                 }}
                 className="w-full bg-white border border-slate-200 rounded-lg py-1 px-2 focus:outline-none focus:border-teal-500 text-slate-700 h-[32px]"
               />

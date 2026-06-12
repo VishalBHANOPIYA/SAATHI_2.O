@@ -8,6 +8,7 @@ interface TelemedicineOverlayProps {
   triageResult: any;
   screenResults: any;
   symptomsText: string;
+  userProfile?: any;
 }
 
 export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.memo(({
@@ -15,7 +16,8 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
   setActiveCall,
   triageResult,
   screenResults,
-  symptomsText
+  symptomsText,
+  userProfile
 }) => {
   const { language, t } = useLanguage();
 
@@ -228,7 +230,8 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
           symptoms: symptomsText || "Patient requested telemedicine consultation.",
           triage: triageResult?.triage || "GREEN",
           screeningResults: screeningInfo,
-          language
+          language,
+          profile: userProfile
         })
       });
 

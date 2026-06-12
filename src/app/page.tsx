@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/context/LanguageContext";
+import { safeGetItem, safeSetItem, safeRemoveItem, safeClear } from "@/utils/localStorageHelper";
 import {
   Heart,
   Settings,
@@ -15,8 +16,16 @@ import {
   ChevronRight,
   Check,
   Camera,
-  FileText
+  FileText,
+  Trash2,
+  Sparkles
 } from "lucide-react";
+import {
+  demoPatients,
+  demoMedicines,
+  demoVitalsHistory,
+  demoRecords
+} from "../utils/demoData";
 
 // Dynamically import heavy subcomponents to optimize bundle size and prevent SSR issues
 const HomeView = dynamic(() => import("@/components/HomeView").then(m => m.HomeView), { ssr: false });
@@ -86,12 +95,16 @@ export default function MainApp() {
   const [isOffline, setIsOffline] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [demoModeActive, setDemoModeActive] = useState(false);
 
   // --- INITIALIZATION ---
   useEffect(() => {
     setIsMounted(true);
     
-    const onboarded = localStorage.getItem("saathi_onboarding_complete");
+    const savedDemoMode = safeGetItem("saathi_demo_mode") === "true";
+    setDemoModeActive(savedDemoMode);
+    
+    const onboarded = safeGetItem("saathi_onboarding_complete");
     if (onboarded === "true") {
       setShowOnboarding(false);
     } else {
@@ -99,7 +112,7 @@ export default function MainApp() {
       setOnboardStep(0);
     }
 
-    const savedProfile = localStorage.getItem("saathi_user_profile");
+    const savedProfile = safeGetItem("saathi_user_profile");
     if (savedProfile) {
       try {
         const parsed = JSON.parse(savedProfile);
@@ -122,7 +135,7 @@ export default function MainApp() {
       }
     }
 
-    const savedVitals = localStorage.getItem("saathi_vitals");
+    const savedVitals = safeGetItem("saathi_vitals");
     if (savedVitals) {
       try {
         setVitalsHistory(JSON.parse(savedVitals));
@@ -139,10 +152,10 @@ export default function MainApp() {
         { date: "06-10", heartRate: 71, systolic: 120, diastolic: 80, oxygen: 98 },
       ];
       setVitalsHistory(initialVitals);
-      localStorage.setItem("saathi_vitals", JSON.stringify(initialVitals));
+      safeSetItem("saathi_vitals", JSON.stringify(initialVitals));
     }
     
-    const savedRecords = localStorage.getItem("saathi_records");
+    const savedRecords = safeGetItem("saathi_records");
     if (savedRecords) {
       try {
         setRecordsList(JSON.parse(savedRecords));
@@ -156,10 +169,10 @@ export default function MainApp() {
         { id: 3, title: "Cardiology Prescription", date: "2026-06-02", category: "Prescription", doctor: "Dr. Ritu Patel", notes: "Rx: Tab. Metoprolol 25mg QD, Tab. Aspirin 75mg QD. Follow-up in 4 weeks." },
       ];
       setRecordsList(initialRecords);
-      localStorage.setItem("saathi_records", JSON.stringify(initialRecords));
+      safeSetItem("saathi_records", JSON.stringify(initialRecords));
     }
 
-    const savedMeds = localStorage.getItem("saathi_medicines");
+    const savedMeds = safeGetItem("saathi_medicines");
     if (savedMeds) {
       try {
         setMedicinesList(JSON.parse(savedMeds));
@@ -167,11 +180,11 @@ export default function MainApp() {
         console.error("Failed to parse saved medicines:", e);
       }
     }
-    const savedInteractions = localStorage.getItem("saathi_drug_interactions");
+    const savedInteractions = safeGetItem("saathi_drug_interactions");
     if (savedInteractions) {
       setDrugInteractionNote(savedInteractions);
     }
-    const savedCaregiver = localStorage.getItem("saathi_caregiver_alert");
+    const savedCaregiver = safeGetItem("saathi_caregiver_alert");
     if (savedCaregiver) {
       setCaregiverAlert(savedCaregiver === "true");
     }
@@ -187,13 +200,13 @@ export default function MainApp() {
     }
 
     // Load ASHA worker settings
-    const savedAshaMode = localStorage.getItem("saathi_asha_mode_active") === "true";
+    const savedAshaMode = safeGetItem("saathi_asha_mode_active") === "true";
     setAshaModeActive(savedAshaMode);
-    const savedActiveId = localStorage.getItem("saathi_asha_active_patient_id");
+    const savedActiveId = safeGetItem("saathi_asha_active_patient_id");
     if (savedActiveId) {
       setActivePatientId(savedActiveId);
     }
-    const savedPatients = localStorage.getItem("saathi_asha_patients");
+    const savedPatients = safeGetItem("saathi_asha_patients");
     if (savedPatients) {
       try {
         setPatientsList(JSON.parse(savedPatients));
@@ -207,7 +220,7 @@ export default function MainApp() {
         { id: "p3", name: "Sita Patel", age: 28, gender: "Female", village: "Rampur", lastScreeningDate: "2026-06-09", lastRiskBand: "GREEN" as const, records: [{ id: 103, title: "Camera Vitals Scan (Normal)", date: "2026-06-09", category: "Lab Test", doctor: "Saathi Camera AI Scanner" }] },
       ];
       setPatientsList(initialPatients);
-      localStorage.setItem("saathi_asha_patients", JSON.stringify(initialPatients));
+      safeSetItem("saathi_asha_patients", JSON.stringify(initialPatients));
     }
 
     // Monitor Online/Offline Status
@@ -236,11 +249,11 @@ export default function MainApp() {
   const attachRecordToActivePatient = useCallback((record: any, riskBand?: "GREEN" | "YELLOW" | "RED") => {
     if (typeof window === "undefined") return;
     
-    const savedActiveId = localStorage.getItem("saathi_asha_active_patient_id");
+    const savedActiveId = safeGetItem("saathi_asha_active_patient_id");
     const currentActiveId = activePatientId || savedActiveId;
     if (!ashaModeActive || !currentActiveId) return;
 
-    const savedPatients = localStorage.getItem("saathi_asha_patients");
+    const savedPatients = safeGetItem("saathi_asha_patients");
     let currentPatients = patientsList;
     if (savedPatients) {
       try {
@@ -264,18 +277,83 @@ export default function MainApp() {
     });
 
     setPatientsList(updated);
-    localStorage.setItem("saathi_asha_patients", JSON.stringify(updated));
+    safeSetItem("saathi_asha_patients", JSON.stringify(updated));
     console.log(`Attached record to ASHA patient ${currentActiveId}:`, record);
   }, [activePatientId, ashaModeActive, patientsList]);
 
   const selectActivePatientForASHA = useCallback((id: string | null) => {
     setActivePatientId(id);
     if (id) {
-      localStorage.setItem("saathi_asha_active_patient_id", id);
+      safeSetItem("saathi_asha_active_patient_id", id);
     } else {
-      localStorage.removeItem("saathi_asha_active_patient_id");
+      safeRemoveItem("saathi_asha_active_patient_id");
     }
   }, []);
+
+  const toggleDemoMode = () => {
+    if (!demoModeActive) {
+      let confirmMsg = "Activate Demo Mode? This will seed realistic patients, vitals history, and medicine schedules for demonstration purposes. Your existing records will not be deleted.";
+      if (language === "hi") {
+        confirmMsg = "डेमो मोड सक्रिय करें? यह प्रदर्शन के लिए रोगियों, वाइटल्स इतिहास और दवा कार्यक्रम को लोड करेगा। आपके मौजूदा रिकॉर्ड हटाए नहीं जाएंगे।";
+      } else if (language === "gu") {
+        confirmMsg = "ડેમો મોડ સક્રિય કરવો છે? આ નિદર્શન માટે દર્દીઓ, વાઇટલ્સ ઇતિહાસ અને દવાઓનું શેડ્યૂલ લોડ કરશે. તમારા અસ્તિત્વમાં રહેલા રેકોર્ડ્સ કાઢી નાખવામાં આવશે નહીં.";
+      }
+
+      if (window.confirm(confirmMsg)) {
+        setDemoModeActive(true);
+        safeSetItem("saathi_demo_mode", "true");
+
+        const updatedPatients = [...demoPatients, ...patientsList];
+        setPatientsList(updatedPatients);
+        safeSetItem("saathi_asha_patients", JSON.stringify(updatedPatients));
+
+        const updatedVitals = [...demoVitalsHistory, ...vitalsHistory];
+        setVitalsHistory(updatedVitals);
+        safeSetItem("saathi_vitals", JSON.stringify(updatedVitals));
+
+        const updatedRecords = [...demoRecords, ...recordsList];
+        setRecordsList(updatedRecords);
+        safeSetItem("saathi_records", JSON.stringify(updatedRecords));
+
+        const updatedMedicines = [...demoMedicines, ...medicinesList];
+        setMedicinesList(updatedMedicines);
+        safeSetItem("saathi_medicines", JSON.stringify(updatedMedicines));
+      }
+    } else {
+      let confirmMsg = "Deactivate Demo Mode? This will remove all demonstration records and data, keeping only your genuine user records.";
+      if (language === "hi") {
+        confirmMsg = "डेमो मोड बंद करें? यह सभी प्रदर्शन रिकॉर्ड और डेटा को हटा देगा, केवल आपके वास्तविक उपयोगकर्ता रिकॉर्ड को रखेगा।";
+      } else if (language === "gu") {
+        confirmMsg = "ડેમો મોડ બંધ કરવો છે? આ નિદર્શન માટેના તમામ રેકોર્ડ્સ અને ડેટા કાઢી નાખશે, ફક્ત તમારા જ રેકોર્ડ્સ રાખશે.";
+      }
+
+      if (window.confirm(confirmMsg)) {
+        setDemoModeActive(false);
+        safeSetItem("saathi_demo_mode", "false");
+
+        const cleanedPatients = patientsList.filter(p => !p.isDemo);
+        setPatientsList(cleanedPatients);
+        safeSetItem("saathi_asha_patients", JSON.stringify(cleanedPatients));
+
+        const cleanedVitals = vitalsHistory.filter(v => !v.isDemo);
+        setVitalsHistory(cleanedVitals);
+        safeSetItem("saathi_vitals", JSON.stringify(cleanedVitals));
+
+        const cleanedRecords = recordsList.filter(r => !r.isDemo);
+        setRecordsList(cleanedRecords);
+        safeSetItem("saathi_records", JSON.stringify(cleanedRecords));
+
+        const cleanedMedicines = medicinesList.filter(m => !m.isDemo);
+        setMedicinesList(cleanedMedicines);
+        safeSetItem("saathi_medicines", JSON.stringify(cleanedMedicines));
+
+        if (activePatientId && activePatientId.startsWith("demo-")) {
+          setActivePatientId(null);
+          safeRemoveItem("saathi_asha_active_patient_id");
+        }
+      }
+    }
+  };
 
   // --- REMINDERS HANDLER ---
   useEffect(() => {
@@ -287,12 +365,12 @@ export default function MainApp() {
       const mm = String(now.getMinutes()).padStart(2, "0");
       const currentHHMM = `${hh}:${mm}`;
 
-      const lastFired = localStorage.getItem("saathi_last_fired_time");
+      const lastFired = safeGetItem("saathi_last_fired_time");
       if (lastFired === currentHHMM) return;
 
       const matches = medicinesList.filter(m => m.reminderTime === currentHHMM);
       if (matches.length > 0) {
-        localStorage.setItem("saathi_last_fired_time", currentHHMM);
+        safeSetItem("saathi_last_fired_time", currentHHMM);
         
         matches.forEach(med => {
           if ("Notification" in window && Notification.permission === "granted") {
@@ -378,6 +456,7 @@ export default function MainApp() {
       if (!validateSubStepB()) return;
     }
 
+    const existingProfile = userProfile || {};
     const finalProfile = {
       name: profileForm.name.trim(),
       age: Number(profileForm.age),
@@ -391,15 +470,17 @@ export default function MainApp() {
       emergencyContact: {
         name: profileForm.emergencyName.trim(),
         phone: profileForm.emergencyPhone.trim()
-      }
+      },
+      language,
+      createdAt: existingProfile.createdAt || new Date().toISOString()
     };
 
-    localStorage.setItem("saathi_user_profile", JSON.stringify(finalProfile));
+    safeSetItem("saathi_user_profile", JSON.stringify(finalProfile));
     setUserProfile(finalProfile);
 
     // If we are in onboarding, finish it
     if (showOnboarding) {
-      localStorage.setItem("saathi_onboarding_complete", "true");
+      safeSetItem("saathi_onboarding_complete", "true");
       setShowOnboarding(false);
 
       // Trigger Namaste Toast
@@ -409,10 +490,27 @@ export default function MainApp() {
       setTimeout(() => {
         setWelcomeToast(null);
       }, 4000);
-    } else {
-      setShowProfileModal(false);
     }
   };
+
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab as any);
+  }, []);
+
+  const handleResetApp = useCallback(() => {
+    const confirmed = window.confirm(
+      language === "hi" 
+        ? "क्या आप निश्चित रूप से ऐप को रीसेट करना चाहते हैं और ऑनबोर्डिंग को फिर से शुरू करना चाहते हैं?" 
+        : language === "gu" 
+        ? "શું તમે ખરેખર એપ્લિકેશન રીસેટ કરવા અને ઓનબોર્ડિંગ ફરીથી શરૂ કરવા માંગો છો?" 
+        : "Are you sure you want to reset the app and redo the onboarding flow?"
+    );
+    if (confirmed) {
+      safeRemoveItem("saathi_onboarding_complete");
+      safeRemoveItem("saathi_user_profile");
+      window.location.reload();
+    }
+  }, [language]);
 
   // --- ONBOARDING UI ---
   const renderOnboarding = () => {
@@ -1162,6 +1260,18 @@ export default function MainApp() {
               </div>
             </div>
 
+            {/* Reset App button inside Profile Modal */}
+            <div className="pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={handleResetApp}
+                className="w-full py-2.5 px-4 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold text-center flex items-center justify-center gap-1.5 transition-all"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{t.resetApp}</span>
+              </button>
+            </div>
+
             {/* Actions */}
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
               <button
@@ -1186,6 +1296,28 @@ export default function MainApp() {
                 className="flex-1 py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold text-center shadow-md"
               >
                 {language === "hi" ? "सहेजें" : language === "gu" ? "સાચવો" : "Save Changes"}
+              </button>
+            </div>
+
+            {/* Reset App / Redo Onboarding */}
+            <div className="pt-3 border-t border-slate-100 mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const confirmMsg = language === "hi"
+                    ? "क्या आप वाकई ऐप रीसेट करना और ऑनबोर्डिंग दोबारा करना चाहते हैं? सभी प्रोफ़ाइल डेटा हटा दिया जाएगा।"
+                    : language === "gu"
+                    ? "શું તમે ખરેખર એપ્લિકેશન રીસેટ કરવા અને ઓનબોર્ડિંગ ફરીથી કરવા માંગો છો? તમામ પ્રોફાઇલ ડેટા દૂર કરવામાં આવશે."
+                    : "Are you sure you want to reset the app and redo onboarding? All profile data will be removed.";
+                  if (window.confirm(confirmMsg)) {
+                    safeRemoveItem("saathi_onboarding_complete");
+                    safeRemoveItem("saathi_user_profile");
+                    window.location.reload();
+                  }
+                }}
+                className="w-full py-2 px-4 rounded-xl border border-rose-200 text-rose-500 hover:bg-rose-50 text-[10px] font-extrabold text-center uppercase tracking-wider transition-all"
+              >
+                {t.resetApp}
               </button>
             </div>
           </div>
@@ -1240,6 +1372,8 @@ export default function MainApp() {
         </div>
 
         <div className="flex items-center gap-2">
+
+
           {isInstallable && (
             <button
               onClick={handleInstallClick}
@@ -1256,6 +1390,37 @@ export default function MainApp() {
               <Users className="w-2.5 h-2.5" />
               <span>ASHA</span>
             </span>
+          )}
+
+          {/* Profile Avatar Button */}
+          {userProfile && (
+            <button
+              onClick={() => {
+                if (userProfile) {
+                  setProfileForm({
+                    name: userProfile.name || "",
+                    age: String(userProfile.age || ""),
+                    gender: userProfile.gender || "Male",
+                    phone: userProfile.phone || "",
+                    conditions: userProfile.conditions || [],
+                    otherCondition: userProfile.otherCondition || "",
+                    allergies: userProfile.allergies || "",
+                    medications: userProfile.medications || "",
+                    bloodGroup: userProfile.bloodGroup || "Unknown",
+                    emergencyName: userProfile.emergencyContact?.name || "",
+                    emergencyPhone: userProfile.emergencyContact?.phone || ""
+                  });
+                }
+                setFormErrors({});
+                setProfileSubStep("A");
+                setShowProfileModal(true);
+              }}
+              className="w-7 h-7 rounded-full bg-white/20 border border-white/30 text-white font-black text-[11px] flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 shrink-0"
+              title={language === "hi" ? "प्रोफ़ाइल संपादित करें" : language === "gu" ? "પ્રોફાઇલ સંપાદિત કરો" : "Edit Profile"}
+              id="profile-avatar-btn"
+            >
+              {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+            </button>
           )}
 
           {/* Settings Button */}
@@ -1305,17 +1470,12 @@ export default function MainApp() {
               activePatientId={activePatientId}
               setActivePatientId={setActivePatientId}
               setAshaModeActive={setAshaModeActive}
-              setActiveTab={setActiveTab}
+              setActiveTab={handleTabChange}
             />
           ) : (
             <HomeView
-              setActiveTab={setActiveTab}
+              setActiveTab={handleTabChange}
               setActiveCall={setActiveCall}
-              deferredPrompt={deferredPrompt}
-              isInstallable={isInstallable}
-              handleInstallClick={handleInstallClick}
-              ashaModeActive={ashaModeActive}
-              setAshaModeActive={setAshaModeActive}
               userProfile={userProfile}
               onEditProfile={() => {
                 if (userProfile) {
@@ -1345,7 +1505,11 @@ export default function MainApp() {
           <ScreenView
             recordsList={recordsList}
             setRecordsList={setRecordsList}
-            attachRecordToActivePatient={attachRecordToActivePatient}
+            activePatientId={activePatientId}
+            ashaModeActive={ashaModeActive}
+            patientsList={patientsList}
+            setPatientsList={setPatientsList}
+            activeTab={activeTab}
           />
         )}
 
@@ -1366,6 +1530,7 @@ export default function MainApp() {
             setRecordsList={setRecordsList}
             attachRecordToActivePatient={attachRecordToActivePatient}
             setActiveCall={setActiveCall}
+            userProfile={userProfile}
           />
         )}
 
@@ -1423,12 +1588,13 @@ export default function MainApp() {
             setCaregiverAlert={setCaregiverAlert}
             drugInteractionNote={drugInteractionNote}
             setDrugInteractionNote={setDrugInteractionNote}
+            userProfile={userProfile}
           />
         )}
       </div>
 
       {/* BOTTOM NAVIGATION switcher */}
-      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <BottomNav activeTab={activeTab} setActiveTab={handleTabChange} />
 
       {/* TELEMEDICINE WEB-RTC LOOPBACK OVERLAY */}
       <TelemedicineOverlay
@@ -1437,6 +1603,7 @@ export default function MainApp() {
         triageResult={triageResult}
         screenResults={screenResults}
         symptomsText={transcriptText || ""}
+        userProfile={userProfile}
       />
 
       {/* MEDICINE REMINDER MODAL POPUP */}
@@ -1513,7 +1680,7 @@ export default function MainApp() {
                   onClick={() => {
                     const nextVal = !ashaModeActive;
                     setAshaModeActive(nextVal);
-                    localStorage.setItem("saathi_asha_mode_active", nextVal ? "true" : "false");
+                    safeSetItem("saathi_asha_mode_active", nextVal ? "true" : "false");
                     if (!nextVal) {
                       selectActivePatientForASHA(null);
                     } else {
@@ -1599,13 +1766,43 @@ export default function MainApp() {
                 </button>
               </div>
 
+              {/* Setting 4: Demo Mode Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100/50 transition-all">
+                <div className="space-y-0.5 max-w-[70%]">
+                  <div className="flex items-center gap-1.5 text-slate-800">
+                    <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+                    <span className="text-xs font-extrabold uppercase tracking-wide">
+                      {language === "hi" ? "डेमो मोड (सैंडबॉक्स)" : language === "gu" ? "ડેમો મોડ (સેન્ડબોક્સ)" : "Demo Mode (Sandbox)"}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 leading-normal">
+                    {language === "hi" 
+                      ? "प्रदर्शन के लिए वास्तविक रोगियों, वाइटल्स इतिहास और दवा कार्यक्रम को लोड करें।" 
+                      : language === "gu" 
+                      ? "નિદર્શન માટે વાસ્તવિક દર્દીઓ, વાઇટલ્સ ઇતિહાસ અને દવાઓ લોડ કરો."
+                      : "Seed realistic demonstration patient records, vitals history, and medicine schedules."}
+                  </p>
+                </div>
+                <button
+                  onClick={toggleDemoMode}
+                  className={`w-11 h-6 rounded-full transition-all relative flex items-center p-0.5 border ${
+                    demoModeActive 
+                      ? "bg-amber-500 border-amber-400 justify-end" 
+                      : "bg-slate-200 border-slate-300 justify-start"
+                  }`}
+                  id="demo-mode-toggle-switch"
+                >
+                  <div className="w-4 h-4 bg-white rounded-full shadow-md transition-all" />
+                </button>
+              </div>
+
               {/* Reset Data Section */}
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-[10px] text-slate-400 font-medium">Saathi v2.0 (PWA)</span>
                 <button
                   onClick={() => {
                     if (window.confirm(language === "hi" ? "क्या आप वाकई सभी सेव किया डेटा हटाना चाहते हैं?" : "Are you sure you want to reset all local patient and vital records?")) {
-                      localStorage.clear();
+                      safeClear();
                       window.location.reload();
                     }
                   }}

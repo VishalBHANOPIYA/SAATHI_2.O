@@ -27,6 +27,7 @@ import {
   Cell
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
+import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
 import { CommunityAnalyticsView } from "./CommunityAnalyticsView";
 
 export interface PatientRecord {
@@ -83,9 +84,9 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
   const selectActivePatientForASHA = (id: string | null) => {
     setActivePatientId(id);
     if (id) {
-      localStorage.setItem("saathi_asha_active_patient_id", id);
+      safeSetItem("saathi_asha_active_patient_id", id);
     } else {
-      localStorage.removeItem("saathi_asha_active_patient_id");
+      safeRemoveItem("saathi_asha_active_patient_id");
     }
   };
 
@@ -119,7 +120,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
     };
     const updated = [newP, ...patientsList];
     setPatientsList(updated);
-    localStorage.setItem("saathi_asha_patients", JSON.stringify(updated));
+    safeSetItem("saathi_asha_patients", JSON.stringify(updated));
     setShowAddPatientModal(false);
     setNewPatientData({ name: "", age: "", gender: "Male", village: "" });
   };
@@ -128,7 +129,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
     if (confirm("Are you sure you want to delete this patient profile?")) {
       const updated = patientsList.filter(p => p.id !== id);
       setPatientsList(updated);
-      localStorage.setItem("saathi_asha_patients", JSON.stringify(updated));
+      safeSetItem("saathi_asha_patients", JSON.stringify(updated));
       if (activePatientId === id) {
         selectActivePatientForASHA(null);
       }
@@ -161,7 +162,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
           <button
             onClick={() => {
               setAshaModeActive(false);
-              localStorage.setItem("saathi_asha_mode_active", "false");
+              safeSetItem("saathi_asha_mode_active", "false");
               selectActivePatientForASHA(null);
             }}
             className="bg-white/10 hover:bg-white/20 text-white border border-white/20 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all"

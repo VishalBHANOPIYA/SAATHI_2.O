@@ -9,8 +9,11 @@ import {
   Video,
   Plus,
   X,
-  Sparkles
+  Sparkles,
+  Volume2,
+  VolumeX
 } from "lucide-react";
+import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -22,6 +25,7 @@ import {
   Legend
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
+import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { resampleSignal, estimateVitalsForWindow, detrend, computeChromSignal } from "../utils/vitalsRppg";
 
 const scannerTranslations = {
@@ -109,6 +113,87 @@ const getNormalRanges = (age: number | null) => {
       bp: "90-120/60-80"
     };
   }
+};
+
+const VitalsSpeechPlayer: React.FC<{
+  hr: number;
+  spo2: number;
+  br: number;
+  language: string;
+}> = ({ hr, spo2, br, language }) => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(true);
+
+  const getSpeechText = () => {
+    if (language === "hi") {
+      return `आपके कैमरे से मापे गए जैविक मापदंड हैं: हृदय गति ${hr} धड़कन प्रति मिनट, ऑक्सीजन का स्तर ${spo2} प्रतिशत, और श्वसन दर ${br} सांस प्रति मिनट है।`;
+    }
+    if (language === "gu") {
+      return `તમારા અંદાજિત જૈવિક માપદંડો છે: હૃદયના ધબકારા પ્રતિ મિનિટ ${hr}, ઓક્સિજનનું પ્રમાણ {spo2} ટકા, અને શ્વાસનો દર પ્રતિ મિનિટ {br} છે.`;
+    }
+    return `Your estimated vitals are: Heart rate is ${hr} beats per minute, blood oxygen level is ${spo2} percent, and breathing rate is ${br} breaths per minute.`;
+  };
+
+  useEffect(() => {
+    const supported = isSpeechSupported();
+    setVoiceSupported(supported);
+
+    if (supported) {
+      speakText(
+        getSpeechText(),
+        language,
+        () => setIsSpeaking(true),
+        () => setIsSpeaking(false),
+        () => setIsSpeaking(false)
+      );
+    }
+    return () => {
+      stopSpeaking();
+    };
+  }, [hr, spo2, br, language]);
+
+  const toggleSpeech = () => {
+    if (!voiceSupported) return;
+    if (isSpeaking) {
+      stopSpeaking();
+      setIsSpeaking(false);
+    } else {
+      speakText(
+        getSpeechText(),
+        language,
+        () => setIsSpeaking(true),
+        () => setIsSpeaking(false),
+        () => setIsSpeaking(false)
+      );
+    }
+  };
+
+  if (!voiceSupported) {
+    return (
+      <span className="text-[9px] text-slate-400 italic">
+        {language === "hi" ? "आवाज उपलब्ध नहीं" : language === "gu" ? "અવાજ ઉપલબ્ધ નથી" : "Voice not available"}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={toggleSpeech}
+      className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-705 transition-all py-1 px-2.5 rounded-lg shadow-sm text-[10px] font-extrabold shrink-0"
+    >
+      {isSpeaking ? (
+        <>
+          <VolumeX className="w-3.5 h-3.5 text-teal-605 animate-pulse" />
+          <span>{language === "hi" ? "आवाज रोकें" : language === "gu" ? "અવાજ બંધ કરો" : "Stop Voice"}</span>
+        </>
+      ) : (
+        <>
+          <Volume2 className="w-3.5 h-3.5 text-teal-605" />
+          <span>{language === "hi" ? "आवाज सुनें" : language === "gu" ? "અવાજ સાંભળો" : "Play Voice"}</span>
+        </>
+      )}
+    </button>
+  );
 };
 
 export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
@@ -522,7 +607,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
 
     const updatedHistory = [...vitalsHistory, newEntry];
     setVitalsHistory(updatedHistory);
-    localStorage.setItem("saathi_vitals", JSON.stringify(updatedHistory));
+    safeSetItem("saathi_vitals", JSON.stringify(updatedHistory));
 
     const newRecordItem = {
       id: Date.now(),
@@ -535,7 +620,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
 
     const updatedRecords = [newRecordItem, ...recordsList];
     setRecordsList(updatedRecords);
-    localStorage.setItem("saathi_records", JSON.stringify(updatedRecords));
+    safeSetItem("saathi_records", JSON.stringify(updatedRecords));
 
     const vitalsRisk = (capturedVitals.spo2 < 95 || capturedVitals.hr > 100 || capturedVitals.hr < 55) ? "YELLOW" as const : "GREEN" as const;
     attachRecordToActivePatient(newRecordItem, vitalsRisk);
@@ -564,7 +649,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
 
     const updatedHistory = [...vitalsHistory, newEntry];
     setVitalsHistory(updatedHistory);
-    localStorage.setItem("saathi_vitals", JSON.stringify(updatedHistory));
+    safeSetItem("saathi_vitals", JSON.stringify(updatedHistory));
 
     const newRecordItem = {
       id: Date.now(),
@@ -577,7 +662,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
 
     const updatedRecords = [newRecordItem, ...recordsList];
     setRecordsList(updatedRecords);
-    localStorage.setItem("saathi_records", JSON.stringify(updatedRecords));
+    safeSetItem("saathi_records", JSON.stringify(updatedRecords));
 
     const vitalsRisk = (newEntry.oxygen < 95 || newEntry.heartRate > 100 || newEntry.heartRate < 55) ? "YELLOW" as const : "GREEN" as const;
     attachRecordToActivePatient(newRecordItem, vitalsRisk);
@@ -704,14 +789,17 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
 
     return (
       <div className="p-4 space-y-4 animate-fadeIn text-left">
-        <div className="space-y-1">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-teal-600 animate-pulse" />
-            {sTrans.resultsTitle}
-          </h2>
-          <p className="text-xs text-slate-500 leading-normal">
-            {language === "hi" ? "कैमरे से मापे गए अनुमानित जैविक मापदंड" : language === "gu" ? "કેમેરા દ્વારા માપેલા અંદાજિત જૈવિક માપદંડો" : "Estimated vital signs from your camera scan"}
-          </p>
+        <div className="flex justify-between items-start gap-2">
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-teal-600 animate-pulse" />
+              {sTrans.resultsTitle}
+            </h2>
+            <p className="text-xs text-slate-500 leading-normal">
+              {language === "hi" ? "कैमरे से मापे गए अनुमानित जैविक मापदंड" : language === "gu" ? "કેમેરા દ્વારા માપેલા અંદાજિત જૈવિક માપદંડો" : "Estimated vital signs from your camera scan"}
+            </p>
+          </div>
+          <VitalsSpeechPlayer hr={capturedVitals.hr} spo2={capturedVitals.spo2} br={capturedVitals.br} language={language} />
         </div>
 
         <div className="grid grid-cols-3 gap-2">

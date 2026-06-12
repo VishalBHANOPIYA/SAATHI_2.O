@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 
 export type Language = "en" | "hi" | "gu";
 
@@ -218,7 +219,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // Load language from localStorage if available
   useEffect(() => {
-    const saved = localStorage.getItem("saathi_lang");
+    const saved = safeGetItem("saathi_lang");
     if (saved === "en" || saved === "hi" || saved === "gu") {
       setLanguageState(saved);
     }
@@ -226,7 +227,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem("saathi_lang", lang);
+    safeSetItem("saathi_lang", lang);
   };
 
   const t = translations[language];

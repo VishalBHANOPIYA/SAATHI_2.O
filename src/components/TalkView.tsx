@@ -10,10 +10,15 @@ import {
   Video,
   RefreshCw,
   Heart,
-  ShieldAlert
+  ShieldAlert,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { trimSilence } from "../utils/audioTrimmer";
+import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
+import { performOfflineTriage } from "../utils/offlineTriage";
 
 interface TriageResult {
   triage: "GREEN" | "YELLOW" | "RED";
@@ -22,6 +27,7 @@ interface TriageResult {
   advice: string;
   see_doctor: boolean;
   confidence?: "LOW" | "MEDIUM" | "HIGH";
+  isOffline?: boolean;
 }
 
 const talkLabels = {
@@ -151,16 +157,89 @@ function TriageResultCard({
     badgeClass = "bg-red-600 text-white animate-pulse";
     titleText = tLabels.emergency;
   } else if (isYellow) {
-    bgClass = "bg-amber-50/70 border-amber-250 text-amber-905 text-amber-900";
+    bgClass = "bg-amber-50/70 border-amber-250 text-amber-900";
     badgeClass = "bg-amber-500 text-white";
     titleText = tLabels.yellow;
   }
+
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(true);
+
+  const offlineBadgeLabels = {
+    en: "Offline basic guidance",
+    hi: "ऑफ़लाइन बुनियादी मार्गदर्शन",
+    gu: "ઑફલાઇન મૂળભૂત માર્ગદર્શન"
+  };
+
+  const speakLabels = {
+    en: { play: "Play Voice", stop: "Stop Voice", unavailable: "Voice not available" },
+    hi: { play: "आवाज सुनें", stop: "आवाज रोकें", unavailable: "आवाज उपलब्ध नहीं" },
+    gu: { play: "અવાજ સાંભળો", stop: "અવાજ બંધ કરો", unavailable: "અવાજ ઉપલબ્ધ નથી" }
+  };
+
+  const getSpeechText = () => {
+    if (language === "hi") {
+      const level = result.triage === "RED" ? "लाल" : result.triage === "YELLOW" ? "पीला" : "हरा";
+      return `ट्राइएज स्तर ${level}। ${titleText}। सलाह: ${result.advice}`;
+    }
+    if (language === "gu") {
+      const level = result.triage === "RED" ? "લાલ" : result.triage === "YELLOW" ? "પીળો" : "લીલો";
+      return `ટ્રાયેજ સ્તર ${level}। ${titleText}। સલાહ: ${result.advice}`;
+    }
+    return `Triage Level ${result.triage}. ${titleText}. Recommended Advice: ${result.advice}`;
+  };
+
+  useEffect(() => {
+    const supported = isSpeechSupported();
+    setVoiceSupported(supported);
+
+    if (supported) {
+      const textToSpeak = getSpeechText();
+      speakText(
+        textToSpeak,
+        language,
+        () => setIsSpeaking(true),
+        () => setIsSpeaking(false),
+        (err) => {
+          console.error("Speech error:", err);
+          setIsSpeaking(false);
+        }
+      );
+    }
+
+    return () => {
+      stopSpeaking();
+    };
+  }, [result, language]);
+
+  const toggleSpeech = () => {
+    if (!voiceSupported) return;
+
+    if (isSpeaking) {
+      stopSpeaking();
+      setIsSpeaking(false);
+    } else {
+      const textToSpeak = getSpeechText();
+      speakText(
+        textToSpeak,
+        language,
+        () => setIsSpeaking(true),
+        () => setIsSpeaking(false),
+        (err) => {
+          console.error("Speech error:", err);
+          setIsSpeaking(false);
+        }
+      );
+    }
+  };
+
+  const sLabels = speakLabels[language as "en" | "hi" | "gu"] || speakLabels.en;
 
   return (
     <div className="space-y-4 animate-scaleUp text-left">
       <div className={`p-4 rounded-2xl border ${bgClass} shadow-sm space-y-3`}>
         <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap gap-1.5 items-center">
             <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider ${badgeClass} self-start shadow-sm`}>
               Triage Level: {result.triage}
             </span>
@@ -175,11 +254,41 @@ function TriageResultCard({
                 AI Confidence: {result.confidence}
               </span>
             )}
+            {result.isOffline && (
+              <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wide bg-slate-600 text-white border border-slate-500 self-start shadow-sm">
+                {offlineBadgeLabels[language as "en" | "hi" | "gu"] || offlineBadgeLabels.en}
+              </span>
+            )}
           </div>
-          <span className="text-xs font-bold flex items-center gap-1 text-slate-700">
-            <Heart className="w-3.5 h-3.5 fill-current text-rose-500 animate-pulse" />
-            Saathi Triage
-          </span>
+          
+          <div className="flex items-center gap-2">
+            {voiceSupported ? (
+              <button
+                onClick={toggleSpeech}
+                className="flex items-center gap-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 transition-all py-1 px-2.5 rounded-lg shadow-sm text-[10px] font-extrabold"
+              >
+                {isSpeaking ? (
+                  <>
+                    <VolumeX className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+                    <span>{sLabels.stop}</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5 text-teal-605" />
+                    <span>{sLabels.play}</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <span className="text-[9px] font-extrabold text-slate-400 italic">
+                {sLabels.unavailable}
+              </span>
+            )}
+            <span className="text-xs font-bold flex items-center gap-1 text-slate-700">
+              <Heart className="w-3.5 h-3.5 fill-current text-rose-500 animate-pulse" />
+              Saathi Triage
+            </span>
+          </div>
         </div>
 
         <h3 className="text-sm font-black leading-snug">{titleText}</h3>
@@ -253,13 +362,15 @@ interface TalkViewProps {
   setRecordsList: React.Dispatch<React.SetStateAction<any[]>>;
   attachRecordToActivePatient: (record: any, riskBand?: "GREEN" | "YELLOW" | "RED") => void;
   setActiveCall: React.Dispatch<React.SetStateAction<boolean>>;
+  userProfile?: any;
 }
 
 export const TalkView: React.FC<TalkViewProps> = React.memo(({
   recordsList,
   setRecordsList,
   attachRecordToActivePatient,
-  setActiveCall
+  setActiveCall,
+  userProfile
 }) => {
   const { language } = useLanguage();
   const l = talkLabels[language as "en" | "hi" | "gu"] || talkLabels.en;
@@ -427,13 +538,18 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     setTriageHistory(updatedHistory);
 
     try {
+      if (!navigator.onLine) {
+        throw new Error("Offline");
+      }
+
       const res = await fetch("/api/triage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transcript: transcriptText,
           history: updatedHistory,
-          language
+          language,
+          userProfile
         })
       });
 
@@ -464,7 +580,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           if (data.triageResult.triage === "YELLOW" || data.triageResult.triage === "RED") {
             const nextRecords = [addedItem, ...recordsList];
             setRecordsList(nextRecords);
-            localStorage.setItem("saathi_records", JSON.stringify(nextRecords));
+            safeSetItem("saathi_records", JSON.stringify(nextRecords));
           }
 
           attachRecordToActivePatient(addedItem, data.triageResult.triage);
@@ -475,14 +591,32 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         throw new Error(data.error || "Failed to analyze symptoms.");
       }
     } catch (err) {
-      console.error("Follow-up error:", err);
-      setTalkError(
-        language === "hi"
-          ? "ट्राइएज विश्लेषण विफल रहा। कृपया पुनः प्रयास करें।"
-          : language === "gu"
-          ? "ટ્રાયેજ વિશ્લેષણ નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયાસ કરો."
-          : "Triage analysis failed. Please try again."
-      );
+      console.warn("Triage follow-up failed, running offline fallback triage engine:", err);
+      // Run offline triage engine
+      const combinedInput = transcriptText + " " + answerText;
+      const offlineResult = performOfflineTriage(combinedInput, language);
+      setTriageResult(offlineResult);
+      
+      const severityEmoji = offlineResult.triage === "RED" ? "🚨 RED" : offlineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
+      const concern = offlineResult.possible_concerns.join(", ") || "Symptom Check";
+      const dateStr = new Date().toISOString().split("T")[0];
+      
+      const addedItem = {
+        id: Date.now(),
+        title: `Triage (Offline): ${severityEmoji} - ${concern}`,
+        date: dateStr,
+        category: "Prescription" as const,
+        doctor: "Saathi AI Triage (Offline)",
+        notes: `Urgency: ${offlineResult.triage} | Reason: ${offlineResult.reason} | Advice: ${offlineResult.advice}`
+      };
+
+      if (offlineResult.triage === "YELLOW" || offlineResult.triage === "RED") {
+        const nextRecords = [addedItem, ...recordsList];
+        setRecordsList(nextRecords);
+        safeSetItem("saathi_records", JSON.stringify(nextRecords));
+      }
+
+      attachRecordToActivePatient(addedItem, offlineResult.triage);
     } finally {
       setIsTriaging(false);
     }
@@ -497,13 +631,18 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     setTriageHistory(initialHistory);
 
     try {
+      if (!navigator.onLine) {
+        throw new Error("Offline");
+      }
+
       const res = await fetch("/api/triage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transcript: transcriptText,
           history: initialHistory,
-          language
+          language,
+          userProfile
         })
       });
 
@@ -534,7 +673,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           if (data.triageResult.triage === "YELLOW" || data.triageResult.triage === "RED") {
             const nextRecords = [addedItem, ...recordsList];
             setRecordsList(nextRecords);
-            localStorage.setItem("saathi_records", JSON.stringify(nextRecords));
+            safeSetItem("saathi_records", JSON.stringify(nextRecords));
           }
 
           attachRecordToActivePatient(addedItem, data.triageResult.triage);
@@ -545,14 +684,31 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         throw new Error(data.error || "Failed to get triage analysis.");
       }
     } catch (err) {
-      console.error("Triage error:", err);
-      setTalkError(
-        language === "hi"
-          ? "ट्राइएज विश्लेषण विफल रहा। कृपया पुनः प्रयास करें।"
-          : language === "gu"
-          ? "ટ્રાયેજ વિશ્લેષણ નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયાસ કરો."
-          : "Triage analysis failed. Please try again."
-      );
+      console.warn("Triage failed, running offline fallback triage engine:", err);
+      // Run offline triage engine
+      const offlineResult = performOfflineTriage(transcriptText, language);
+      setTriageResult(offlineResult);
+      
+      const severityEmoji = offlineResult.triage === "RED" ? "🚨 RED" : offlineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
+      const concern = offlineResult.possible_concerns.join(", ") || "Symptom Check";
+      const dateStr = new Date().toISOString().split("T")[0];
+      
+      const addedItem = {
+        id: Date.now(),
+        title: `Triage (Offline): ${severityEmoji} - ${concern}`,
+        date: dateStr,
+        category: "Prescription" as const,
+        doctor: "Saathi AI Triage (Offline)",
+        notes: `Urgency: ${offlineResult.triage} | Reason: ${offlineResult.reason} | Advice: ${offlineResult.advice}`
+      };
+
+      if (offlineResult.triage === "YELLOW" || offlineResult.triage === "RED") {
+        const nextRecords = [addedItem, ...recordsList];
+        setRecordsList(nextRecords);
+        safeSetItem("saathi_records", JSON.stringify(nextRecords));
+      }
+
+      attachRecordToActivePatient(addedItem, offlineResult.triage);
     } finally {
       setIsTriaging(false);
     }
