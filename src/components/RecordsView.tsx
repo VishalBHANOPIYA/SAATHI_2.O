@@ -29,6 +29,7 @@ import {
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
 import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
+import { checkRateLimit } from "@/utils/rateLimit";
 
 interface RecordsViewProps {
   vitalsHistory: any[];
@@ -547,6 +548,11 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     setShowExportModal(true);
 
     try {
+      const { allowed } = checkRateLimit("summary", 4, 30000);
+      if (!allowed) {
+        throw new Error("RateLimitExceeded");
+      }
+
       const recordsText = recordsList.map((r, idx) => {
         return `[Record #${idx + 1}] Title: ${r.title} | Date: ${r.date} | Category: ${r.category} | Clinician: ${r.doctor} | Notes: ${r.notes || "None"}`;
       }).join("\n");
@@ -579,11 +585,34 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       }
     } catch (err) {
       console.error("Export summary error:", err);
-      const fallbackReport = `### Saathi Patient Health Export (Fallback Mode)\n\n` +
-        `**Generated on:** ${new Date().toLocaleDateString()}\n\n` +
-        `**Vitals Log:**\n` + vitalsHistory.map(v => `- ${v.date}: HR ${v.heartRate} bpm, BP ${v.systolic}/${v.diastolic}, SpO2 ${v.oxygen}%`).join("\n") + `\n\n` +
-        `**Saved Diagnostic Sessions:**\n` + recordsList.map(r => `- ${r.date}: ${r.title} (${r.category})`).join("\n") + `\n\n` +
-        `*Note: LLM summary failed to compile. Reconnect to the internet or check Groq API configuration.*`;
+      const isRateLimit = err instanceof Error && err.message === "RateLimitExceeded";
+      
+      const rateLimitMsg = language === "hi"
+        ? `*नोट: सिस्टम व्यस्त है - ऑफ़लाइन स्थानीय फ़ॉलबैक मोड में चल रहा है।*`
+        : language === "gu"
+        ? `*નોંધ: સિસ્ટમ વ્યસ્ત છે - ઑફલાઇન સ્થાનિક ફૉલબેક મોડમાં ચાલે છે.*`
+        : `*Note: System busy - running local rate-limit fallback summary.*`;
+
+      const fallbackReport = language === "hi"
+        ? `### साथी रोगी स्वास्थ्य निर्यात (ऑफ़लाइन फ़ॉलबैक)\n\n` +
+          `**दिनांक:** ${new Date().toLocaleDateString()}\n\n` +
+          `${isRateLimit ? rateLimitMsg + "\n\n" : ""}` +
+          `**नवीनतम वाइटल्स लॉग:**\n` + vitalsHistory.map(v => `- ${v.date}: HR ${v.heartRate} bpm, BP ${v.systolic}/${v.diastolic}, SpO2 ${v.oxygen}%`).join("\n") + `\n\n` +
+          `**सहेजे गए रिकॉर्ड्स:**\n` + recordsList.map(r => `- ${r.date}: ${r.title} (${r.category})`).join("\n") + `\n\n` +
+          `*नोट: एआई संकलन अनुपलब्ध है। डॉक्टर के साथ परामर्श करते समय इन विवरणों को दिखाएं।*`
+        : language === "gu"
+        ? `### સાથી દર્દી આરોગ્ય નિકાસ (ઑફલાઇન ફૉલબેક)\n\n` +
+          `**તારીખ:** ${new Date().toLocaleDateString()}\n\n` +
+          `${isRateLimit ? rateLimitMsg + "\n\n" : ""}` +
+          `**વાઇટલ્સ લૉગ:**\n` + vitalsHistory.map(v => `- ${v.date}: HR ${v.heartRate} bpm, BP ${v.systolic}/${v.diastolic}, SpO2 ${v.oxygen}%`).join("\n") + `\n\n` +
+          `**સાચવેલ રેકોર્ડ્સ:**\n` + recordsList.map(r => `- ${r.date}: ${r.title} (${r.category})`).join("\n") + `\n\n` +
+          `*નોંધ: AI સારાંશ ઉપલબ્ધ નથી. ડૉક્ટર સાથે આ વિગતો શેર કરો.*`
+        : `### Saathi Patient Health Export (Fallback Mode)\n\n` +
+          `**Generated on:** ${new Date().toLocaleDateString()}\n\n` +
+          `${isRateLimit ? rateLimitMsg + "\n\n" : ""}` +
+          `**Vitals Log:**\n` + vitalsHistory.map(v => `- ${v.date}: HR ${v.heartRate} bpm, BP ${v.systolic}/${v.diastolic}, SpO2 ${v.oxygen}%`).join("\n") + `\n\n` +
+          `**Saved Diagnostic Sessions:**\n` + recordsList.map(r => `- ${r.date}: ${r.title} (${r.category})`).join("\n") + `\n\n` +
+          `*Note: LLM summary failed to compile. Reconnect to the internet or check Groq API configuration.*`;
       setExportedSummary(fallbackReport);
     } finally {
       setIsExporting(false);

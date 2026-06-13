@@ -13,21 +13,93 @@ import {
   Phone
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { computeHealthScore, getImproveTip } from "@/utils/healthScore";
 
 interface HomeViewProps {
   setActiveTab: (tab: string) => void;
   setActiveCall: (active: boolean) => void;
   userProfile: any;
   onEditProfile: () => void;
+  recordsList: any[];
+  vitalsHistory: any[];
 }
 
 export const HomeView: React.FC<HomeViewProps> = React.memo(({
   setActiveTab,
   setActiveCall,
   userProfile,
-  onEditProfile
+  onEditProfile,
+  recordsList = [],
+  vitalsHistory = []
 }) => {
   const { language, setLanguage, t } = useLanguage();
+
+  // 1. Extract latest screening risk
+  const latestScreening = recordsList.find(r => r.doctor === "Saathi Camera AI Screening");
+  let latestScreeningRisk: "Low" | "Moderate" | "High" | null = null;
+  if (latestScreening) {
+    const title = latestScreening.title || "";
+    if (title.includes("High Risk")) {
+      latestScreeningRisk = "High";
+    } else if (title.includes("Moderate Risk")) {
+      latestScreeningRisk = "Moderate";
+    } else if (title.includes("Low Risk")) {
+      latestScreeningRisk = "Low";
+    }
+  }
+
+  // 2. Extract latest vitals
+  const latestVitalsEntry = vitalsHistory && vitalsHistory.length > 0 ? vitalsHistory[0] : null;
+  const latestVitals = latestVitalsEntry ? {
+    heartRate: latestVitalsEntry.heartRate ? Number(latestVitalsEntry.heartRate) : undefined,
+    oxygen: latestVitalsEntry.oxygen ? Number(latestVitalsEntry.oxygen) : undefined
+  } : null;
+
+  // 3. Extract conditions
+  const conditions = userProfile?.conditions || [];
+
+  // Compute Wellness Score
+  const wellness = computeHealthScore({
+    latestScreeningRisk,
+    latestVitals,
+    conditions
+  }, language);
+
+  const improveTip = getImproveTip(wellness.biggestFactorKey, language);
+
+  // SVG circular properties for gauge
+  const radius = 35;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (wellness.score / 100) * circumference;
+
+  // Determine color theme based on score band
+  const colorClasses =
+    wellness.color === "green"
+      ? {
+          stroke: "stroke-emerald-500",
+          text: "text-emerald-600",
+          bg: "from-emerald-50 to-teal-50/50",
+          border: "border-emerald-100",
+          badge: "bg-emerald-100 text-emerald-800",
+          label: language === "hi" ? "उत्कृष्ट स्वास्थ्य" : language === "gu" ? "ઉત્તમ આરોગ્ય" : "Excellent Health"
+        }
+      : wellness.color === "yellow"
+      ? {
+          stroke: "stroke-amber-500",
+          text: "text-amber-600",
+          bg: "from-amber-50/70 to-orange-50/40",
+          border: "border-amber-100",
+          badge: "bg-amber-100 text-amber-800",
+          label: language === "hi" ? "मध्यम स्वास्थ्य" : language === "gu" ? "મધ્યમ આરોગ્ય" : "Moderate Status"
+        }
+      : {
+          stroke: "stroke-rose-500",
+          text: "text-rose-600",
+          bg: "from-rose-50 to-red-50/30",
+          border: "border-rose-100",
+          badge: "bg-rose-100 text-rose-800",
+          label: language === "hi" ? "ध्यान देने की आवश्यकता" : language === "gu" ? "ધ્યાન આપવાની જરૂરિયાત" : "Action Advised"
+        };
 
   return (
     <div className="p-4 space-y-5 animate-fadeIn">
@@ -44,7 +116,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                   {language === "hi" ? `नमस्ते, ${userProfile.name?.split(" ")[0]}!` : language === "gu" ? `નમસ્તે, ${userProfile.name?.split(" ")[0]}!` : `Namaste, ${userProfile.name?.split(" ")[0]}!`}
                 </h2>
                 <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                  {userProfile.age}{language === "hi" ? " वर्ष" : language === "gu" ? " વર્ષ" : "y"} • {userProfile.gender === "Male" ? (language === "hi" ? "पुरुष" : language === "gu" ? "પુરુષ" : "Male") : userProfile.gender === "Female" ? (language === "hi" ? "महिला" : language === "gu" ? "સ્ત્રી" : "Female") : (language === "hi" ? "अन्य" : language === "gu" ? "અન્ય" : "Other")}
+                  {userProfile.age}{language === "hi" ? " वर्ष" : language === "gu" ? " वर्ष" : "y"} • {userProfile.gender === "Male" ? (language === "hi" ? "पुरुष" : language === "gu" ? "પુરુષ" : "Male") : userProfile.gender === "Female" ? (language === "hi" ? "महिला" : language === "gu" ? "સ્ત્રી" : "Female") : (language === "hi" ? "अन्य" : language === "gu" ? "અન્ય" : "Other")}
                   {userProfile.bloodGroup && userProfile.bloodGroup !== "Unknown" ? ` • ${userProfile.bloodGroup}` : ""}
                 </p>
               </div>
@@ -98,6 +170,73 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </div>
         </div>
       )}
+
+      {/* Premium Wellness Score Gauge Card */}
+      <div className={`bg-gradient-to-br ${colorClasses.bg} rounded-2xl p-4 border ${colorClasses.border} shadow-sm text-left flex items-center gap-4 relative overflow-hidden transition-all duration-300`}>
+        {/* Animated Background Pulse */}
+        <div className="absolute -right-8 -bottom-8 w-24 h-24 rounded-full bg-current opacity-5 pointer-events-none text-teal-500 animate-pulse"></div>
+
+        {/* Semi-circular radial gauge */}
+        <div className="relative flex items-center justify-center shrink-0 w-[90px] h-[90px]">
+          <svg className="w-full h-full transform -rotate-90">
+            {/* Background track */}
+            <circle
+              cx="45"
+              cy="45"
+              r={radius}
+              className="stroke-slate-100"
+              strokeWidth="6"
+              fill="transparent"
+            />
+            {/* Foreground progress indicator */}
+            <circle
+              cx="45"
+              cy="45"
+              r={radius}
+              className={`${colorClasses.stroke} transition-all duration-1000 ease-out`}
+              strokeWidth="6"
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+            />
+          </svg>
+          {/* Inner Text display */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <span className="text-lg font-black text-slate-850 leading-none">{wellness.score}</span>
+            <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Index</span>
+          </div>
+        </div>
+
+        {/* Informational details block */}
+        <div className="flex-1 space-y-1.5 z-10">
+          <div className="flex items-center gap-1.5">
+            <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${colorClasses.badge}`}>
+              {colorClasses.label}
+            </span>
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-slate-800 leading-tight">
+              {language === "hi" ? "वेलनेस स्कोर कार्ड" : language === "gu" ? "વેલનેસ સ્કોર કાર્ડ" : "Overall Wellness Score"}
+            </h4>
+            <p className="text-[10px] font-medium text-slate-500 mt-0.5 leading-snug">
+              {language === "hi"
+                ? `मुख्य कारक: ${wellness.biggestFactor}`
+                : language === "gu"
+                ? `મુખ્ય પરિબળ: ${wellness.biggestFactor}`
+                : `Key factor: ${wellness.biggestFactor}`}
+            </p>
+          </div>
+          {/* Actionable improvement link */}
+          <button
+            onClick={() => setActiveTab(improveTip.tab)}
+            className={`flex items-center gap-1 text-[10px] font-extrabold ${colorClasses.text} hover:underline transition-all active:scale-95`}
+          >
+            <span>{improveTip.text}</span>
+            <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
 
       {/* Grid of feature cards */}
       <div className="text-left">

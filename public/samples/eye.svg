@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+  <!-- Sclera (Eye ball background) - slightly yellowish tint for jaundice simulation -->
+  <rect width="320" height="320" fill="#f8fafc" />
+  
+  <!-- Outer eye contour -->
+  <path d="M 20 160 C 80 80, 240 80, 300 160 C 240 240, 80 240, 20 160 Z" fill="#fffdec" stroke="#cbd5e1" stroke-width="3" />
+  
+  <!-- Sclera jaundice color gradient (yellowish near edges) -->
+  <path d="M 20 160 C 80 80, 240 80, 300 160 C 240 240, 80 240, 20 160 Z" fill="url(#jaundice-grad)" opacity="0.85" />
+  
+  <!-- Iris -->
+  <circle cx="160" cy="160" r="50" fill="#6b7280" stroke="#4b5563" stroke-width="2" />
+  <!-- Iris patterns -->
+  <circle cx="160" cy="160" r="38" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="4,4" />
+  
+  <!-- Pupil -->
+  <circle cx="160" cy="160" r="24" fill="#0f172a" />
+  
+  <!-- Cornea reflection / shine -->
+  <circle cx="145" cy="145" r="8" fill="#ffffff" opacity="0.8" />
+  <circle cx="138" cy="152" r="4" fill="#ffffff" opacity="0.6" />
+  
+  <!-- Red blood vessels (sclera details) -->
+  <path d="M 40 155 Q 60 150 80 158 M 40 155 Q 55 162 70 158" fill="none" stroke="#fca5a5" stroke-width="1.5" opacity="0.7" />
+  <path d="M 280 160 Q 250 155 230 162 M 270 150 Q 255 145 240 152" fill="none" stroke="#fca5a5" stroke-width="1.5" opacity="0.7" />
+  <path d="M 120 100 Q 130 115 125 125" fill="none" stroke="#fca5a5" stroke-width="1.2" opacity="0.6" />
+  <path d="M 200 220 Q 185 205 190 195" fill="none" stroke="#fca5a5" stroke-width="1.2" opacity="0.6" />
+
+  <defs>
+    <radialGradient id="jaundice-grad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+      <stop offset="65%" stop-color="#fef08a" stop-opacity="0.3" />
+      <stop offset="85%" stop-color="#fde047" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#eab308" stop-opacity="0.85" />
+    </radialGradient>
+  </defs>
+</svg>

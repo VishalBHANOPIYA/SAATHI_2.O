@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { X, Star, Phone, Loader2, Mic, Video, PhoneOff } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { checkRateLimit } from "@/utils/rateLimit";
 
 interface TelemedicineOverlayProps {
   activeCall: boolean;
@@ -214,6 +215,11 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
     setDoctorSummary(null);
 
     try {
+      const { allowed } = checkRateLimit("summary", 4, 30000);
+      if (!allowed) {
+        throw new Error("RateLimitExceeded");
+      }
+
       const screeningInfo = screenResults
         ? {
             condition: screenResults.condition,
@@ -243,12 +249,19 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
       }
     } catch (error) {
       console.error("Summary error:", error);
+      const isRateLimit = error instanceof Error && error.message === "RateLimitExceeded";
       setDoctorSummary({
         chief_complaint: symptomsText || "Symptom check",
         screening_signals: screenResults ? `${screenResults.condition} (${screenResults.riskBand})` : "None recorded",
         triage_level: triageResult?.triage || "GREEN",
         suggested_focus: "General practitioner intake consultation.",
-        formatted_summary: `### Clinical Intake Summary (Offline Fallback)\n\n**Chief Complaint:** ${symptomsText || "General symptoms"}\n\n**Triage Urgency:** ${triageResult?.triage || "GREEN"}\n\n**Screening Results:** ${screenResults ? `${screenResults.condition} - ${screenResults.riskBand} risk` : "No image screening files uploaded"}\n\n**Suggested Focus:** Direct physician evaluation of reported symptoms.`
+        formatted_summary: isRateLimit
+          ? (language === "hi"
+              ? `### क्लिनिकल इंटेक सारांश [सिस्टम व्यस्त - ऑफ़लाइन फ़ॉलबैक]\n\n**लक्षण:** ${symptomsText || "सामान्य लक्षण"}\n\n**प्राथमिकता:** ${triageResult?.triage || "GREEN"}\n\n**स्क्रीनिंग:** ${screenResults ? `${screenResults.condition} - ${screenResults.riskBand} जोखिम` : "कोई स्क्रीनिंग नहीं"}\n\n**ध्यान दें:** सिस्टम व्यस्त है, ऑफ़लाइन फ़ॉलबैक सारांश का उपयोग कर रहे हैं। चिकित्सक सीधे मूल्यांकन करेंगे।`
+              : language === "gu"
+              ? `### ક્લિનિકલ ઇન્ટેક સારાંશ [સિસ્ટમ વ્યસ્ત - ઑફલાઇન ફૉલબેક]\n\n**લક્ષણો:** ${symptomsText || "સામાન્ય લક્ષણો"}\n\n**પ્રાથમિકતા:** ${triageResult?.triage || "GREEN"}\n\n**સ્ક્રીનીંગ:** ${screenResults ? `${screenResults.condition} - ${screenResults.riskBand} જોખમ` : "કોઈ સ્ક્રીનીંગ નથી"}\n\n**નોંધ:** સિસ્ટમ વ્યસ્ત છે, ઑફલાઇન સ્થાનિક સારાંશનો ઉપયોગ છે.`
+              : `### Clinical Intake Summary [System Busy - Offline Fallback]\n\n**Chief Complaint:** ${symptomsText || "General symptoms"}\n\n**Triage Urgency:** ${triageResult?.triage || "GREEN"}\n\n**Screening Results:** ${screenResults ? `${screenResults.condition} - ${screenResults.riskBand} risk` : "No image screening files uploaded"}\n\n**Suggested Focus:** Direct physician evaluation of reported symptoms. (System busy, running local rate-limit fallback)`)
+          : `### Clinical Intake Summary (Offline Fallback)\n\n**Chief Complaint:** ${symptomsText || "General symptoms"}\n\n**Triage Urgency:** ${triageResult?.triage || "GREEN"}\n\n**Screening Results:** ${screenResults ? `${screenResults.condition} - ${screenResults.riskBand} risk` : "No image screening files uploaded"}\n\n**Suggested Focus:** Direct physician evaluation of reported symptoms.`
       });
     } finally {
       setIsSummaryLoading(false);

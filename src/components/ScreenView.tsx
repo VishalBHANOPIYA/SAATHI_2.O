@@ -8,11 +8,14 @@ import {
   Sparkles,
   Loader2,
   Volume2,
-  VolumeX
+  VolumeX,
+  Share2
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
+import { shareHealthReport } from "@/utils/shareHelper";
+import { checkRateLimit } from "@/utils/rateLimit";
 
 const screenTranslations = {
   en: {
@@ -252,6 +255,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const [screenStep, setScreenStep] = useState<"select" | "capture" | "roi" | "results">("select");
 
   const [screenImage, setScreenImage] = useState<string | null>(null);
+  const [isSampleImage, setIsSampleImage] = useState(false);
   const [roiCoords, setRoiCoords] = useState<{ x: number; y: number } | null>(null);
   const [avgColor, setAvgColor] = useState<{ r: number; g: number; b: number } | null>(null);
   const [screenResults, setScreenResults] = useState<{
@@ -313,6 +317,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
   const startScreenCamera = async () => {
     isStaticUploadRef.current = false;
+    setIsSampleImage(false);
     setScreenStep("capture");
     setScreenImage(null);
     setRoiCoords(null);
@@ -373,6 +378,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     isStaticUploadRef.current = true;
+    setIsSampleImage(false);
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -401,6 +407,42 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleSampleSelect = (condition: "anemia" | "jaundice" | "skin") => {
+    isStaticUploadRef.current = true;
+    setIsSampleImage(true);
+    capturedFramesRef.current = [];
+    
+    let path = "";
+    if (condition === "anemia") {
+      path = "/samples/nail_bed.png";
+    } else if (condition === "jaundice") {
+      path = "/samples/eye.svg";
+    } else {
+      path = "/samples/skin.svg";
+    }
+
+    setScreenImage(path);
+    setScreenStep("roi");
+
+    // Initialize 5 copies of the sample image in capturedFramesRef
+    const img = new Image();
+    img.src = path;
+    img.onload = () => {
+      const canvases: HTMLCanvasElement[] = [];
+      for (let i = 0; i < 5; i++) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = 320;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, 320, 320);
+        }
+        canvases.push(canvas);
+      }
+      capturedFramesRef.current = canvases;
+    };
   };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -871,11 +913,11 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
     const newRecordItem = {
       id: Date.now(),
-      title: `${conditionLabel} (${screenResults.riskBand} Risk)`,
+      title: `${isSampleImage ? "Sample: " : ""}${conditionLabel} (${screenResults.riskBand} Risk)`,
       date: dateStr,
       category: "Lab Test",
       doctor: "Saathi Camera AI Screening",
-      notes: `Condition: ${screenResults.condition.toUpperCase()} | Index Score: ${screenResults.indexVal}% | Color RGB: (${avgColor?.r}, ${avgColor?.g}, ${avgColor?.b}) | Recommendation: ${screenResults.riskBand === 'Low' ? 'Routine follow-up' : 'Consult a doctor'}`
+      notes: `${isSampleImage ? "[Sample Image Demo] " : ""}Condition: ${screenResults.condition.toUpperCase()} | Index Score: ${screenResults.indexVal}% | Color RGB: (${avgColor?.r}, ${avgColor?.g}, ${avgColor?.b}) | Recommendation: ${screenResults.riskBand === 'Low' ? 'Routine follow-up' : 'Consult a doctor'}`
     };
 
     const updatedRecords = [newRecordItem, ...recordsList];
@@ -901,6 +943,11 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     setScreeningResult(null);
 
     try {
+      const { allowed } = checkRateLimit("assess", 4, 30000);
+      if (!allowed) {
+        throw new Error("RateLimitExceeded");
+      }
+
       const response = await fetch("/api/assess", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -921,7 +968,31 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       }
     } catch (error) {
       console.error(error);
-      setScreeningResult("An error occurred during screening. Please try again.");
+      const isRateLimit = error instanceof Error && error.message === "RateLimitExceeded";
+      if (isRateLimit) {
+        const symptomsList: string[] = [];
+        if (symptoms.fever) symptomsList.push(language === "hi" ? "बुखार" : language === "gu" ? "તાવ" : "Fever");
+        if (symptoms.cough) symptomsList.push(language === "hi" ? "खांसी" : language === "gu" ? "ખાંસી" : "Cough");
+        if (symptoms.breath) symptomsList.push(language === "hi" ? "सांस लेने में तकलीफ" : language === "gu" ? "શ્વાસ લેવામાં તકલીફ" : "Shortness of breath");
+        
+        const offlineReport = language === "hi"
+          ? `[सिस्टम व्यस्त - ऑफ़लाइन स्थानीय आकलन]
+आयु: ${age} वर्ष, तापमान: ${temperature}°F
+लक्षण: ${symptomsList.join(", ") || "कोई गंभीर लक्षण नहीं"}
+जोखिम स्तर: मध्यम। पर्याप्त आराम करें, तरल पदार्थ लें और लक्षणों की निगरानी करें।`
+          : language === "gu"
+          ? `[સિસ્ટમ વ્યસ્ત - ઑફલાઇન સ્થાનિક આકારણી]
+ઉંમર: ${age} વર્ષ, તાપમાન: ${temperature}°F
+લક્ષણો: ${symptomsList.join(", ") || "કોઈ ગંભીર લક્ષણો નથી"}
+જોખમ સ્તર: મધ્યમ. પૂરતો આરામ કરો અને પુષ્કળ પ્રવાહી લો.`
+          : `[System Busy - Offline Fallback Assessment]
+Age: ${age} years, Temp: ${temperature}°F
+Symptoms: ${symptomsList.join(", ") || "None severe"}
+Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
+        setScreeningResult(offlineReport);
+      } else {
+        setScreeningResult("An error occurred during screening. Please try again.");
+      }
     } finally {
       setIsScreeningLoading(false);
     }
@@ -1073,6 +1144,25 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
                     className="hidden"
                   />
                 </label>
+              </div>
+
+              {/* Try with sample */}
+              <div className="pt-2.5 flex flex-col items-center border-t border-dashed border-slate-200 mt-2">
+                <span className="text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-wider">
+                  {language === "hi" ? "या नमूना छवि के साथ प्रयास करें" : language === "gu" ? "અથવા નમૂના ચિત્ર સાથે પ્રયાસ કરો" : "Or Try with a Sample"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSampleSelect(selectedCondition)}
+                  className="flex items-center justify-center gap-2 bg-purple-50 border border-purple-200 text-purple-700 hover:bg-purple-100 font-extrabold text-xs py-2.5 px-4 rounded-xl shadow-sm active:scale-[0.98] transition-all w-full min-h-[38px]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-650 animate-pulse" />
+                  <span>
+                    {selectedCondition === "anemia" && (language === "hi" ? "नाखून का नमूना (एनीमिया)" : language === "gu" ? "નખનો નમૂનો (એનિમિયા)" : "Fingernail Sample (Anemia)")}
+                    {selectedCondition === "jaundice" && (language === "hi" ? "आंख का नमूना (पीलिया)" : language === "gu" ? "આંખનો નમૂનો (કમળો)" : "Eye Sclera Sample (Jaundice)")}
+                    {selectedCondition === "skin" && (language === "hi" ? "त्वचा का नमूना (चकत्ते)" : language === "gu" ? "ત્વચાનો નમૂનો (કાળજી)" : "Skin Rash Sample (Skin Check)")}
+                  </span>
+                </button>
               </div>
             </div>
           )}
@@ -1231,6 +1321,11 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
                   />
                 </div>
                 <div className="flex gap-2">
+                  {isSampleImage && (
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 animate-pulse uppercase tracking-wider">
+                      {language === "hi" ? "नमूना" : language === "gu" ? "નમૂનો" : "Sample Image"}
+                    </span>
+                  )}
                   <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
                     screenResults.riskBand === "Low" ? "bg-emerald-100 text-emerald-800" :
                     screenResults.riskBand === "Moderate" ? "bg-amber-100 text-amber-800" :
@@ -1331,6 +1426,31 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
                   {sTrans.saveReport}
                 </button>
               </div>
+
+              {/* Share Results Button */}
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!screenResults) return;
+                  const condLabel = screenResults.condition === "anemia" ? "Anemia" : screenResults.condition === "jaundice" ? "Jaundice" : "Skin Rash";
+                  const shareText = `Saathi Health AI Screening Report:
+- Condition: ${condLabel} Check
+- Risk Level: ${screenResults.riskBand} Risk
+- Score: ${screenResults.indexVal}%
+- Details: ${screenResults.description}
+
+Shared via Saathi.`;
+                  await shareHealthReport({
+                    title: `${condLabel} Screening`,
+                    text: shareText,
+                    url: window.location.origin
+                  });
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-extrabold text-xs py-2.5 rounded-xl active:scale-[0.98] transition-all min-h-[38px] shadow-sm"
+              >
+                <Share2 className="w-4 h-4 text-blue-650" />
+                <span>{language === "hi" ? "नतीजे साझा करें" : language === "gu" ? "પરિણામો શેર કરો" : "Share Screening Results"}</span>
+              </button>
             </div>
           )}
         </div>

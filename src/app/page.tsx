@@ -1671,6 +1671,8 @@ export default function MainApp() {
               setActiveTab={handleTabChange}
               setActiveCall={setActiveCall}
               userProfile={userProfile}
+              recordsList={recordsList}
+              vitalsHistory={vitalsHistory}
               onEditProfile={() => {
                 if (userProfile) {
                   setProfileForm({

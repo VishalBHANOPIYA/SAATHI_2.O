@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
+import { checkRateLimit } from "@/utils/rateLimit";
 
 interface MedicinesViewProps {
   medicinesList: any[];
@@ -115,6 +116,11 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
   const handleParsePrescriptionImageAndText = async (imageBase64: string, ocrText: string) => {
     setIsParsingPrescription(true);
     try {
+      const { allowed } = checkRateLimit("parse-prescription", 3, 30000);
+      if (!allowed) {
+        throw new Error("RateLimitExceeded");
+      }
+
       const response = await fetch("/api/parse-prescription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -145,14 +151,26 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
       }
     } catch (error) {
       console.error("Parse error:", error);
+      const isRateLimit = error instanceof Error && error.message === "RateLimitExceeded";
       const fallbackMeds = [
         { id: "f1", name: "Paracetamol", dose: "500 mg", frequency: "Twice daily (1-0-1)", duration: "5 days", reminderTime: "08:00" },
         { id: "f2", name: "Amoxicillin", dose: "250 mg", frequency: "Thrice daily (1-1-1)", duration: "7 days", reminderTime: "13:00" }
       ];
       setMedicinesList(fallbackMeds);
-      setDrugInteractionNote("Note: AI parser failed or is in offline fallback mode. Please review and adjust the medicine schedules manually.");
+      
+      const rateLimitMsg = language === "hi"
+        ? "नोट: सिस्टम व्यस्त है - ऑफ़लाइन लोकल फ़ॉलबैक दवा शेड्यूल का उपयोग किया जा रहा है। कृपया दवाओं की जांच स्वयं करें।"
+        : language === "gu"
+        ? "નોંધ: સિસ્ટમ વ્યસ્ત છે - ઑફલાઇન સ્થાનિક ફૉલબેક દવાની સૂચિ ઉપયોગમાં છે. કૃપા કરીને તપાસી લો."
+        : "Note: System busy - running offline fallback medicine schedule. Please review and adjust the medicine schedules manually.";
+
+      const genericMsg = "Note: AI parser failed or is in offline fallback mode. Please review and adjust the medicine schedules manually.";
+
+      const interactionMsg = isRateLimit ? rateLimitMsg : genericMsg;
+
+      setDrugInteractionNote(interactionMsg);
       safeSetItem("saathi_medicines", JSON.stringify(fallbackMeds));
-      safeSetItem("saathi_drug_interactions", "Note: AI parser failed or is in offline fallback mode. Please review and adjust the medicine schedules manually.");
+      safeSetItem("saathi_drug_interactions", interactionMsg);
     } finally {
       setIsParsingPrescription(false);
       setIsOcrLoading(false);

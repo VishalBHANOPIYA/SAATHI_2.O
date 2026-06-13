@@ -12,13 +12,18 @@ import {
   Heart,
   ShieldAlert,
   Volume2,
-  VolumeX
+  VolumeX,
+  Phone,
+  MessageSquare,
+  Share2
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { trimSilence } from "../utils/audioTrimmer";
 import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
+import { shareHealthReport } from "@/utils/shareHelper";
 import { performOfflineTriage } from "../utils/offlineTriage";
+import { checkRateLimit } from "@/utils/rateLimit";
 
 interface TriageResult {
   triage: "GREEN" | "YELLOW" | "RED";
@@ -28,6 +33,8 @@ interface TriageResult {
   see_doctor: boolean;
   confidence?: "LOW" | "MEDIUM" | "HIGH";
   isOffline?: boolean;
+  latencySec?: number;
+  resolvedVia?: string;
 }
 
 const talkLabels = {
@@ -135,16 +142,29 @@ const cardLabels = {
 function TriageResultCard({
   result,
   language,
+  userProfile,
   onConnectDoctor,
   onReset
 }: {
   result: TriageResult;
   language: string;
+  userProfile?: any;
   onConnectDoctor?: () => void;
   onReset?: () => void;
 }) {
   const isRed = result.triage === "RED";
   const isYellow = result.triage === "YELLOW";
+
+  const patientName = userProfile?.name || "Patient";
+  const emergencyName = userProfile?.emergencyContact?.name;
+  const emergencyPhone = userProfile?.emergencyContact?.phone;
+  const hasEmergencyContact = !!(emergencyPhone && emergencyName);
+
+  const smsText = language === "hi"
+    ? `आपातकाल: ${patientName} को चिकित्सीय मदद की आवश्यकता है। साथी (Saathi) के माध्यम से भेजा गया।`
+    : language === "gu"
+    ? `કટોકટી: ${patientName} ને તબીબી મદદની જરૂર છે. સાથી (Saathi) દ્વારા મોકલેલ.`
+    : `EMERGENCY: ${patientName} needs medical help. Sent via Saathi.`;
 
   const tLabels = cardLabels[language as "en" | "hi" | "gu"] || cardLabels.en;
 
@@ -259,6 +279,12 @@ function TriageResultCard({
                 {offlineBadgeLabels[language as "en" | "hi" | "gu"] || offlineBadgeLabels.en}
               </span>
             )}
+            {result.latencySec !== undefined && (
+              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full tracking-wide bg-sky-50 text-sky-850 border border-sky-200 self-start shadow-sm flex items-center gap-1.5 animate-fadeIn">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                <span>{result.latencySec}s response time ({result.resolvedVia || "Groq Cloud API"})</span>
+              </span>
+            )}
           </div>
           
           <div className="flex items-center gap-2">
@@ -321,6 +347,50 @@ function TriageResultCard({
         </div>
       )}
 
+      {isRed && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-3 shadow-sm border-red-200">
+          <div className="flex items-center gap-2 text-red-800 font-extrabold text-xs uppercase tracking-wider">
+            <AlertTriangle className="w-4.5 h-4.5 text-red-650 shrink-0 animate-bounce" />
+            <span>
+              {language === "hi" ? "आपातकालीन त्वरित कार्रवाई" : language === "gu" ? "કટોકટીની ઝડપી કાર્યવાહી" : "Emergency Quick Action"}
+            </span>
+          </div>
+
+          {hasEmergencyContact ? (
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`tel:${emergencyPhone}`}
+                className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition-all active:scale-95 text-center min-h-[44px]"
+              >
+                <Phone className="w-4 h-4" />
+                <span>
+                  {language === "hi" ? `कॉल: ${emergencyName}` : language === "gu" ? `કૉલ: ${emergencyName}` : `Call ${emergencyName}`}
+                </span>
+              </a>
+              <a
+                href={`sms:${emergencyPhone}?body=${encodeURIComponent(smsText)}`}
+                className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-655 text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition-all active:scale-95 text-center min-h-[44px]"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>
+                  {language === "hi" ? "एसएमएस भेजें" : language === "gu" ? "SMS મોકલો" : "Send SMS"}
+                </span>
+              </a>
+            </div>
+          ) : (
+            <a
+              href="tel:108"
+              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all active:scale-95 text-center w-full min-h-[44px]"
+            >
+              <Phone className="w-4 h-4 animate-pulse" />
+              <span>
+                {language === "hi" ? "एम्बुलेंस को कॉल करें (108)" : language === "gu" ? "એમ્બ્યુલન્સ કૉલ કરો (108)" : "Call 108 Ambulance"}
+              </span>
+            </a>
+          )}
+        </div>
+      )}
+
       <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 flex gap-2 text-slate-500 leading-normal">
         <AlertTriangle className="w-4.5 h-4.5 text-slate-400 shrink-0 mt-0.5" />
         <div className="space-y-0.5">
@@ -329,29 +399,55 @@ function TriageResultCard({
         </div>
       </div>
 
-      <div className="flex gap-2 pt-1">
-        {result.see_doctor && onConnectDoctor && (
-          <button
-            onClick={onConnectDoctor}
-            className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-650 text-white font-extrabold text-xs py-3 rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
-          >
-            <Video className="w-4 h-4" />
-            <span>{tLabels.connect}</span>
-          </button>
-        )}
-        {onReset && (
-          <button
-            onClick={onReset}
-            className={`py-3 px-4 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 min-h-[44px] ${
-              result.see_doctor 
-                ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                : "w-full bg-teal-650 text-white hover:bg-teal-700 shadow-md"
-            }`}
-          >
-            <RefreshCw className="w-3.5 h-3.5 animate-spin-hover" />
-            <span>{tLabels.checkAgain}</span>
-          </button>
-        )}
+      <div className="flex flex-col gap-2 pt-1">
+        <div className="flex gap-2">
+          {result.see_doctor && onConnectDoctor && (
+            <button
+              onClick={onConnectDoctor}
+              className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-650 text-white font-extrabold text-xs py-3 rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
+            >
+              <Video className="w-4 h-4" />
+              <span>{tLabels.connect}</span>
+            </button>
+          )}
+          {onReset && (
+            <button
+              onClick={onReset}
+              className={`py-3 px-4 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 min-h-[44px] ${
+                result.see_doctor 
+                  ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  : "w-full bg-teal-650 text-white hover:bg-teal-700 shadow-md"
+              }`}
+            >
+              <RefreshCw className="w-3.5 h-3.5 animate-spin-hover" />
+              <span>{tLabels.checkAgain}</span>
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const shareText = `Saathi AI Symptom Triage Report:
+- Status: ${result.triage}
+- Concerns: ${result.possible_concerns.join(", ")}
+- Explanation: ${result.reason}
+- Advice: ${result.advice}
+
+Shared via Saathi.`;
+            await shareHealthReport({
+              title: "Saathi AI Symptom Triage",
+              text: shareText,
+              url: window.location.origin
+            });
+          }}
+          className="w-full flex items-center justify-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-extrabold text-xs py-2.5 rounded-xl active:scale-[0.98] transition-all min-h-[38px] shadow-sm"
+        >
+          <Share2 className="w-4 h-4 text-blue-650" />
+          <span>
+            {language === "hi" ? "ट्राइएज रिपोर्ट साझा करें" : language === "gu" ? "ટ્રાયેજ રિપોર્ટ શેર કરો" : "Share Triage Report"}
+          </span>
+        </button>
       </div>
     </div>
   );
@@ -489,6 +585,11 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     setTalkError(null);
 
     try {
+      const { allowed } = checkRateLimit("transcribe", 5, 30000);
+      if (!allowed) {
+        throw new Error("RateLimitExceeded");
+      }
+
       // Trim audio silence client-side
       const trimmedBlob = await trimSilence(blob);
 
@@ -513,12 +614,19 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       }
     } catch (err) {
       console.error("Transcription error:", err);
+      const isRateLimit = err instanceof Error && err.message === "RateLimitExceeded";
       setTalkError(
-        language === "hi"
-          ? "ट्रांसक्रिप्शन विफल रहा। कृपया फिर से प्रयास करें या मैन्युअल रूप से टाइप करें।"
-          : language === "gu"
-          ? "ટ્રાન્સક્રિપ્શન નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયાસ કરો અથવા મેન્યુઅલી ટાઇપ કરો."
-          : "Transcription failed. Please try again or type manually."
+        isRateLimit
+          ? (language === "hi"
+              ? "सिस्टम व्यस्त है - कृपया मैन्युअल रूप से टाइप करें या कुछ समय बाद प्रयास करें।"
+              : language === "gu"
+              ? "સિસ્ટમ વ્યસ્ત છે - કૃપા કરીને મેન્યુઅલી ટાઇપ કરો અથવા થોડીવાર પછી પ્રયાસ કરો."
+              : "System busy - please type manually or try again in a few moments.")
+          : (language === "hi"
+              ? "ट्रांसक्रिप्शन विफल रहा। कृपया फिर से प्रयास करें या मैन्युअल रूप से टाइप करें।"
+              : language === "gu"
+              ? "ટ્રાન્સક્રિપ્શન નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયાસ કરો અથવા મેન્યુઅલી ટાઇપ કરો."
+              : "Transcription failed. Please try again or type manually.")
       );
     } finally {
       setIsTranscribing(false);
@@ -537,7 +645,13 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     ];
     setTriageHistory(updatedHistory);
 
+    const startTime = Date.now();
     try {
+      const { allowed } = checkRateLimit("triage", 4, 30000);
+      if (!allowed) {
+        throw new Error("RateLimitExceeded");
+      }
+
       if (!navigator.onLine) {
         throw new Error("Offline");
       }
@@ -561,11 +675,17 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             { role: "assistant" as const, content: data.follow_up_question }
           ]);
         } else if (data.triageResult) {
-          setTriageResult(data.triageResult);
+          const latencySec = ((Date.now() - startTime) / 1000).toFixed(1);
+          const enrichedResult = {
+            ...data.triageResult,
+            latencySec: Number(latencySec),
+            resolvedVia: data.isMock ? "Groq Cloud Mock" : "Groq Cloud API"
+          };
+          setTriageResult(enrichedResult);
           
           // Save case to health records if Yellow or Red
-          const severityEmoji = data.triageResult.triage === "RED" ? "🚨 RED" : data.triageResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
-          const concern = data.triageResult.possible_concerns.join(", ") || "Symptom Check";
+          const severityEmoji = enrichedResult.triage === "RED" ? "🚨 RED" : enrichedResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
+          const concern = enrichedResult.possible_concerns.join(", ") || "Symptom Check";
           const dateStr = new Date().toISOString().split("T")[0];
           
           const addedItem = {
@@ -574,16 +694,16 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             date: dateStr,
             category: "Prescription" as const,
             doctor: "Saathi AI Triage",
-            notes: `Urgency: ${data.triageResult.triage} | Reason: ${data.triageResult.reason} | Advice: ${data.triageResult.advice}`
+            notes: `Urgency: ${enrichedResult.triage} | Reason: ${enrichedResult.reason} | Advice: ${enrichedResult.advice}`
           };
 
-          if (data.triageResult.triage === "YELLOW" || data.triageResult.triage === "RED") {
+          if (enrichedResult.triage === "YELLOW" || enrichedResult.triage === "RED") {
             const nextRecords = [addedItem, ...recordsList];
             setRecordsList(nextRecords);
             safeSetItem("saathi_records", JSON.stringify(nextRecords));
           }
 
-          attachRecordToActivePatient(addedItem, data.triageResult.triage);
+          attachRecordToActivePatient(addedItem, enrichedResult.triage);
         } else {
           throw new Error("Invalid response format from triage service.");
         }
@@ -591,14 +711,24 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         throw new Error(data.error || "Failed to analyze symptoms.");
       }
     } catch (err) {
+      const isRateLimit = err instanceof Error && err.message === "RateLimitExceeded";
       console.warn("Triage follow-up failed, running offline fallback triage engine:", err);
       // Run offline triage engine
       const combinedInput = transcriptText + " " + answerText;
+      const startTimeOffline = Date.now();
       const offlineResult = performOfflineTriage(combinedInput, language);
-      setTriageResult(offlineResult);
+      const latencySec = ((Date.now() - startTimeOffline) / 1000).toFixed(2);
       
-      const severityEmoji = offlineResult.triage === "RED" ? "🚨 RED" : offlineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
-      const concern = offlineResult.possible_concerns.join(", ") || "Symptom Check";
+      const enrichedOfflineResult = {
+        ...offlineResult,
+        isOffline: true,
+        latencySec: Number(latencySec),
+        resolvedVia: isRateLimit ? "Local Rule Engine (System Busy Fallback)" : "Local Rule Engine"
+      };
+      setTriageResult(enrichedOfflineResult);
+      
+      const severityEmoji = enrichedOfflineResult.triage === "RED" ? "🚨 RED" : enrichedOfflineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
+      const concern = enrichedOfflineResult.possible_concerns.join(", ") || "Symptom Check";
       const dateStr = new Date().toISOString().split("T")[0];
       
       const addedItem = {
@@ -607,16 +737,16 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         date: dateStr,
         category: "Prescription" as const,
         doctor: "Saathi AI Triage (Offline)",
-        notes: `Urgency: ${offlineResult.triage} | Reason: ${offlineResult.reason} | Advice: ${offlineResult.advice}`
+        notes: `Urgency: ${enrichedOfflineResult.triage} | Reason: ${enrichedOfflineResult.reason} | Advice: ${enrichedOfflineResult.advice}`
       };
 
-      if (offlineResult.triage === "YELLOW" || offlineResult.triage === "RED") {
+      if (enrichedOfflineResult.triage === "YELLOW" || enrichedOfflineResult.triage === "RED") {
         const nextRecords = [addedItem, ...recordsList];
         setRecordsList(nextRecords);
         safeSetItem("saathi_records", JSON.stringify(nextRecords));
       }
 
-      attachRecordToActivePatient(addedItem, offlineResult.triage);
+      attachRecordToActivePatient(addedItem, enrichedOfflineResult.triage);
     } finally {
       setIsTriaging(false);
     }
@@ -630,7 +760,13 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     const initialHistory = [{ role: "user" as const, content: transcriptText }];
     setTriageHistory(initialHistory);
 
+    const startTime = Date.now();
     try {
+      const { allowed } = checkRateLimit("triage", 4, 30000);
+      if (!allowed) {
+        throw new Error("RateLimitExceeded");
+      }
+
       if (!navigator.onLine) {
         throw new Error("Offline");
       }
@@ -654,11 +790,17 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             { role: "assistant" as const, content: data.follow_up_question }
           ]);
         } else if (data.triageResult) {
-          setTriageResult(data.triageResult);
+          const latencySec = ((Date.now() - startTime) / 1000).toFixed(1);
+          const enrichedResult = {
+            ...data.triageResult,
+            latencySec: Number(latencySec),
+            resolvedVia: data.isMock ? "Groq Cloud Mock" : "Groq Cloud API"
+          };
+          setTriageResult(enrichedResult);
           
           // Save case to health records if Yellow or Red
-          const severityEmoji = data.triageResult.triage === "RED" ? "🚨 RED" : data.triageResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
-          const concern = data.triageResult.possible_concerns.join(", ") || "Symptom Check";
+          const severityEmoji = enrichedResult.triage === "RED" ? "🚨 RED" : enrichedResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
+          const concern = enrichedResult.possible_concerns.join(", ") || "Symptom Check";
           const dateStr = new Date().toISOString().split("T")[0];
           
           const addedItem = {
@@ -667,16 +809,16 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             date: dateStr,
             category: "Prescription" as const,
             doctor: "Saathi AI Triage",
-            notes: `Urgency: ${data.triageResult.triage} | Reason: ${data.triageResult.reason} | Advice: ${data.triageResult.advice}`
+            notes: `Urgency: ${enrichedResult.triage} | Reason: ${enrichedResult.reason} | Advice: ${enrichedResult.advice}`
           };
 
-          if (data.triageResult.triage === "YELLOW" || data.triageResult.triage === "RED") {
+          if (enrichedResult.triage === "YELLOW" || enrichedResult.triage === "RED") {
             const nextRecords = [addedItem, ...recordsList];
             setRecordsList(nextRecords);
             safeSetItem("saathi_records", JSON.stringify(nextRecords));
           }
 
-          attachRecordToActivePatient(addedItem, data.triageResult.triage);
+          attachRecordToActivePatient(addedItem, enrichedResult.triage);
         } else {
           throw new Error("Invalid response format from triage service.");
         }
@@ -684,13 +826,23 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         throw new Error(data.error || "Failed to get triage analysis.");
       }
     } catch (err) {
+      const isRateLimit = err instanceof Error && err.message === "RateLimitExceeded";
       console.warn("Triage failed, running offline fallback triage engine:", err);
       // Run offline triage engine
+      const startTimeOffline = Date.now();
       const offlineResult = performOfflineTriage(transcriptText, language);
-      setTriageResult(offlineResult);
+      const latencySec = ((Date.now() - startTimeOffline) / 1000).toFixed(2);
       
-      const severityEmoji = offlineResult.triage === "RED" ? "🚨 RED" : offlineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
-      const concern = offlineResult.possible_concerns.join(", ") || "Symptom Check";
+      const enrichedOfflineResult = {
+        ...offlineResult,
+        isOffline: true,
+        latencySec: Number(latencySec),
+        resolvedVia: isRateLimit ? "Local Rule Engine (System Busy Fallback)" : "Local Rule Engine"
+      };
+      setTriageResult(enrichedOfflineResult);
+      
+      const severityEmoji = enrichedOfflineResult.triage === "RED" ? "🚨 RED" : enrichedOfflineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
+      const concern = enrichedOfflineResult.possible_concerns.join(", ") || "Symptom Check";
       const dateStr = new Date().toISOString().split("T")[0];
       
       const addedItem = {
@@ -699,16 +851,16 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         date: dateStr,
         category: "Prescription" as const,
         doctor: "Saathi AI Triage (Offline)",
-        notes: `Urgency: ${offlineResult.triage} | Reason: ${offlineResult.reason} | Advice: ${offlineResult.advice}`
+        notes: `Urgency: ${enrichedOfflineResult.triage} | Reason: ${enrichedOfflineResult.reason} | Advice: ${enrichedOfflineResult.advice}`
       };
 
-      if (offlineResult.triage === "YELLOW" || offlineResult.triage === "RED") {
+      if (enrichedOfflineResult.triage === "YELLOW" || enrichedOfflineResult.triage === "RED") {
         const nextRecords = [addedItem, ...recordsList];
         setRecordsList(nextRecords);
         safeSetItem("saathi_records", JSON.stringify(nextRecords));
       }
 
-      attachRecordToActivePatient(addedItem, offlineResult.triage);
+      attachRecordToActivePatient(addedItem, enrichedOfflineResult.triage);
     } finally {
       setIsTriaging(false);
     }
@@ -752,6 +904,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         <TriageResultCard
           result={triageResult}
           language={language}
+          userProfile={userProfile}
           onConnectDoctor={() => setActiveCall(true)}
           onReset={resetTriageFlow}
         />
