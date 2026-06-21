@@ -37,6 +37,8 @@ const MedicinesView = dynamic(() => import("@/components/MedicinesView").then(m 
 const AshaView = dynamic(() => import("@/components/AshaView").then(m => m.AshaView), { ssr: false });
 const TelemedicineOverlay = dynamic(() => import("@/components/TelemedicineOverlay").then(m => m.TelemedicineOverlay), { ssr: false });
 const BottomNav = dynamic(() => import("@/components/BottomNav").then(m => m.BottomNav), { ssr: false });
+const Sidebar = dynamic(() => import("@/components/Sidebar").then(m => m.Sidebar), { ssr: false });
+const RightPanel = dynamic(() => import("@/components/RightPanel").then(m => m.RightPanel), { ssr: false });
 
 const formatABHA = (raw: string) => {
   const cleaned = raw.replace(/\D/g, "").slice(0, 14);
@@ -1194,8 +1196,8 @@ export default function MainApp() {
     if (!showProfileModal) return null;
 
     return (
-      <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn text-left">
-        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full max-h-[85vh] overflow-y-auto space-y-4 animate-scaleUp no-scrollbar">
+      <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fadeIn text-left">
+        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm md:max-w-lg w-full max-h-[85vh] md:max-h-[90vh] overflow-y-auto space-y-4 animate-scaleUp no-scrollbar">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2 text-slate-800">
               <Heart className="w-5 h-5 text-teal-600 fill-teal-50 animate-pulse" />
@@ -1522,15 +1524,66 @@ export default function MainApp() {
   // Prevent hydration mismatch
   if (!isMounted) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-650"></div>
+      <div className="flex h-screen items-center justify-center bg-white md:bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600"></div>
       </div>
     );
   }
 
+  // Helper: open profile modal from sidebar
+  const openProfileFromSidebar = () => {
+    if (userProfile) {
+      setProfileForm({
+        name: userProfile.name || "",
+        age: String(userProfile.age || ""),
+        gender: userProfile.gender || "Male",
+        phone: userProfile.phone || "",
+        conditions: userProfile.conditions || [],
+        otherCondition: userProfile.otherCondition || "",
+        allergies: userProfile.allergies || "",
+        medications: userProfile.medications || "",
+        bloodGroup: userProfile.bloodGroup || "Unknown",
+        emergencyName: userProfile.emergencyContact?.name || "",
+        emergencyPhone: userProfile.emergencyContact?.phone || "",
+        abha: userProfile.abha || ""
+      });
+    }
+    setFormErrors({});
+    setProfileSubStep("A");
+    setShowProfileModal(true);
+  };
+
+  // Tab title map for breadcrumb
+  const tabTitles: Record<string, string> = {
+    home: t.home,
+    screen: t.screen,
+    vitals: t.vitals,
+    talk: t.talk,
+    records: t.records,
+    medicines: t.medicinesHeader,
+  };
+
   return (
-    <main className="w-full max-w-[430px] h-[100dvh] bg-white sm:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-slate-200 mx-auto">
-      {showOnboarding && renderOnboarding()}
+    <div className="flex w-full min-h-[100dvh] overflow-x-hidden">
+      {/* SIDEBAR (md+) */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        userProfile={userProfile}
+        onOpenSettings={() => setShowSettingsModal(true)}
+        onOpenProfile={openProfileFromSidebar}
+      />
+
+      {/* MAIN CONTENT COLUMN */}
+      <main className="flex-1 flex flex-col h-[100dvh] bg-white relative overflow-hidden">
+        {/* ONBOARDING */}
+        {showOnboarding && (
+          <div className="absolute inset-0 z-50 md:flex md:items-center md:justify-center md:bg-slate-900/80 md:backdrop-blur-sm">
+            <div className="w-full h-full md:w-full md:max-w-lg md:h-auto md:max-h-[90vh] md:overflow-y-auto md:rounded-3xl md:shadow-2xl">
+              {renderOnboarding()}
+            </div>
+          </div>
+        )}
 
       {/* PERSISTENT DISCLAIMER BANNER */}
       <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-start gap-1.5 shrink-0 z-35 shadow-sm text-left">
@@ -1554,8 +1607,8 @@ export default function MainApp() {
         </div>
       )}
 
-      {/* HEADER */}
-      <header className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-4 py-3 shrink-0 shadow-md flex justify-between items-center z-20 text-left">
+      {/* MOBILE HEADER — hidden on md+ (sidebar replaces it) */}
+      <header className="md:hidden bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-4 py-3 shrink-0 shadow-md flex justify-between items-center z-20 text-left">
         <div>
           <div className="flex items-center gap-1.5">
             <Heart className="w-5 h-5 fill-white text-teal-600 animate-pulse" />
@@ -1565,19 +1618,16 @@ export default function MainApp() {
         </div>
 
         <div className="flex items-center gap-2">
-
-
           {isInstallable && (
             <button
               onClick={handleInstallClick}
-              className="bg-white text-teal-700 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0"
+              className="bg-white text-teal-700 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0 min-h-[44px] min-w-[44px] justify-center"
             >
               <Download className="w-3 h-3" />
               {language === "hi" ? "इंस्टॉल" : language === "gu" ? "ઇન્સ્ટોલ" : "Install"}
             </button>
           )}
 
-          {/* ASHA Mode Status Badge */}
           {ashaModeActive && (
             <span className="bg-emerald-500 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full border border-emerald-400 shadow-sm flex items-center gap-1 shrink-0 animate-pulse tracking-wide">
               <Users className="w-2.5 h-2.5" />
@@ -1585,31 +1635,10 @@ export default function MainApp() {
             </span>
           )}
 
-          {/* Profile Avatar Button */}
           {userProfile && (
             <button
-              onClick={() => {
-                if (userProfile) {
-                  setProfileForm({
-                    name: userProfile.name || "",
-                    age: String(userProfile.age || ""),
-                    gender: userProfile.gender || "Male",
-                    phone: userProfile.phone || "",
-                    conditions: userProfile.conditions || [],
-                    otherCondition: userProfile.otherCondition || "",
-                    allergies: userProfile.allergies || "",
-                    medications: userProfile.medications || "",
-                    bloodGroup: userProfile.bloodGroup || "Unknown",
-                    emergencyName: userProfile.emergencyContact?.name || "",
-                    emergencyPhone: userProfile.emergencyContact?.phone || "",
-                    abha: userProfile.abha || ""
-                  });
-                }
-                setFormErrors({});
-                setProfileSubStep("A");
-                setShowProfileModal(true);
-              }}
-              className="w-7 h-7 rounded-full bg-white/20 border border-white/30 text-white font-black text-[11px] flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 shrink-0"
+              onClick={openProfileFromSidebar}
+              className="w-7 h-7 rounded-full bg-white/20 border border-white/30 text-white font-black text-[11px] flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 shrink-0 min-h-[44px] min-w-[44px]"
               title={language === "hi" ? "प्रोफ़ाइल संपादित करें" : language === "gu" ? "પ્રોફાઇલ સંપાદિત કરો" : "Edit Profile"}
               id="profile-avatar-btn"
             >
@@ -1617,10 +1646,9 @@ export default function MainApp() {
             </button>
           )}
 
-          {/* Settings Button */}
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="p-1.5 rounded-full bg-teal-700/50 border border-teal-500/25 text-teal-100 hover:text-white hover:bg-teal-700/70 transition-all active:scale-95 shrink-0 flex items-center justify-center"
+            className="p-1.5 rounded-full bg-teal-700/50 border border-teal-500/25 text-teal-100 hover:text-white hover:bg-teal-700/70 transition-all active:scale-95 shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px]"
             title="Settings"
             id="settings-btn"
           >
@@ -1629,9 +1657,15 @@ export default function MainApp() {
         </div>
       </header>
 
+      {/* DESKTOP/TABLET PAGE TITLE BAR — visible only on md+ */}
+      <div className="hidden md:flex items-center px-6 lg:px-10 py-3 border-b border-slate-200 bg-white shrink-0 z-20">
+        <h1 className="text-lg lg:text-xl font-bold text-slate-800">{tabTitles[activeTab] || t.home}</h1>
+        <div className="ml-3 h-0.5 flex-1 max-w-[80px] bg-teal-500 rounded-full" />
+      </div>
+
       {/* CONTENT AREA */}
-      <div className="flex-grow overflow-y-auto no-scrollbar bg-slate-50 pb-20 relative">
-        {/* Sticky Patient Banner */}
+      <div className="flex-grow overflow-y-auto no-scrollbar bg-slate-50 pb-20 md:pb-6 relative">
+        <div className="w-full md:px-6 lg:px-10 md:max-w-3xl md:mx-auto">
         {ashaModeActive && activePatientId && (
           (() => {
             const activePatient = patientsList.find(p => p.id === activePatientId);
@@ -1792,7 +1826,10 @@ export default function MainApp() {
             userProfile={userProfile}
           />
         )}
+        </div>
       </div>
+
+      {/* Add responsive padding for content area on wider screens */}
 
       {/* BOTTOM NAVIGATION switcher */}
       <BottomNav activeTab={activeTab} setActiveTab={handleTabChange} />
@@ -1809,7 +1846,7 @@ export default function MainApp() {
 
       {/* MEDICINE REMINDER MODAL POPUP */}
       {pendingReminderAlert && (
-        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+        <div className="absolute inset-0 md:fixed md:inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center animate-bounce">
               <Bell className="w-8 h-8" />
@@ -1841,7 +1878,7 @@ export default function MainApp() {
 
       {/* GLOBAL SETTINGS MODAL */}
       {showSettingsModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn text-left">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fadeIn text-left">
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full space-y-5 animate-scaleUp">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2 text-slate-800">
@@ -2020,11 +2057,20 @@ export default function MainApp() {
       {renderProfileModal()}
 
       {welcomeToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-teal-900/95 backdrop-blur-sm border border-teal-500/30 text-emerald-350 px-5 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-2 font-black text-xs animate-scaleUp">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-teal-900/95 backdrop-blur-sm border border-teal-500/30 text-emerald-300 px-5 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-2 font-black text-xs animate-scaleUp">
           <Heart className="w-4 h-4 text-emerald-400 fill-emerald-400 animate-pulse" />
           <span>{welcomeToast}</span>
         </div>
       )}
     </main>
+
+      {/* RIGHT PANEL (desktop ≥1200px) */}
+      <RightPanel
+        userProfile={userProfile}
+        recordsList={recordsList}
+        vitalsHistory={vitalsHistory}
+        setActiveTab={handleTabChange}
+      />
+    </div>
   );
 }

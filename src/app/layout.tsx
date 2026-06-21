@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/context/LanguageContext";
 
-const inter = Inter({ subsets: ["latin"] });
+
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -49,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased bg-slate-900 min-h-screen flex items-center justify-center p-0 sm:p-4`}>
+      <body className={`antialiased bg-white md:bg-slate-50 min-h-screen overflow-x-hidden`} style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
         <LanguageProvider>
           {children}
         </LanguageProvider>

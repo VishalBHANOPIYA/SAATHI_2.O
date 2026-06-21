@@ -8,10 +8,27 @@
 }
 
 /* Custom styles for native mobile app feel */
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    font-size: 16px;
+  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

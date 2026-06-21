@@ -14,7 +14,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
   const { t } = useLanguage();
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-2.5 px-3 flex justify-between items-center z-30 shadow-lg shrink-0">
+    <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-2.5 px-3 flex justify-between items-center z-30 shadow-lg shrink-0">
       <button
         onClick={() => setActiveTab("home")}
         className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
