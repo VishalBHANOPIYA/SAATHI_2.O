@@ -559,13 +559,13 @@ export default function MainApp() {
   // --- ONBOARDING UI ---
   const renderOnboarding = () => {
     return (
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-900 via-teal-950 to-emerald-950 text-white z-50 flex flex-col font-sans p-6 justify-between select-none animate-fadeIn">
+      <div className="absolute inset-0 bg-gradient-to-br from-teal-900 via-teal-950 to-emerald-950 text-white z-50 flex flex-col font-sans p-6 sm:p-10 md:p-16 justify-between select-none animate-fadeIn items-center">
         {/* Decorative background blurs */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/20 rounded-full blur-3xl pointer-events-none -translate-x-1/4 translate-y-1/4" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/4 -translate-y-1/4" />
 
         {/* Top Header */}
-        <div className="flex justify-between items-center z-10 shrink-0">
+        <div className="flex justify-between items-center z-10 shrink-0 w-full max-w-lg">
           <div className="flex items-center gap-1.5">
             <Heart className="w-5 h-5 text-emerald-400 fill-emerald-400 animate-pulse" />
             <span className="font-black text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">Saathi</span>
@@ -579,7 +579,7 @@ export default function MainApp() {
 
         {/* STEP 0: Welcome & Language selection */}
         {onboardStep === 0 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-scaleUp text-center">
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-scaleUp text-center w-full max-w-lg">
             <div className="space-y-2">
               <div className="w-20 h-20 bg-teal-550/20 rounded-3xl flex items-center justify-center mx-auto border border-teal-400/20 animate-pulse">
                 <Heart className="w-10 h-10 text-teal-300 fill-teal-400/20" />
@@ -592,7 +592,7 @@ export default function MainApp() {
               </p>
             </div>
 
-            <div className="space-y-3 pt-6 max-w-xs mx-auto w-full">
+            <div className="space-y-3 pt-6 w-full">
               <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block">
                 Select Your Language / भाषा चुनें / ભાષા પસંદ કરો
               </span>
@@ -621,7 +621,7 @@ export default function MainApp() {
             <div className="pt-4">
               <button
                 onClick={() => setOnboardStep(1)}
-                className="w-full max-w-xs py-3.5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center justify-center gap-1.5 mx-auto"
+                className="w-full py-3.5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center justify-center gap-1.5 mx-auto"
               >
                 <span>{language === "hi" ? "शुरू करें" : language === "gu" ? "શરૂ કરો" : "Get Started"}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -632,7 +632,7 @@ export default function MainApp() {
 
         {/* Slide 1 */}
         {onboardStep === 1 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left">
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
                 {language === "hi" ? "सुविधा १: कैमरा जांच" : language === "gu" ? "સુવિધા ૧: કેમેરા તપાસ" : "Feature 1: Camera Screening"}
@@ -743,7 +743,7 @@ export default function MainApp() {
 
         {/* Slide 2 */}
         {onboardStep === 2 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left">
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
                 {language === "hi" ? "सुविधा २: वाइटल्स और आवाज जांच" : language === "gu" ? "સુવિધા ૨: વાઇટલ્સ અને અવાજ તપાસ" : "Feature 2: Vitals & Voice"}
@@ -797,7 +797,7 @@ export default function MainApp() {
 
         {/* Slide 3 */}
         {onboardStep === 3 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left">
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
                 {language === "hi" ? "सुविधा ३: पूर्ण स्वास्थ्य प्रबंधन" : language === "gu" ? "સુવિધા ૩: પૂર્ણ સ્વાસ્થ્ય સંચાલન" : "Feature 3: Complete Health"}
@@ -851,7 +851,7 @@ export default function MainApp() {
 
         {/* Slide navigation controls */}
         {onboardStep >= 1 && onboardStep <= 3 && (
-          <div className="flex justify-between items-center gap-3 z-10 pt-4 border-t border-white/10 shrink-0">
+          <div className="flex justify-between items-center gap-3 z-10 pt-4 border-t border-white/10 shrink-0 w-full max-w-lg">
             <button
               onClick={() => setOnboardStep(prev => prev - 1)}
               className="py-3 px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold transition-all text-slate-350"
@@ -883,7 +883,7 @@ export default function MainApp() {
 
         {/* STEP 4: Profile intake form */}
         {onboardStep === 4 && (
-          <div className="flex-1 flex flex-col justify-between z-10 text-left h-full overflow-hidden">
+          <div className="flex-1 flex flex-col justify-between z-10 text-left h-full overflow-hidden w-full max-w-lg">
             <div className="space-y-4 overflow-y-auto no-scrollbar pb-4 flex-1 pr-1">
               <div className="flex justify-between items-center border-b border-white/10 pb-3">
                 <h3 className="text-md font-black tracking-tight text-white flex items-center gap-2">
@@ -1564,26 +1564,28 @@ export default function MainApp() {
   };
 
   return (
+    <>
+      {/* FULL-SCREEN ONBOARDING OVERLAY — covers entire viewport on all devices */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-[100] w-screen h-[100dvh]">
+          {renderOnboarding()}
+        </div>
+      )}
+
     <div className="flex w-full min-h-[100dvh] overflow-x-hidden">
-      {/* SIDEBAR (md+) */}
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={handleTabChange}
-        userProfile={userProfile}
-        onOpenSettings={() => setShowSettingsModal(true)}
-        onOpenProfile={openProfileFromSidebar}
-      />
+      {/* SIDEBAR (md+) — hidden during onboarding */}
+      {!showOnboarding && (
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          userProfile={userProfile}
+          onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenProfile={openProfileFromSidebar}
+        />
+      )}
 
       {/* MAIN CONTENT COLUMN */}
       <main className="flex-1 flex flex-col h-[100dvh] bg-white relative overflow-hidden">
-        {/* ONBOARDING */}
-        {showOnboarding && (
-          <div className="absolute inset-0 z-50 md:flex md:items-center md:justify-center md:bg-slate-900/80 md:backdrop-blur-sm">
-            <div className="w-full h-full md:w-full md:max-w-lg md:h-auto md:max-h-[90vh] md:overflow-y-auto md:rounded-3xl md:shadow-2xl">
-              {renderOnboarding()}
-            </div>
-          </div>
-        )}
 
       {/* PERSISTENT DISCLAIMER BANNER */}
       <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-start gap-1.5 shrink-0 z-35 shadow-sm text-left">
@@ -2064,13 +2066,16 @@ export default function MainApp() {
       )}
     </main>
 
-      {/* RIGHT PANEL (desktop ≥1200px) */}
-      <RightPanel
-        userProfile={userProfile}
-        recordsList={recordsList}
-        vitalsHistory={vitalsHistory}
-        setActiveTab={handleTabChange}
-      />
+      {/* RIGHT PANEL (desktop ≥1200px) — hidden during onboarding */}
+      {!showOnboarding && (
+        <RightPanel
+          userProfile={userProfile}
+          recordsList={recordsList}
+          vitalsHistory={vitalsHistory}
+          setActiveTab={handleTabChange}
+        />
+      )}
     </div>
+    </>
   );
 }
