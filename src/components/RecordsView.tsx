@@ -811,7 +811,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       )}
 
       {/* ABHA HEALTH ID CARD (ABDM) */}
-      <div className="bg-gradient-to-r from-blue-650 to-indigo-650 rounded-2xl p-4 text-white shadow-md relative overflow-hidden border border-blue-500/10">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-md relative overflow-hidden border border-blue-500/10">
         <div className="absolute right-[-10px] top-[-10px] w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
         <div className="flex justify-between items-start mb-3">
           <div>
