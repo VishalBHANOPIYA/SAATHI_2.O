@@ -1045,14 +1045,14 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           <div className="flex gap-2 w-full max-w-xs pt-2">
             <button
               onClick={stopRecording}
-              className="flex-grow bg-emerald-605 hover:bg-emerald-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px]"
+              className="flex-grow bg-emerald-650 hover:bg-emerald-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
             >
-              <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
+              <div className="w-2.5 h-2.5 bg-white rounded-[2px] shrink-0" />
               <span>{l.stop}</span>
             </button>
             <button
               onClick={cancelRecording}
-              className="px-5 border border-slate-200 text-slate-500 font-extrabold text-xs rounded-xl hover:bg-slate-55 transition-colors min-h-[44px]"
+              className="px-5 border border-slate-200 text-slate-500 font-extrabold text-xs rounded-xl hover:bg-slate-50 transition-colors min-h-[44px]"
             >
               {l.cancel}
             </button>
@@ -1122,7 +1122,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                 </button>
                 <button
                   onClick={resetTriageFlow}
-                  className="bg-slate-55 hover:bg-slate-100 text-slate-500 border border-slate-200 font-extrabold text-[10px] py-2 px-3 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all shadow-sm min-h-[36px]"
+                  className="bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-extrabold text-[10px] py-2 px-3 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all shadow-sm min-h-[36px]"
                 >
                   <span>{language === "hi" ? "रद्द करें" : language === "gu" ? "રદ કરો" : "Reset"}</span>
                 </button>
@@ -1156,7 +1156,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
               </button>
               <button
                 onClick={resetTriageFlow}
-                className="px-4 border border-slate-200 text-slate-650 font-bold text-xs rounded-xl hover:bg-slate-55 transition-colors min-h-[44px]"
+                className="px-4 border border-slate-200 text-slate-650 font-bold text-xs rounded-xl hover:bg-slate-50 transition-colors min-h-[44px]"
               >
                 {l.btnRecordAgain}
               </button>
