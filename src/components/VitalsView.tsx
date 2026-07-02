@@ -11,7 +11,8 @@ import {
   X,
   Sparkles,
   Volume2,
-  VolumeX
+  VolumeX,
+  SwitchCamera
 } from "lucide-react";
 import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
 import {
@@ -25,6 +26,7 @@ import {
   Legend
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
+import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { resampleSignal, estimateVitalsForWindow, detrend, computeChromSignal } from "../utils/vitalsRppg";
 
@@ -205,10 +207,13 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
   userProfile = null
 }) => {
   const { language, t } = useLanguage();
-  const sTrans = scannerTranslations[language] || scannerTranslations.en;
+  const sTrans = scannerTranslations[language as keyof typeof scannerTranslations] || scannerTranslations.en;
   const profileAge = userProfile?.age ? Number(userProfile.age) : null;
 
   const [scanState, setScanState] = useState<"idle" | "permissions" | "scanning" | "completed" | "error">("idle");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [obstructionWarning, setObstructionWarning] = useState(false);
+  const [movementWarning, setMovementWarning] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [finalSignal, setFinalSignal] = useState<number[]>([]);
   const [capturedVitals, setCapturedVitals] = useState<{
@@ -279,6 +284,26 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     }
   };
 
+  const toggleFacingMode = async () => {
+    const nextFacing = facingMode === "user" ? "environment" : "user";
+    setFacingMode(nextFacing);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: nextFacing, width: { ideal: 480 }, height: { ideal: 360 } }
+        });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      } catch (err: any) {
+        setErrorMsg("Failed to switch camera: " + err.message);
+      }
+    }
+  };
+
   const startCameraScan = async () => {
     setScanState("permissions");
     setErrorMsg("");
@@ -299,7 +324,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 360 } }
+        video: { facingMode: facingMode, width: { ideal: 480 }, height: { ideal: 360 } }
       });
       streamRef.current = stream;
 
@@ -326,8 +351,10 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         const h = canvas.height;
 
         ctx.save();
-        ctx.translate(w, 0);
-        ctx.scale(-1, 1);
+        if (facingMode === "user") {
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+        }
         ctx.drawImage(video, 0, 0, w, h);
         ctx.restore();
 
@@ -360,26 +387,43 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         ctx.fillText("Cheek L", clxS, cyS - 3);
         ctx.fillText("Cheek R", crxS, cyS - 3);
 
+        let fR = 0, fG = 0, fB = 0, fCount = 0;
+        let lR = 0, lG = 0, lB = 0, lCount = 0;
+        let rR = 0, rG = 0, rB = 0, rCount = 0;
+
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             const isForehead = (y >= fyS && y <= fyE && x >= fxS && x <= fxE);
             const isLeftCheek = (y >= cyS && y <= cyE && x >= clxS && x <= clxE);
             const isRightCheek = (y >= cyS && y <= cyE && x >= crxS && x <= crxE);
 
-            if (isForehead || isLeftCheek || isRightCheek) {
+            if (isForehead) {
               const idx = (y * w + x) * 4;
-              rSum += data[idx];
-              gSum += data[idx + 1];
-              bSum += data[idx + 2];
-              count++;
+              fR += data[idx];
+              fG += data[idx + 1];
+              fB += data[idx + 2];
+              fCount++;
+            } else if (isLeftCheek) {
+              const idx = (y * w + x) * 4;
+              lR += data[idx];
+              lG += data[idx + 1];
+              lB += data[idx + 2];
+              lCount++;
+            } else if (isRightCheek) {
+              const idx = (y * w + x) * 4;
+              rR += data[idx];
+              rG += data[idx + 1];
+              rB += data[idx + 2];
+              rCount++;
             }
           }
         }
 
-        if (count > 0) {
-          const rAvg = rSum / count;
-          const gAvg = gSum / count;
-          const bAvg = bSum / count;
+        const totalCount = fCount + lCount + rCount;
+        if (totalCount > 0) {
+          const rAvg = (fR + lR + rR) / totalCount;
+          const gAvg = (fG + lG + rG) / totalCount;
+          const bAvg = (fB + lB + rB) / totalCount;
 
           signalRRef.current.push(rAvg);
           signalGRef.current.push(gAvg);
@@ -395,6 +439,14 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             liveFpsRef.current = calculatedFps;
           }
 
+          // Obstruction warning logic (Fix 6): if forehead or cheeks are too dark, or there is a huge mismatch (asymmetry)
+          const fAvgInt = fCount > 0 ? (fR + fG + fB) / (3 * fCount) : 0;
+          const lAvgInt = lCount > 0 ? (lR + lG + lB) / (3 * lCount) : 0;
+          const rAvgInt = rCount > 0 ? (rR + rG + rB) / (3 * rCount) : 0;
+
+          const isObstructed = fAvgInt < 25 || lAvgInt < 25 || rAvgInt < 25 || Math.abs(lAvgInt - rAvgInt) > 55;
+          setObstructionWarning(isObstructed);
+
           const currentY = 0.299 * rAvg + 0.587 * gAvg + 0.114 * bAvg;
           const nFrames = signalRRef.current.length;
           if (nFrames > 10) {
@@ -404,12 +456,20 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             }
             const yAvg = ySum / nFrames;
             const deviation = Math.abs(currentY - yAvg) / yAvg;
+
+            // Set warnings based on deviation thresholds (Fix 6)
             if (deviation > 0.20) {
               setBrightnessWarning(true);
               brightnessWarningRef.current = true;
+              setMovementWarning(false);
+            } else if (deviation > 0.10) {
+              setBrightnessWarning(false);
+              brightnessWarningRef.current = false;
+              setMovementWarning(true);
             } else {
               setBrightnessWarning(false);
               brightnessWarningRef.current = false;
+              setMovementWarning(false);
             }
           }
         }
@@ -545,13 +605,21 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     const medianBR = Math.round(getMedian(brs));
     const medianSNR = getMedian(snrs);
 
-    const snrThreshold = 1.25;
+    const snrThreshold = 0.8;
     let qualityError: string | null = null;
 
     if (medianSNR < snrThreshold) {
-      qualityError = "Poor signal — improve lighting, hold still, retry";
+      qualityError = language === "hi" 
+        ? "कम विश्वसनीयता / खराब सिग्नल गुणवत्ता, कृपया उचित प्रकाश व्यवस्था में पुन: स्कैन करें" 
+        : language === "gu" 
+        ? "ઓછી વિશ્વસનીયતા / નબળી સિગ્નલ ગુણવત્તા, કૃપા કરીને યોગ્ય લાઇટિંગમાં ફરીથી સ્કેન કરો" 
+        : "Low Confidence / poor signal quality, please scan again under proper lighting";
     } else if (medianHR < 40 || medianHR > 180) {
-      qualityError = "Poor signal — improve lighting, hold still, retry";
+      qualityError = language === "hi" 
+        ? "अस्थिर पल्स रीडिंग - कृपया सीधे कैमरे के सामने शांत बैठें और दोबारा प्रयास करें" 
+        : language === "gu" 
+        ? "અસ્થિર પલ્સ રીડિંગ - કૃપા કરીને સીધા કેમેરાની સામે શાંત બેસો અને ફરી પ્રયાસ કરો" 
+        : "Unstable pulse reading - please sit still directly facing the camera and retry";
     }
 
     const detrendedR = detrend(resampledR);
@@ -700,20 +768,46 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           />
 
           {scanState === "scanning" && (
-            <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-white font-bold text-[10px] px-3 py-1.5 rounded-full flex flex-col items-end gap-0.5 border border-white/20 shadow-md">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                <span>{secondsLeft}s {language === "hi" ? "शेष" : language === "gu" ? "બાકી" : "left"}</span>
+            <>
+              {/* Timer & FPS Badge */}
+              <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white font-bold text-[10px] px-3 py-1.5 rounded-full flex flex-col items-start gap-0.5 border border-white/20 shadow-md">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span>{secondsLeft}s {language === "hi" ? "शेष" : language === "gu" ? "બાકી" : "left"}</span>
+                </div>
+                <span className="text-[8px] text-slate-300 font-normal">
+                  {30 - secondsLeft}s elapsed | {liveFps.toFixed(1)} FPS
+                </span>
               </div>
-              <span className="text-[8px] text-slate-300 font-normal">
-                {30 - secondsLeft}s elapsed | {liveFps.toFixed(1)} FPS
-              </span>
-            </div>
+
+              {/* Floating Camera Flip Button (Fix 1) */}
+              <button
+                onClick={toggleFacingMode}
+                className="absolute top-3 right-3 z-30 w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 hover:bg-black/80 transition-all active:scale-90 shadow-md"
+                title="Flip Camera"
+              >
+                <SwitchCamera className="w-4 h-4 text-white" />
+              </button>
+            </>
           )}
 
-          {scanState === "scanning" && brightnessWarning && (
-            <div className="absolute top-16 left-3 right-3 bg-red-500/95 backdrop-blur-sm text-white text-center text-[10px] font-bold py-1.5 px-3 rounded-lg border border-red-400/30 animate-pulse shadow-md z-10">
-              ⚠️ {language === "hi" ? "चेतावनी: प्रकाश बदल रहा है या हलचल हो रही है!" : language === "gu" ? "ચેતવણી: પ્રકાશ બદલાઈ રહ્યો છે અથવા હલનચલન થાય છે!" : "WARNING: Lighting unstable or face moving!"}
+          {scanState === "scanning" && (
+            <div className="absolute top-16 left-3 right-3 flex flex-col gap-1.5 z-10">
+              {brightnessWarning && (
+                <div className="bg-red-500/95 backdrop-blur-sm text-white text-center text-[10px] font-bold py-1.5 px-3 rounded-lg border border-red-400/30 animate-pulse shadow-md">
+                  ⚠️ {language === "hi" ? "चेतावनी: अस्थिर प्रकाश या अत्यधिक हलचल!" : language === "gu" ? "ચેતવણી: અસ્થિર પ્રકાશ અથવા ભારે હલનચલન!" : "WARNING: Unstable lighting or extreme movement!"}
+                </div>
+              )}
+              {movementWarning && !brightnessWarning && (
+                <div className="bg-amber-500/95 backdrop-blur-sm text-white text-center text-[10px] font-bold py-1.5 px-3 rounded-lg border border-amber-400/30 animate-pulse shadow-md">
+                  ⚠️ {language === "hi" ? "चेतावनी: हलचल का पता चला, कृपया स्थिर रहें!" : language === "gu" ? "ચેતવણી: હલનચલન જણાયું, કૃપા કરીને સ્થિર રહો!" : "WARNING: Movement detected, please hold still!"}
+                </div>
+              )}
+              {obstructionWarning && (
+                <div className="bg-red-600/95 backdrop-blur-sm text-white text-center text-[10px] font-bold py-1.5 px-3 rounded-lg border border-red-500/30 animate-pulse shadow-md">
+                  🕶️ {language === "hi" ? "चेतावनी: चेहरा ढका हुआ है या छाया है (चश्मा/बाल हटाएं)!" : language === "gu" ? "ચેતવણી: ચહેરો ઢંકાયેલો છે અથવા પડછાયો છે (ચશ્મા/વાળ દૂર કરો)!" : "WARNING: Face obstructed or shadow (remove glasses/hair)!"}
+                </div>
+              )}
             </div>
           )}
 
@@ -833,6 +927,39 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             <span className="text-[9px] text-slate-400 mt-1 font-semibold">Normal: {getNormalRanges(profileAge).br}</span>
           </div>
         </div>
+
+        {/* Tiered Confidence Feedback (Fix 5) */}
+        {capturedVitals.snr !== undefined && (
+          <div className={`p-3 rounded-2xl border flex items-start gap-2.5 shadow-sm text-left animate-fadeIn ${
+            capturedVitals.snr >= 1.5 
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800" 
+              : capturedVitals.snr >= 0.8
+              ? "bg-amber-50 border-amber-200 text-amber-800"
+              : "bg-red-50 border-red-200 text-red-800"
+          }`}>
+            <AlertTriangle className={`w-4.5 h-4.5 shrink-0 mt-0.5 ${
+              capturedVitals.snr >= 1.5 ? "text-emerald-600" : capturedVitals.snr >= 0.8 ? "text-amber-600" : "text-red-600"
+            }`} />
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-wider">
+                {capturedVitals.snr >= 1.5 
+                  ? (language === "hi" ? "उच्च विश्वसनीयता / उच्च गुणवत्ता सिग्नल" : language === "gu" ? "ઉચ્ચ વિશ્વસનીયતા / ઉચ્ચ ગુણવત્તા સિગ્નલ" : "High Confidence / high quality signal")
+                  : capturedVitals.snr >= 0.8
+                  ? (language === "hi" ? "मध्यम विश्वसनीयता / मध्यम गुणवत्ता सिग्नल" : language === "gu" ? "મધ્યમ વિશ્વસનીયતા / મધ્યમ ગુણવત્તા સિગ્નલ" : "Medium Confidence / moderate signal quality")
+                  : (language === "hi" ? "कम विश्वसनीयता / खराब सिग्नल गुणवत्ता" : language === "gu" ? "ઓછી વિશ્વસનીયતા / નબળી સિગ્નલ ગુણવત્તા" : "Low Confidence / poor signal quality")
+                }
+              </h4>
+              <p className="text-[9px] font-semibold opacity-90 mt-0.5 leading-normal">
+                {capturedVitals.snr >= 1.5 
+                  ? (language === "hi" ? "सिग्नल स्पष्ट और मजबूत है। आपके अनुमानित वाइटल्स अत्यधिक सटीक हैं।" : language === "gu" ? "સિગ્નલ સ્પષ્ટ અને મજબૂત છે. તમારા અંદાજિત વાઇટલ્સ અત્યંત સચોટ છે." : "The signal is clear and strong. Your estimated vitals have high baseline accuracy.")
+                  : capturedVitals.snr >= 0.8
+                  ? (language === "hi" ? "सिग्नल स्वीकार्य है लेकिन मामूली उतार-चढ़ाव हैं। सलाह दी जाती है कि शांत बैठें और सर्वोत्तम परिणामों के लिए पर्याप्त रोशनी में स्कैन करें।" : language === "gu" ? "સિગ્નલ સ્વીકાર્ય છે પરંતુ નજીવો ફેરફાર છે. શાંત બેસવા અને શ્રેષ્ઠ પરિણામો માટે સારી લાઇટિંગમાં સ્કેન કરવાની સલાહ આપવામાં આવે છે." : "The signal is acceptable but contains minor noise. For highest accuracy, sit still and scan under good, direct lighting.")
+                  : (language === "hi" ? "पर्याप्त रोशनी की कमी या हलचल के कारण ग्रीन पल्स सिग्नल बहुत कमजोर है। कृपया प्रकाश की स्थिति सुधारें और दोबारा प्रयास करें।" : language === "gu" ? "પ્રકાશની ઉણપ અથવા હલનચલનને કારણે સિગ્નલ નબળું છે. કૃપા કરીને પ્રકાશ સુધારો અને ફરી પ્રયાસ કરો." : "The green pulse signal is too weak due to poor lighting or excessive movement. Please improve lighting, sit still, and retry.")
+                }
+              </p>
+            </div>
+          </div>
+        )}
 
         {capturedVitals.hrList && capturedVitals.hrList.length > 0 && (
           <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 shadow-sm space-y-2">
@@ -1136,6 +1263,9 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           </div>
         </div>
       )}
+
+      {/* Collapsible Clinical Disclaimer (Fix 4) */}
+      <ClinicalDisclaimer />
     </div>
   );
 });

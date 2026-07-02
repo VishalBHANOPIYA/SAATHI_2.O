@@ -9,9 +9,14 @@ import {
   Loader2,
   Volume2,
   VolumeX,
-  Share2
+  Share2,
+  SwitchCamera,
+  ChevronDown,
+  Search,
+  Check
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
 import { shareHealthReport } from "@/utils/shareHelper";
@@ -248,7 +253,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   userProfile
 }) => {
   const { language, t } = useLanguage();
-  const sTrans = screenTranslations[language] || screenTranslations.en;
+  const sTrans = screenTranslations[language as keyof typeof screenTranslations] || screenTranslations.en;
 
   const [screenMode, setScreenMode] = useState<"camera" | "symptoms">("camera");
   const [selectedCondition, setSelectedCondition] = useState<"anemia" | "jaundice" | "skin">("anemia");
@@ -268,6 +273,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [screenToast, setScreenToast] = useState<{ message: string; type: "error" | "success" | "info" } | null>(null);
   const [isCapturingMulti, setIsCapturingMulti] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
 
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -328,7 +334,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     setTimeout(async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment", width: { ideal: 480 }, height: { ideal: 480 } }
+          video: { facingMode: facingMode, width: { ideal: 480 }, height: { ideal: 480 } }
         });
         if (screenVideoRef.current) {
           screenVideoRef.current.srcObject = stream;
@@ -337,6 +343,37 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       } catch (err) {
         console.error("Failed to open camera for screening:", err);
         alert("Failed to access camera. You can still upload a photo instead.");
+        setScreenStep("select");
+      }
+    }, 100);
+  };
+
+  const toggleCameraFacing = async () => {
+    const newMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newMode);
+    stopScreenCameraStream();
+
+    isStaticUploadRef.current = false;
+    setIsSampleImage(false);
+    setScreenStep("capture");
+    setScreenImage(null);
+    setRoiCoords(null);
+    setAvgColor(null);
+    setScreenResults(null);
+
+    // Wait briefly for elements to mount
+    setTimeout(async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: newMode, width: { ideal: 480 }, height: { ideal: 480 } }
+        });
+        if (screenVideoRef.current) {
+          screenVideoRef.current.srcObject = stream;
+          screenVideoRef.current.play();
+        }
+      } catch (err) {
+        console.error("Failed to switch camera:", err);
+        alert("Failed to switch camera direction. Reverting.");
         setScreenStep("select");
       }
     }, 100);
@@ -1173,10 +1210,19 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
               <div className="relative w-full aspect-square max-w-[320px] rounded-xl overflow-hidden bg-black border-2 border-slate-800">
                 <video
                   ref={screenVideoRef}
-                  className="w-full h-full object-cover transform -scale-x-100"
+                  className={`w-full h-full object-cover transform ${facingMode === "user" ? "-scale-x-100" : ""}`}
                   playsInline
                   muted
                 />
+                {/* Floating camera flip button (Fix 1) */}
+                <button
+                  type="button"
+                  onClick={toggleCameraFacing}
+                  className="absolute top-3 right-3 bg-slate-900/60 hover:bg-slate-900/80 text-white p-2.5 rounded-full shadow-lg border border-white/20 transition-all active:scale-95 z-30 flex items-center justify-center"
+                  title="Flip Camera"
+                >
+                  <SwitchCamera className="w-4 h-4 text-white" />
+                </button>
                 {/* Absolute guide box overlay */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-[180px] h-[180px] border-2 border-dashed border-teal-400 rounded-xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
@@ -1579,6 +1625,9 @@ Shared via Saathi.`;
           )}
         </>
       )}
+
+      {/* Collapsible Clinical Disclaimer (Fix 4) */}
+      <ClinicalDisclaimer />
     </div>
   );
 });

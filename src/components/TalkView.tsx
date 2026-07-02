@@ -480,11 +480,13 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [triageHistory, setTriageHistory] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const [chatInput, setChatInput] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<any>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -493,6 +495,12 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (triageHistory.length > 0) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [triageHistory]);
 
   const formatDuration = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -605,9 +613,11 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       const data = await res.json();
       if (data.success) {
         if (triageHistory.length > 0) {
-          setChatInput(data.text);
+          setChatInput("");
+          submitFollowUpAnswer(data.text);
         } else {
           setTranscriptText(data.text);
+          handleTriage(data.text);
         }
       } else {
         throw new Error(data.error || "Failed to transcribe audio.");
@@ -674,6 +684,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             ...updatedHistory,
             { role: "assistant" as const, content: data.follow_up_question }
           ]);
+          speakAssistantMessage(data.follow_up_question);
         } else if (data.triageResult) {
           const latencySec = ((Date.now() - startTime) / 1000).toFixed(1);
           const enrichedResult = {
@@ -682,6 +693,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             resolvedVia: data.isMock ? "Groq Cloud Mock" : "Groq Cloud API"
           };
           setTriageResult(enrichedResult);
+          speakTriageResult(enrichedResult);
           
           // Save case to health records if Yellow or Red
           const severityEmoji = enrichedResult.triage === "RED" ? "🚨 RED" : enrichedResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
@@ -726,6 +738,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         resolvedVia: isRateLimit ? "Local Rule Engine (System Busy Fallback)" : "Local Rule Engine"
       };
       setTriageResult(enrichedOfflineResult);
+      speakTriageResult(enrichedOfflineResult);
       
       const severityEmoji = enrichedOfflineResult.triage === "RED" ? "🚨 RED" : enrichedOfflineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
       const concern = enrichedOfflineResult.possible_concerns.join(", ") || "Symptom Check";
@@ -752,12 +765,46 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     }
   };
 
-  const handleTriage = async () => {
-    if (!transcriptText.trim()) return;
+  const speakAssistantMessage = (text: string) => {
+    if (isMuted || !isSpeechSupported()) return;
+    speakText(
+      text,
+      language,
+      () => {},
+      () => {},
+      (err) => console.error("Assistant Speech error:", err)
+    );
+  };
+
+  const speakTriageResult = (res: any) => {
+    if (isMuted || !isSpeechSupported()) return;
+    let textToSpeak = "";
+    if (language === "hi") {
+      const severity = res.triage === "RED" ? "लाल (तुरंत डॉक्टर से मिलें)" : res.triage === "YELLOW" ? "पीला (जल्द ही डॉक्टर से परामर्श लें)" : "हरा (सुरक्षित)";
+      textToSpeak = `जांच पूरी हो गई है। ट्राइएज स्तर ${severity} है। सलाह है: ${res.advice}। कारण: ${res.reason}`;
+    } else if (language === "gu") {
+      const severity = res.triage === "RED" ? "લાલ (તાત્કાલિક ડૉક્ટરને મળો)" : res.triage === "YELLOW" ? "પીળો (ટૂંક સમયમાં ડૉક્ટરની સલાહ લો)" : "લીલો (સુરક્ષિત)";
+      textToSpeak = `તપાસ પૂર્ણ થઈ ગઈ છે. ટ્રાયેજ સ્તર ${severity} છે. સલાહ છે: ${res.advice}। કારણ: ${res.reason}`;
+    } else {
+      const severity = res.triage === "RED" ? "Red, seek immediate medical attention" : res.triage === "YELLOW" ? "Yellow, consult a doctor soon" : "Green, you appear safe";
+      textToSpeak = `Triage complete. Your status is ${severity}. Recommended advice: ${res.advice}. Assessment reason: ${res.reason}`;
+    }
+    speakText(
+      textToSpeak,
+      language,
+      () => {},
+      () => {},
+      (err) => console.error("Triage Speech error:", err)
+    );
+  };
+
+  const handleTriage = async (overrideText?: string) => {
+    const finalTxt = typeof overrideText === "string" ? overrideText : transcriptText;
+    if (!finalTxt.trim()) return;
     setIsTriaging(true);
     setTalkError(null);
 
-    const initialHistory = [{ role: "user" as const, content: transcriptText }];
+    const initialHistory = [{ role: "user" as const, content: finalTxt }];
     setTriageHistory(initialHistory);
 
     const startTime = Date.now();
@@ -775,7 +822,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          transcript: transcriptText,
+          transcript: finalTxt,
           history: initialHistory,
           language,
           userProfile
@@ -789,6 +836,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             ...initialHistory,
             { role: "assistant" as const, content: data.follow_up_question }
           ]);
+          speakAssistantMessage(data.follow_up_question);
         } else if (data.triageResult) {
           const latencySec = ((Date.now() - startTime) / 1000).toFixed(1);
           const enrichedResult = {
@@ -797,6 +845,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             resolvedVia: data.isMock ? "Groq Cloud Mock" : "Groq Cloud API"
           };
           setTriageResult(enrichedResult);
+          speakTriageResult(enrichedResult);
           
           // Save case to health records if Yellow or Red
           const severityEmoji = enrichedResult.triage === "RED" ? "🚨 RED" : enrichedResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
@@ -830,7 +879,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       console.warn("Triage failed, running offline fallback triage engine:", err);
       // Run offline triage engine
       const startTimeOffline = Date.now();
-      const offlineResult = performOfflineTriage(transcriptText, language);
+      const offlineResult = performOfflineTriage(finalTxt, language);
       const latencySec = ((Date.now() - startTimeOffline) / 1000).toFixed(2);
       
       const enrichedOfflineResult = {
@@ -840,6 +889,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         resolvedVia: isRateLimit ? "Local Rule Engine (System Busy Fallback)" : "Local Rule Engine"
       };
       setTriageResult(enrichedOfflineResult);
+      speakTriageResult(enrichedOfflineResult);
       
       const severityEmoji = enrichedOfflineResult.triage === "RED" ? "🚨 RED" : enrichedOfflineResult.triage === "YELLOW" ? "⚠️ YELLOW" : "🟢 GREEN";
       const concern = enrichedOfflineResult.possible_concerns.join(", ") || "Symptom Check";
@@ -879,12 +929,31 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
   return (
     <div className="p-4 space-y-4 animate-fadeIn text-left">
-      <div className="space-y-1">
-        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <Mic className="w-5 h-5 text-teal-600" />
-          {l.header}
-        </h2>
-        <p className="text-xs text-slate-500 leading-normal">{l.desc}</p>
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <Mic className="w-5 h-5 text-teal-650" />
+            {l.header}
+          </h2>
+          <p className="text-xs text-slate-500 leading-normal">{l.desc}</p>
+        </div>
+        <button
+          onClick={() => {
+            const nextMute = !isMuted;
+            setIsMuted(nextMute);
+            if (nextMute) {
+              stopSpeaking();
+            }
+          }}
+          className={`p-2 rounded-xl border transition-all ${
+            isMuted
+              ? "bg-red-50 text-red-500 border-red-255"
+              : "bg-teal-50 text-teal-605 border-teal-200 hover:bg-teal-100"
+          }`}
+          title={isMuted ? "Unmute Assistant Voice" : "Mute Assistant Voice"}
+        >
+          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-pulse" />}
+        </button>
       </div>
 
       {talkError && (
@@ -995,7 +1064,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
         triageHistory.length > 1 ? (
           /* Follow-up question chat-style flow */
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 animate-fadeIn">
-            <div className="space-y-3 max-h-[300px] overflow-y-auto p-1.5 scrollbar-thin flex flex-col gap-2">
+            <div className="space-y-3 max-h-[300px] overflow-y-auto p-1.5 scrollbar-thin flex flex-col gap-2.5">
               {triageHistory.map((msg, idx) => (
                 <div
                   key={idx}
@@ -1012,6 +1081,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                   </div>
                 </div>
               ))}
+              <div ref={chatEndRef} />
             </div>
 
             {/* Answer input for follow-up */}
@@ -1078,7 +1148,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
             <div className="flex gap-2">
               <button
-                onClick={handleTriage}
+                onClick={() => handleTriage()}
                 className="flex-grow bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <span>{l.btnAnalyze}</span>

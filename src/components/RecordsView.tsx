@@ -364,7 +364,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.setFontSize(10);
     doc.text(`${tPdf.name}:`, 15, 66);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.name || "N/A"}`, 30, 66);
+    doc.text(`${profile.name || "N/A"}`, 45, 66);
 
     doc.setFont("helvetica", "bold");
     doc.text(`${tPdf.ageGender}:`, 15, 72);
@@ -379,13 +379,14 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.setFont("helvetica", "bold");
     doc.text(`${tPdf.contact}:`, 15, 84);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.phone || "N/A"}`, 32, 84);
+    doc.text(`${profile.phone || "N/A"}`, 45, 84);
 
     // Right Column in Profile block
     doc.setFont("helvetica", "bold");
     doc.text(`${tPdf.allergies}:`, 110, 66);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.allergies || "None reported"}`, 130, 66);
+    const allergyVal = profile.allergies || "None reported";
+    doc.text(allergyVal.length > 22 ? allergyVal.substring(0, 22) + "..." : allergyVal, 148, 66);
 
     doc.setFont("helvetica", "bold");
     doc.text(`${tPdf.conditions}:`, 110, 72);
@@ -411,12 +412,13 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
         }).join(", ")
       : "None";
 
-    doc.text(`${condsStr || "None"}`, 134, 72);
+    doc.text(condsStr.length > 22 ? condsStr.substring(0, 22) + "..." : condsStr, 148, 72);
 
     doc.setFont("helvetica", "bold");
     doc.text(`${tPdf.medications}:`, 110, 78);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.medications || "None"}`, 136, 78);
+    const medsVal = profile.medications || "None";
+    doc.text(medsVal.length > 22 ? medsVal.substring(0, 22) + "..." : medsVal, 148, 78);
 
     // Latest Vitals Block
     doc.roundedRect(10, 104, 190, 36, 4, 4, "FD");
@@ -432,7 +434,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       doc.setFont("helvetica", "bold");
       doc.text(`${tPdf.heartRate}:`, 15, 122);
       doc.setFont("helvetica", "normal");
-      doc.text(`${latestVital.heartRate} bpm`, 40, 122);
+      doc.text(`${latestVital.heartRate} bpm`, 58, 122);
 
       doc.setFont("helvetica", "bold");
       doc.text(`${tPdf.oxygen}:`, 15, 128);
@@ -442,12 +444,12 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       doc.setFont("helvetica", "bold");
       doc.text(`${tPdf.bp}:`, 110, 122);
       doc.setFont("helvetica", "normal");
-      doc.text(`${latestVital.systolic || 120}/${latestVital.diastolic || 80} mmHg`, 142, 122);
+      doc.text(`${latestVital.systolic || 120}/${latestVital.diastolic || 80} mmHg`, 148, 122);
 
       doc.setFont("helvetica", "bold");
       doc.text(`${tPdf.date}:`, 110, 128);
       doc.setFont("helvetica", "normal");
-      doc.text(`${latestVital.date || "N/A"}`, 140, 128);
+      doc.text(`${latestVital.date || "N/A"}`, 148, 128);
     } else {
       doc.setFont("helvetica", "normal");
       doc.text(tPdf.noVitals, 15, 124);
@@ -477,8 +479,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       doc.setFont("helvetica", "bold");
       doc.text(`${tPdf.notes}:`, 15, 176);
       doc.setFont("helvetica", "normal");
-      const truncatedNotes = latestScreening.notes.length > 95 ? latestScreening.notes.substring(0, 95) + "..." : latestScreening.notes;
-      doc.text(`${truncatedNotes}`, 30, 176);
+      const truncatedNotes = latestScreening.notes.length > 80 ? latestScreening.notes.substring(0, 80) + "..." : latestScreening.notes;
+      doc.text(`${truncatedNotes}`, 48, 176);
     } else {
       doc.setFont("helvetica", "normal");
       doc.text(tPdf.noScreenings, 15, 166);
@@ -712,32 +714,32 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
   return (
     <div className="p-4 space-y-4 animate-fadeIn overflow-y-auto flex-1 h-full pb-24 text-left">
       {/* Header Info */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div className="space-y-1">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-teal-600" />
+            <FileText className="w-5 h-5 text-teal-655 text-teal-605" />
             {t.recordsHeader}
           </h2>
           <p className="text-xs text-slate-500 leading-normal">{t.recordsDesc}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <button
             onClick={downloadHealthCardPDF}
-            className="bg-teal-50 text-teal-600 p-2.5 rounded-full border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm"
+            className="bg-teal-50 text-teal-605 p-2.5 rounded-xl border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm min-h-[40px] min-w-[40px]"
             title={language === "hi" ? "हेल्थ कार्ड डाउनलोड करें (PDF)" : language === "gu" ? "હેલ્થ કાર્ડ ડાઉનલોડ કરો (PDF)" : "Download Health Card (PDF)"}
           >
             <Download className="w-4 h-4" />
           </button>
           <button
             onClick={handleExportSummary}
-            className="bg-teal-50 text-teal-600 p-2.5 rounded-full border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm"
+            className="bg-teal-50 text-teal-605 p-2.5 rounded-xl border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm min-h-[40px] min-w-[40px]"
             title="Export Summary"
           >
             <Share2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowRecordForm(!showRecordForm)}
-            className="bg-teal-600 text-white p-2.5 rounded-full hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm"
+            className="bg-teal-605 text-white p-2.5 rounded-xl hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm min-h-[40px] min-w-[40px]"
           >
             {showRecordForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           </button>
@@ -855,25 +857,25 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                 ? "ડિજિટલ હેલ્થ મિશન અંતર્ગત તમારા 14-આંકડાના ABHA કાર્ડને કનેક્ટ કરો."
                 : "Link your 14-digit National ABHA Health ID to synchronize diagnostic records across facilities."}
             </p>
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
+            <div className="space-y-1.5">
+              <div className="flex gap-2">
                 <input
                   type="text"
                   placeholder="e.g. 12-3456-7890-1234"
                   value={abhaNumber}
                   onChange={handleAbhaChange}
-                  className="w-full text-xs p-2.5 rounded-xl border border-white/20 bg-white/10 font-bold placeholder-white/40 text-white focus:outline-none focus:border-white focus:bg-white/15 tracking-wider h-[44px]"
+                  className="flex-1 text-xs p-2.5 rounded-xl border border-white/20 bg-white/10 font-bold placeholder-white/40 text-white focus:outline-none focus:border-white focus:bg-white/15 tracking-wider h-[44px]"
                 />
-                {abhaError && (
-                  <span className="absolute left-1 bottom-[-14px] text-[8px] text-red-300 font-bold">{abhaError}</span>
-                )}
+                <button
+                  onClick={handleLinkAbha}
+                  className="bg-white text-blue-700 font-extrabold text-xs px-5 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm min-h-[44px]"
+                >
+                  Link
+                </button>
               </div>
-              <button
-                onClick={handleLinkAbha}
-                className="bg-white text-blue-700 font-extrabold text-xs px-4 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm min-h-[44px]"
-              >
-                Link
-              </button>
+              {abhaError && (
+                <div className="text-[10px] text-red-300 font-bold px-1.5 pt-0.5">{abhaError}</div>
+              )}
             </div>
             <div className="text-[8px] text-blue-200/90 leading-tight border-t border-white/5 pt-2 flex items-start gap-1">
               <Info className="w-2.5 h-2.5 shrink-0 mt-0.5" />

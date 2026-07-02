@@ -12,6 +12,7 @@ interface HealthScoreResult {
   label: string;
   color: "green" | "yellow" | "red";
   biggestFactorKey: string;
+  biggestFactor: string;
 }
 
 export function computeHealthScore(params: ComputeScoreParams, lang: string): HealthScoreResult {
@@ -71,6 +72,18 @@ export function computeHealthScore(params: ComputeScoreParams, lang: string): He
     }
   }
 
+  // Map biggestFactorKey to translated string
+  let biggestFactor = "";
+  if (biggestFactorKey === "screening") {
+    biggestFactor = lang === "hi" ? "स्क्रीनिंग परिणाम" : lang === "gu" ? "સ્ક્રિનિંગ પરિણામો" : "Screening findings";
+  } else if (biggestFactorKey === "vitals") {
+    biggestFactor = lang === "hi" ? "हाल के वाइटल्स" : lang === "gu" ? "તાજેતરના વાઇટલ્સ" : "Recent vital signs";
+  } else if (biggestFactorKey === "conditions") {
+    biggestFactor = lang === "hi" ? "पुरानी बीमारियाँ" : lang === "gu" ? "લાંબા ગાળાની બીમારીઓ" : "Chronic conditions";
+  } else {
+    biggestFactor = lang === "hi" ? "कोई नहीं" : lang === "gu" ? "કોઈ નહીં" : "None";
+  }
+
   // Label and color
   let label = "";
   let color: "green" | "yellow" | "red" = "green";
@@ -90,35 +103,48 @@ export function computeHealthScore(params: ComputeScoreParams, lang: string): He
     score,
     label,
     color,
-    biggestFactorKey
+    biggestFactorKey,
+    biggestFactor
   };
 }
 
-export function getImproveTip(biggestFactorKey: string, lang: string): string {
+export function getImproveTip(biggestFactorKey: string, lang: string): { text: string; tab: string } {
   if (biggestFactorKey === "screening") {
-    return lang === "hi"
-      ? "स्क्रीनिंग परिणामों के अनुसार डॉक्टर से परामर्श लें।"
-      : lang === "gu"
-      ? "સ્ક્રીનીંગ પરિણામો અનુસાર ડૉક્ટરની સલાહ લો."
-      : "Schedule a clinician follow-up to address recent screening findings.";
+    return {
+      text: lang === "hi"
+        ? "स्क्रीनिंग परिणामों के अनुसार डॉक्टर से परामर्श लें।"
+        : lang === "gu"
+        ? "સ્ક્રીનીંગ પરિણામો અનુસાર ડૉક્ટરની સલાહ લો."
+        : "Schedule a clinician follow-up to address recent screening findings.",
+      tab: "screen"
+    };
   }
   if (biggestFactorKey === "vitals") {
-    return lang === "hi"
-      ? "नियमित रूप से वाइटल्स की जांच करें और थोड़ा विश्राम करें।"
-      : lang === "gu"
-      ? "નિયમિત રીતે વાઇટલ્સ તપાસો અને આરામ કરો."
-      : "Monitor your vitals daily and keep hydrated. Avoid heavy physical strain.";
+    return {
+      text: lang === "hi"
+        ? "नियमित रूप से वाइटल्स की जांच करें और थोड़ा विश्राम करें।"
+        : lang === "gu"
+        ? "નિયમિત રીતે વાઇટલ્સ તપાસો અને આરામ કરો."
+        : "Monitor your vitals daily and keep hydrated. Avoid heavy physical strain.",
+      tab: "vitals"
+    };
   }
   if (biggestFactorKey === "conditions") {
-    return lang === "hi"
-      ? "अपनी स्वास्थ्य स्थितियों के लिए निर्धारित दवाएं समय पर लें।"
-      : lang === "gu"
-      ? "તમારી સ્વાસ્થ્ય સ્થિતિઓ માટે સૂચવેલ દવાઓ સમયસર લો."
-      : "Stay consistent with your active care plans and daily medications.";
+    return {
+      text: lang === "hi"
+        ? "अपनी स्वास्थ्य स्थितियों के लिए निर्धारित दवाएं समय पर लें।"
+        : lang === "gu"
+        ? "તમારી સ્વાસ્થ્ય સ્થિતિઓ માટે સૂચવેલ દવાઓ સમયસર લો."
+        : "Stay consistent with your active care plans and daily medications.",
+      tab: "medicines"
+    };
   }
-  return lang === "hi"
-    ? "अच्छा काम! संतुलित आहार लें और नियमित रूप से टहलें।"
-    : lang === "gu"
-    ? "સરસ! સંતુલિત આહાર લો અને નિયમિત ચાલવાનું રાખો."
-    : "Maintain your healthy routines: balanced nutrition and daily light walks.";
+  return {
+    text: lang === "hi"
+      ? "अच्छा काम! संतुलित आहार लें और नियमित रूप से टहलें।"
+      : lang === "gu"
+      ? "સરસ! સંતુલિત આહાર લો અને નિયમિત ચાલવાનું રાખો."
+      : "Maintain your healthy routines: balanced nutrition and daily light walks.",
+    tab: "home"
+  };
 }

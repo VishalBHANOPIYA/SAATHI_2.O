@@ -48,7 +48,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
     // Prefill caregiver contact from profile emergency contact if available and not already set
     const savedContact = safeGetItem("saathi_caregiver_contact") || "";
     if (!savedContact && userProfile?.emergencyContact?.name) {
-      const prefilled = `${userProfile.emergencyContact.name}${userProfile.emergencyContact.phone ? ` (+91 ${userProfile.emergencyContact.phone})` : ""}`;
+      const prefilled = `${userProfile.emergencyContact.name}${userProfile.emergencyContact.phone ? ` (${userProfile.countryCode || "+91"} ${userProfile.emergencyContact.phone})` : ""}`;
       setCaregiverContact(prefilled);
       safeSetItem("saathi_caregiver_contact", prefilled);
     } else {

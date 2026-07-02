@@ -14,11 +14,15 @@ import {
   AlertTriangle,
   Download,
   ChevronRight,
+  ChevronDown,
   Check,
   Camera,
   FileText,
   Trash2,
-  Sparkles
+  Sparkles,
+  SwitchCamera,
+  Search,
+  Globe
 } from "lucide-react";
 import {
   demoPatients,
@@ -60,6 +64,56 @@ export default function MainApp() {
   const [onboardCamStream, setOnboardCamStream] = useState<MediaStream | null>(null);
   const [onboardCamErr, setOnboardCamErr] = useState<boolean>(false);
   const [onboardCamLoading, setOnboardCamLoading] = useState<boolean>(false);
+  const [onboardCamFacing, setOnboardCamFacing] = useState<"user" | "environment">("environment");
+
+  // Country codes for international phone selector (Fix 2)
+  const countryCodes = [
+    { code: "+91", country: "India", flag: "🇮🇳", short: "IN" },
+    { code: "+1", country: "United States", flag: "🇺🇸", short: "US" },
+    { code: "+44", country: "United Kingdom", flag: "🇬🇧", short: "GB" },
+    { code: "+971", country: "UAE", flag: "🇦🇪", short: "AE" },
+    { code: "+966", country: "Saudi Arabia", flag: "🇸🇦", short: "SA" },
+    { code: "+61", country: "Australia", flag: "🇦🇺", short: "AU" },
+    { code: "+49", country: "Germany", flag: "🇩🇪", short: "DE" },
+    { code: "+81", country: "Japan", flag: "🇯🇵", short: "JP" },
+    { code: "+86", country: "China", flag: "🇨🇳", short: "CN" },
+    { code: "+33", country: "France", flag: "🇫🇷", short: "FR" },
+    { code: "+55", country: "Brazil", flag: "🇧🇷", short: "BR" },
+    { code: "+7", country: "Russia", flag: "🇷🇺", short: "RU" },
+    { code: "+27", country: "South Africa", flag: "🇿🇦", short: "ZA" },
+    { code: "+234", country: "Nigeria", flag: "🇳🇬", short: "NG" },
+    { code: "+92", country: "Pakistan", flag: "🇵🇰", short: "PK" },
+    { code: "+880", country: "Bangladesh", flag: "🇧🇩", short: "BD" },
+    { code: "+977", country: "Nepal", flag: "🇳🇵", short: "NP" },
+    { code: "+94", country: "Sri Lanka", flag: "🇱🇰", short: "LK" },
+    { code: "+60", country: "Malaysia", flag: "🇲🇾", short: "MY" },
+    { code: "+65", country: "Singapore", flag: "🇸🇬", short: "SG" },
+  ];
+  const [selectedCountryCode, setSelectedCountryCode] = useState("+91");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+
+  // World languages for searchable dropdown selector (Fix 3)
+  const worldLanguages = [
+    { code: "es", label: "Spanish (Español)" },
+    { code: "fr", label: "French (Français)" },
+    { code: "de", label: "German (Deutsch)" },
+    { code: "ar", label: "Arabic (العربية)" },
+    { code: "zh", label: "Mandarin (中文)" },
+    { code: "ta", label: "Tamil (தமிழ்)" },
+    { code: "te", label: "Telugu (తెలుగు)" },
+    { code: "mr", label: "Marathi (मराठी)" },
+    { code: "bn", label: "Bengali (বাংলা)" },
+    { code: "pa", label: "Punjabi (ਪੰਜਾਬી)" },
+    { code: "kn", label: "Kannada (ಕನ್ನಡ)" },
+    { code: "ml", label: "Malayalam (മലയാളം)" },
+    { code: "or", label: "Oriya (ଓડ଼િઆ)" },
+    { code: "ur", label: "Urdu (اردو)" },
+    { code: "pt", label: "Portuguese (Português)" },
+    { code: "vi", label: "Vietnamese (Tiếng Việt)" }
+  ];
+  const [worldLangSearch, setWorldLangSearch] = useState("");
+  const [showWorldLangDropdown, setShowWorldLangDropdown] = useState(false);
 
   // Stop camera stream when leaving onboard step 1
   useEffect(() => {
@@ -123,6 +177,8 @@ export default function MainApp() {
 
   // --- SETTINGS MODAL ---
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [resetConfirmPending, setResetConfirmPending] = useState(false);
+  const [resetCountdown, setResetCountdown] = useState(5);
 
   // --- OFFLINE & PWA STATE ---
   const [isOffline, setIsOffline] = useState(false);
@@ -389,6 +445,20 @@ export default function MainApp() {
     }
   };
 
+  // --- RESET COUNTDOWN EFFECT ---
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resetConfirmPending && resetCountdown > 0) {
+      timer = setTimeout(() => {
+        setResetCountdown(prev => prev - 1);
+      }, 1000);
+    } else if (resetConfirmPending && resetCountdown === 0) {
+      setResetConfirmPending(false);
+      setResetCountdown(5);
+    }
+    return () => clearTimeout(timer);
+  }, [resetConfirmPending, resetCountdown]);
+
   // --- REMINDERS HANDLER ---
   useEffect(() => {
     if (typeof window === "undefined" || medicinesList.length === 0) return;
@@ -449,8 +519,8 @@ export default function MainApp() {
       errors.age = language === "hi" ? "कृपया मान्य आयु (1-120) दर्ज करें" : language === "gu" ? "કૃપા કરીને માન્ય ઉંમર (1-120) દાખલ કરો" : "Please enter a valid age (1-120)";
     }
     const phoneTrim = profileForm.phone.trim();
-    if (!phoneTrim || phoneTrim.length !== 10 || !/^\d+$/.test(phoneTrim)) {
-      errors.phone = language === "hi" ? "कृपया 10-अंकों का मोबाइल नंबर दर्ज करें" : language === "gu" ? "કૃપા કરીને 10-આંકડાનો મોબાઇલ નંબર દાખલ કરો" : "Please enter a valid 10-digit phone number";
+    if (!phoneTrim || phoneTrim.length < 4 || phoneTrim.length > 15 || !/^\d+$/.test(phoneTrim)) {
+      errors.phone = language === "hi" ? "कृपया मान्य मोबाइल नंबर दर्ज करें" : language === "gu" ? "કૃપા કરીને માન્ય મોબાઇલ નંબર દાખલ કરો" : "Please enter a valid phone number";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -459,8 +529,8 @@ export default function MainApp() {
   const validateSubStepB = () => {
     const errors: { [key: string]: string } = {};
     const emergencyPhone = profileForm.emergencyPhone.trim();
-    if (emergencyPhone && (emergencyPhone.length !== 10 || !/^\d+$/.test(emergencyPhone))) {
-      errors.emergencyPhone = language === "hi" ? "आपातकालीन फोन 10 अंकों का होना चाहिए" : language === "gu" ? "ઇમરજન્સી ફોન 10 આંકડાનો હોવો જોઈએ" : "Emergency phone must be 10 digits";
+    if (emergencyPhone && (emergencyPhone.length < 4 || emergencyPhone.length > 15 || !/^\d+$/.test(emergencyPhone))) {
+      errors.emergencyPhone = language === "hi" ? "आपातकालीन फोन नंबर मान्य होना चाहिए" : language === "gu" ? "ઇમરજન્સી ફોન નંબર માન્ય હોવો જોઈએ" : "Please enter a valid emergency phone number";
     }
     const abhaTrim = profileForm.abha.replace(/\D/g, "");
     if (abhaTrim && abhaTrim.length !== 14) {
@@ -500,6 +570,7 @@ export default function MainApp() {
       age: Number(profileForm.age),
       gender: profileForm.gender,
       phone: profileForm.phone.trim(),
+      countryCode: selectedCountryCode,
       conditions: profileForm.conditions,
       otherCondition: profileForm.conditions.includes("Other") ? profileForm.otherCondition.trim() : "",
       allergies: profileForm.allergies.trim(),
@@ -604,17 +675,94 @@ export default function MainApp() {
                 ].map((l) => (
                   <button
                     key={l.code}
-                    onClick={() => setLanguage(l.code as any)}
+                    onClick={() => {
+                      setLanguage(l.code as any);
+                      setShowWorldLangDropdown(false);
+                    }}
                     className={`py-3 px-4 rounded-2xl text-xs font-black border transition-all flex items-center justify-between ${
-                      language === l.code
+                      (language === l.code)
                         ? "bg-teal-600 border-teal-450 text-white shadow-lg scale-[1.02]"
                         : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
                     }`}
                   >
                     <span>{l.label}</span>
-                    {language === l.code && <Check className="w-4 h-4 text-emerald-405" />}
+                    {language === l.code && <Check className="w-4 h-4 text-emerald-400" />}
                   </button>
                 ))}
+              </div>
+
+              {/* World language selector (Fix 3) */}
+              <div className="space-y-2 pt-2 relative text-left">
+                <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block text-center">
+                  Or Select Other World Language / या अन्य भाषा चुनें
+                </span>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowWorldLangDropdown(!showWorldLangDropdown)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 px-4 text-xs text-left font-bold flex items-center justify-between text-teal-200 hover:bg-white/10 transition-colors focus:border-teal-400 focus:outline-none"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-teal-400" />
+                      <span>
+                        {worldLanguages.find(wl => wl.code === language)?.label || 
+                         (language !== "en" && language !== "hi" && language !== "gu" ? language : 
+                          (language === "hi" ? "कोई भाषा चुनें" : language === "gu" ? "ભાષા પસંદ કરો" : "Choose a language"))}
+                      </span>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-teal-400" />
+                  </button>
+
+                  {showWorldLangDropdown && (
+                    <div className="absolute left-0 right-0 bottom-full mb-2 bg-teal-950 border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-48 flex flex-col">
+                      <div className="p-2 border-b border-white/10 flex items-center gap-2 bg-white/5">
+                        <Search className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                        <input
+                          type="text"
+                          placeholder="Search language..."
+                          value={worldLangSearch}
+                          onChange={e => setWorldLangSearch(e.target.value)}
+                          className="w-full text-xs bg-transparent text-white focus:outline-none placeholder-teal-600"
+                        />
+                      </div>
+                      <div className="overflow-y-auto flex-1">
+                        {worldLanguages.filter(wl =>
+                          wl.label.toLowerCase().includes(worldLangSearch.toLowerCase()) ||
+                          wl.code.toLowerCase().includes(worldLangSearch.toLowerCase())
+                        ).map(wl => (
+                          <button
+                            key={wl.code}
+                            type="button"
+                            onClick={() => {
+                              setLanguage(wl.code);
+                              setShowWorldLangDropdown(false);
+                              setWorldLangSearch("");
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-white/10 transition-colors flex items-center justify-between ${
+                              language === wl.code ? "bg-teal-600/30 text-emerald-300" : "text-slate-300"
+                            }`}
+                          >
+                            <span>{wl.label}</span>
+                            {language === wl.code && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {language !== "en" && language !== "hi" && language !== "gu" && (
+                  <div className="mt-2 text-left bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl p-2.5 text-[10px] font-semibold leading-normal animate-fadeIn flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      {language === "hi"
+                        ? `ब्राउज़र ऑटो-अनुवाद फ़ॉलबैक के माध्यम से इंटरफ़ेस का ${worldLanguages.find(wl => wl.code === language)?.label || language} में अनुवाद किया जा रहा है...`
+                        : language === "gu"
+                        ? `બ્રાઉઝર ઓટો-ટ્રાન્સલેટ ફોલબેક દ્વારા ઈન્ટરફેસનું ${worldLanguages.find(wl => wl.code === language)?.label || language} માં ભાષાંતર થઈ રહ્યું છે...`
+                        : `Translating interface to ${worldLanguages.find(wl => wl.code === language)?.label || language} via browser auto-translate fallback...`}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -654,7 +802,7 @@ export default function MainApp() {
                   setOnboardCamLoading(true);
                   try {
                     const stream = await navigator.mediaDevices.getUserMedia({
-                      video: { facingMode: "environment", width: { ideal: 480 }, height: { ideal: 360 } }
+                      video: { facingMode: onboardCamFacing, width: { ideal: 480 }, height: { ideal: 360 } }
                     });
                     setOnboardCamStream(stream);
                     setOnboardCamErr(false);
@@ -680,9 +828,32 @@ export default function MainApp() {
                       }}
                     />
                     <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/70 animate-scan pointer-events-none z-20" />
-                    <span className="absolute top-2 right-2 bg-emerald-500/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider z-20 animate-pulse">
+                    <span className="absolute top-2 left-2 bg-emerald-500/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider z-20 animate-pulse">
                       {language === "hi" ? "लाइव प्रीव्यू" : language === "gu" ? "લાઇવ પ્રીવ્યૂ" : "Live Preview"}
                     </span>
+                    {/* Camera Flip Button (Fix 1) */}
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const nextFacing = onboardCamFacing === "user" ? "environment" : "user";
+                        setOnboardCamFacing(nextFacing);
+                        if (onboardCamStream) {
+                          onboardCamStream.getTracks().forEach(track => track.stop());
+                        }
+                        try {
+                          const stream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: nextFacing, width: { ideal: 480 }, height: { ideal: 360 } }
+                          });
+                          setOnboardCamStream(stream);
+                        } catch {
+                          setOnboardCamErr(true);
+                        }
+                      }}
+                      className="absolute top-2 right-2 z-30 w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 hover:bg-black/70 transition-all active:scale-90"
+                      title="Flip Camera"
+                    >
+                      <SwitchCamera className="w-4 h-4 text-white" />
+                    </button>
                   </>
                 ) : onboardCamErr ? (
                   /* Animated fallback illustration (permission denied) */
@@ -963,11 +1134,62 @@ export default function MainApp() {
                       {t.phone} <span className="text-red-405 font-bold">*</span>
                     </label>
                     <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl overflow-hidden focus-within:border-teal-400">
-                      <span className="text-xs text-teal-300 bg-white/5 py-3.5 px-4 font-bold border-r border-white/10">+91</span>
+                      {/* Country code selector (Fix 2) */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                          className="text-xs text-teal-300 bg-white/5 py-3.5 px-3 font-bold border-r border-white/10 flex items-center gap-1 hover:bg-white/10 transition-colors whitespace-nowrap"
+                        >
+                          <span>{countryCodes.find(c => c.code === selectedCountryCode)?.flag}</span>
+                          <span>{selectedCountryCode}</span>
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                        {showCountryDropdown && (
+                          <div className="absolute top-full left-0 mt-1 w-64 bg-teal-950 border border-white/20 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden">
+                            <div className="p-2 border-b border-white/10">
+                              <div className="flex items-center bg-white/5 rounded-lg px-2">
+                                <Search className="w-3 h-3 text-teal-400" />
+                                <input
+                                  type="text"
+                                  placeholder="Search country..."
+                                  value={countrySearch}
+                                  onChange={e => setCountrySearch(e.target.value)}
+                                  className="w-full text-[10px] p-1.5 bg-transparent text-white focus:outline-none"
+                                  autoFocus
+                                />
+                              </div>
+                            </div>
+                            <div className="overflow-y-auto max-h-36">
+                              {countryCodes.filter(c =>
+                                c.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                                c.code.includes(countrySearch)
+                              ).map(c => (
+                                <button
+                                  key={c.code}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedCountryCode(c.code);
+                                    setShowCountryDropdown(false);
+                                    setCountrySearch("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-white/10 transition-colors ${
+                                    selectedCountryCode === c.code ? "bg-teal-600/30 text-white" : "text-slate-300"
+                                  }`}
+                                >
+                                  <span>{c.flag}</span>
+                                  <span className="flex-1">{c.country}</span>
+                                  <span className="text-teal-400 font-bold">{c.code}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <input
                         type="tel"
-                        maxLength={10}
-                        placeholder={language === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
+                        maxLength={15}
+                        placeholder={language === "hi" ? "फ़ोन नंबर" : "Phone number"}
                         value={profileForm.phone}
                         onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
                         className="w-full text-xs p-3.5 bg-transparent text-white font-semibold focus:outline-none"
@@ -1276,12 +1498,63 @@ export default function MainApp() {
                 <label className="text-[9px] font-bold text-slate-650 uppercase tracking-wide">
                   {t.phone} <span className="text-red-500 font-bold">*</span>
                 </label>
-                <div className="flex items-center border border-slate-200 bg-slate-50 rounded-2xl overflow-hidden focus-within:border-teal-555">
-                  <span className="text-xs text-slate-600 bg-slate-100 py-3 px-4 font-bold border-r border-slate-200">+91</span>
+                <div className="flex items-center border border-slate-200 bg-slate-50 rounded-2xl overflow-hidden focus-within:border-teal-500 relative">
+                  {/* Country code selector in edit profile modal (Fix 2) */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                      className="text-xs text-slate-700 bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200/50 transition-colors whitespace-nowrap"
+                    >
+                      <span>{countryCodes.find(c => c.code === selectedCountryCode)?.flag}</span>
+                      <span>{selectedCountryCode}</span>
+                      <ChevronDown className="w-3 h-3 text-slate-500" />
+                    </button>
+                    {showCountryDropdown && (
+                      <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
+                        <div className="p-2 border-b border-slate-100 bg-slate-50">
+                          <div className="flex items-center bg-white border border-slate-200 rounded-lg px-2">
+                            <Search className="w-3 h-3 text-slate-400" />
+                            <input
+                              type="text"
+                              placeholder="Search country..."
+                              value={countrySearch}
+                              onChange={e => setCountrySearch(e.target.value)}
+                              className="w-full text-[10px] p-1.5 bg-transparent text-slate-800 focus:outline-none"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="overflow-y-auto max-h-36">
+                          {countryCodes.filter(c =>
+                            c.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                            c.code.includes(countrySearch)
+                          ).map(c => (
+                            <button
+                              key={c.code}
+                              type="button"
+                              onClick={() => {
+                                setSelectedCountryCode(c.code);
+                                setShowCountryDropdown(false);
+                                setCountrySearch("");
+                              }}
+                              className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors ${
+                                selectedCountryCode === c.code ? "bg-teal-50 text-teal-700" : "text-slate-600"
+                              }`}
+                            >
+                              <span>{c.flag}</span>
+                              <span className="flex-1">{c.country}</span>
+                              <span className="text-teal-650 font-bold">{c.code}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <input
                     type="tel"
-                    maxLength={10}
-                    placeholder="10-digit number"
+                    maxLength={15}
+                    placeholder="Phone number"
                     value={profileForm.phone}
                     onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
                     className="w-full text-xs p-3 bg-transparent text-slate-800 font-semibold focus:outline-none"
@@ -1547,6 +1820,7 @@ export default function MainApp() {
         emergencyPhone: userProfile.emergencyContact?.phone || "",
         abha: userProfile.abha || ""
       });
+      setSelectedCountryCode(userProfile.countryCode || "+91");
     }
     setFormErrors({});
     setProfileSubStep("A");
@@ -1945,36 +2219,114 @@ export default function MainApp() {
                 </span>
                 <div className="grid grid-cols-3 gap-2">
                   <button
-                    onClick={() => setLanguage("en")}
-                    className={`py-2 text-xs font-bold rounded-xl transition-all border ${
+                    onClick={() => {
+                      setLanguage("en");
+                      setShowWorldLangDropdown(false);
+                    }}
+                    className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "en" 
-                        ? "bg-teal-650 border-teal-500 text-white shadow-sm" 
-                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                        ? "bg-teal-605 border-teal-605 text-white shadow-md shadow-teal-500/20" 
+                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
                     English
                   </button>
                   <button
-                    onClick={() => setLanguage("hi")}
-                    className={`py-2 text-xs font-bold rounded-xl transition-all border ${
+                    onClick={() => {
+                      setLanguage("hi");
+                      setShowWorldLangDropdown(false);
+                    }}
+                    className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "hi" 
-                        ? "bg-teal-650 border-teal-500 text-white shadow-sm" 
-                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                        ? "bg-teal-605 border-teal-605 text-white shadow-md shadow-teal-500/20" 
+                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
                     हिंदी
                   </button>
                   <button
-                    onClick={() => setLanguage("gu")}
-                    className={`py-2 text-xs font-bold rounded-xl transition-all border ${
+                    onClick={() => {
+                      setLanguage("gu");
+                      setShowWorldLangDropdown(false);
+                    }}
+                    className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "gu" 
-                        ? "bg-teal-650 border-teal-500 text-white shadow-sm" 
-                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                        ? "bg-teal-605 border-teal-605 text-white shadow-md shadow-teal-500/20" 
+                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
                     ગુજરાતી
                   </button>
                 </div>
+
+                {/* World language selector inside Settings (Fix 3) */}
+                <div className="relative pt-1 text-left">
+                  <button
+                    type="button"
+                    onClick={() => setShowWorldLangDropdown(!showWorldLangDropdown)}
+                    className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-left font-bold flex items-center justify-between text-slate-700 hover:bg-slate-100 transition-colors focus:border-teal-400 focus:outline-none"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-teal-600" />
+                      <span className="truncate">
+                        {worldLanguages.find(wl => wl.code === language)?.label || 
+                         (language !== "en" && language !== "hi" && language !== "gu" ? language : 
+                          (language === "hi" ? "कोई भाषा चुनें" : language === "gu" ? "ભાષા પસંદ કરો" : "Other Language"))}
+                      </span>
+                    </div>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+
+                  {showWorldLangDropdown && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-40 flex flex-col">
+                      <div className="p-1.5 border-b border-slate-100 flex items-center gap-1.5 bg-slate-50">
+                        <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <input
+                          type="text"
+                          placeholder="Search language..."
+                          value={worldLangSearch}
+                          onChange={e => setWorldLangSearch(e.target.value)}
+                          className="w-full text-xs bg-transparent text-slate-700 focus:outline-none placeholder-slate-400"
+                        />
+                      </div>
+                      <div className="overflow-y-auto flex-1">
+                        {worldLanguages.filter(wl =>
+                          wl.label.toLowerCase().includes(worldLangSearch.toLowerCase()) ||
+                          wl.code.toLowerCase().includes(worldLangSearch.toLowerCase())
+                        ).map(wl => (
+                          <button
+                            key={wl.code}
+                            type="button"
+                            onClick={() => {
+                              setLanguage(wl.code);
+                              setShowWorldLangDropdown(false);
+                              setWorldLangSearch("");
+                            }}
+                            className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center justify-between ${
+                              language === wl.code ? "bg-teal-50 text-teal-700" : "text-slate-600"
+                            }`}
+                          >
+                            <span>{wl.label}</span>
+                            {language === wl.code && <Check className="w-3 h-3 text-teal-605" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {language !== "en" && language !== "hi" && language !== "gu" && (
+                  <div className="mt-1.5 text-left bg-amber-50 border border-amber-100 text-amber-800 rounded-xl p-2 text-[9px] font-semibold leading-normal animate-fadeIn flex items-start gap-1">
+                    <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
+                    <span>
+                      {language === "hi"
+                        ? `ब्राउज़र ऑटो-अनुवाद फ़ॉलबैक के माध्यम से इंटरफ़ेस का ${worldLanguages.find(wl => wl.code === language)?.label || language} में अनुवाद किया जा रहा है...`
+                        : language === "gu"
+                        ? `બ્રાઉઝર ઓટો-ટ્રાન્સલેટ ફોલબેક દ્વારા ઈન્ટરફેસનું ${worldLanguages.find(wl => wl.code === language)?.label || language} માં ભાષાંતર થઈ રહ્યું છે...`
+                        : `Translating interface to ${worldLanguages.find(wl => wl.code === language)?.label || language} via browser auto-translate fallback...`}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Setting 3: Caregiver Notifications Alert */}
@@ -2037,20 +2389,68 @@ export default function MainApp() {
               </div>
 
               {/* Reset Data Section */}
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[10px] text-slate-400 font-medium">Saathi v2.0 (PWA)</span>
-                <button
-                  onClick={() => {
-                    if (window.confirm(language === "hi" ? "क्या आप वाकई सभी सेव किया डेटा हटाना चाहते हैं?" : "Are you sure you want to reset all local patient and vital records?")) {
-                      safeClear();
-                      window.location.reload();
-                    }
-                  }}
-                  className="text-[9px] font-black text-rose-500 hover:text-rose-650 uppercase tracking-wider bg-rose-50 hover:bg-rose-100/60 border border-rose-100 px-3 py-1.5 rounded-xl transition-all"
-                >
-                  {language === "hi" ? "डेटा रीसेट करें" : language === "gu" ? "ડેટા રીસેટ કરો" : "Reset App Data"}
-                </button>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                <span className="text-[10px] text-slate-400 font-medium shrink-0">Saathi v2.0 (PWA)</span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      setResetConfirmPending(true);
+                      setResetCountdown(5);
+                    }}
+                    className="text-[9px] font-black text-rose-500 hover:text-rose-650 uppercase tracking-wider bg-rose-50 hover:bg-rose-100/60 border border-rose-100 px-3 py-1.5 rounded-xl transition-all"
+                  >
+                    {language === "hi" ? "डेटा रीसेट करें" : language === "gu" ? "ડેટા રીસેટ કરો" : "Reset App Data"}
+                  </button>
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Factory Reset Confirmation Dialog Modal */}
+      {resetConfirmPending && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn text-left">
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-2xl max-w-sm w-full space-y-4 animate-scaleUp">
+            <div className="flex items-center gap-3 text-red-600 border-b border-slate-100 pb-3">
+              <AlertTriangle className="w-6 h-6 text-red-500 animate-bounce" />
+              <h3 className="text-sm font-black uppercase tracking-wide">
+                {language === "hi" ? "फ़ैक्टरी रीसेट" : language === "gu" ? "ફેક્ટરી રીસેટ" : "Confirm Factory Reset"}
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              {language === "hi"
+                ? "सभी ऑफ़लाइन नैदानिक डेटा, सक्रिय प्रोफ़ाइल और वाइटल्स इतिहास स्थायी रूप से हटा दिए जाएंगे। इसे वापस नहीं लाया जा सकता।"
+                : language === "gu"
+                ? "તમામ ઑફલાઇન ડાયગ્નોસ્ટિક ડેટા, સક્રિય પ્રોફાઇલ અને વાઇટલ્સ હિસ્ટ્રી કાયમી ધોરણે ભૂંસી નાખવામાં આવશે. આ ક્રિયા પાછી ખેંચી શકાશે નહીં."
+                : "All local offline diagnostic records, patient profiles, vital scans, and schedules will be permanently erased. This action cannot be undone."}
+            </p>
+            <div className="flex gap-2.5 pt-2">
+              <button
+                onClick={() => {
+                  setResetConfirmPending(false);
+                  setResetCountdown(5);
+                }}
+                className="flex-1 bg-slate-105 hover:bg-slate-200 text-slate-700 font-extrabold text-xs py-3 rounded-xl transition-all active:scale-95 min-h-[44px] bg-slate-100 border border-slate-200"
+              >
+                {language === "hi" ? "रद्द करें" : language === "gu" ? "રદ કરો" : "Cancel"}
+              </button>
+              <button
+                onClick={() => {
+                  safeClear();
+                  window.location.reload();
+                }}
+                disabled={resetCountdown > 0}
+                className={`flex-1 text-white font-extrabold text-xs py-3 rounded-xl transition-all min-h-[44px] ${
+                  resetCountdown > 0
+                    ? "bg-red-300 cursor-not-allowed text-white/80"
+                    : "bg-red-600 hover:bg-red-700 active:scale-95 shadow-md animate-pulse"
+                }`}
+              >
+                {resetCountdown > 0
+                  ? (language === "hi" ? `पुष्टि करें (${resetCountdown}s)` : language === "gu" ? `ખાતરી કરો (${resetCountdown}s)` : `Confirm (${resetCountdown}s)`)
+                  : (language === "hi" ? "रीसेट करें" : language === "gu" ? "રીસેટ કરો" : "Reset Now")}
+              </button>
             </div>
           </div>
         </div>

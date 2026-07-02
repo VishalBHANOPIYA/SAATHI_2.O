@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { computeHealthScore, getImproveTip } from "@/utils/healthScore";
+import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 
 interface HomeViewProps {
   setActiveTab: (tab: string) => void;
@@ -147,7 +148,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               <Phone className="w-3 h-3 text-teal-500 shrink-0" />
               <span>
                 {language === "hi" ? "आपातकालीन:" : language === "gu" ? "ઇમરજન્સી:" : "Emergency:"} {userProfile.emergencyContact.name}
-                {userProfile.emergencyContact.phone ? ` (+91 ${userProfile.emergencyContact.phone})` : ""}
+                {userProfile.emergencyContact.phone ? ` (${userProfile.countryCode || "+91"} ${userProfile.emergencyContact.phone})` : ""}
               </span>
             </div>
           )}
@@ -402,6 +403,9 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </p>
         </div>
       </div>
+
+      {/* Collapsible Clinical Disclaimer (Fix 4) */}
+      <ClinicalDisclaimer />
     </div>
   );
 });
