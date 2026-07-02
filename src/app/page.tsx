@@ -1063,8 +1063,8 @@ export default function MainApp() {
                 </h3>
                 <span className="text-[9px] font-extrabold text-teal-350 uppercase bg-teal-500/10 px-2.5 py-1 rounded-full border border-teal-400/20 shrink-0">
                   {profileSubStep === "A" 
-                    ? (language === "hi" ? "भाग १" : language === "gu" ? "ભાગ ૧" : "Part A") 
-                    : (language === "hi" ? "भाग २" : language === "gu" ? "ભાગ ૨" : "Part B")}
+                    ? (language === "hi" ? "भाग १" : language === "gu" ? "भाग १" : "Part A") 
+                    : (language === "hi" ? "भाग २" : language === "gu" ? "भाग २" : "Part B")}
                 </span>
               </div>
 
@@ -1133,22 +1133,22 @@ export default function MainApp() {
                     <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
                       {t.phone} <span className="text-red-405 font-bold">*</span>
                     </label>
-                    <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl overflow-hidden focus-within:border-teal-400">
+                    <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl focus-within:border-teal-400 relative">
                       {/* Country code selector (Fix 2) */}
                       <div className="relative">
                         <button
                           type="button"
                           onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                          className="text-xs text-teal-300 bg-white/5 py-3.5 px-3 font-bold border-r border-white/10 flex items-center gap-1 hover:bg-white/10 transition-colors whitespace-nowrap"
+                          className="text-xs text-teal-300 bg-white/5 py-3.5 px-3 font-bold border-r border-white/10 flex items-center gap-1 hover:bg-white/10 transition-colors whitespace-nowrap rounded-l-2xl"
                         >
                           <span>{countryCodes.find(c => c.code === selectedCountryCode)?.flag}</span>
                           <span>{selectedCountryCode}</span>
                           <ChevronDown className="w-3 h-3" />
                         </button>
                         {showCountryDropdown && (
-                          <div className="absolute top-full left-0 mt-1 w-64 bg-teal-950 border border-white/20 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden">
-                            <div className="p-2 border-b border-white/10">
-                              <div className="flex items-center bg-white/5 rounded-lg px-2">
+                          <div className="absolute top-full left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700/50 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
+                            <div className="p-2 border-b border-white/10 bg-slate-950">
+                              <div className="flex items-center bg-white/5 rounded-lg px-2 border border-white/10">
                                 <Search className="w-3 h-3 text-teal-400" />
                                 <input
                                   type="text"
@@ -1160,7 +1160,7 @@ export default function MainApp() {
                                 />
                               </div>
                             </div>
-                            <div className="overflow-y-auto max-h-36">
+                            <div className="overflow-y-auto max-h-36 bg-slate-900">
                               {countryCodes.filter(c =>
                                 c.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
                                 c.code.includes(countrySearch)
@@ -1174,11 +1174,11 @@ export default function MainApp() {
                                     setCountrySearch("");
                                   }}
                                   className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-white/10 transition-colors ${
-                                    selectedCountryCode === c.code ? "bg-teal-600/30 text-white" : "text-slate-300"
+                                    selectedCountryCode === c.code ? "bg-teal-600/30 text-white font-bold" : "text-slate-300"
                                   }`}
                                 >
                                   <span>{c.flag}</span>
-                                  <span className="flex-1">{c.country}</span>
+                                  <span className="flex-1 text-slate-200">{c.country}</span>
                                   <span className="text-teal-400 font-bold">{c.code}</span>
                                 </button>
                               ))}
@@ -1192,7 +1192,7 @@ export default function MainApp() {
                         placeholder={language === "hi" ? "फ़ोन नंबर" : "Phone number"}
                         value={profileForm.phone}
                         onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
-                        className="w-full text-xs p-3.5 bg-transparent text-white font-semibold focus:outline-none"
+                        className="w-full text-xs p-3.5 bg-transparent text-white font-semibold focus:outline-none rounded-r-2xl"
                       />
                     </div>
                     {formErrors.phone && (
@@ -1498,20 +1498,20 @@ export default function MainApp() {
                 <label className="text-[9px] font-bold text-slate-650 uppercase tracking-wide">
                   {t.phone} <span className="text-red-500 font-bold">*</span>
                 </label>
-                <div className="flex items-center border border-slate-200 bg-slate-50 rounded-2xl overflow-hidden focus-within:border-teal-500 relative">
+                <div className="flex items-center border border-slate-200 bg-slate-50 rounded-2xl focus-within:border-teal-500 relative">
                   {/* Country code selector in edit profile modal (Fix 2) */}
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="text-xs text-slate-700 bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200/50 transition-colors whitespace-nowrap"
+                      className="text-xs text-slate-700 bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200/50 transition-colors whitespace-nowrap rounded-l-2xl"
                     >
                       <span>{countryCodes.find(c => c.code === selectedCountryCode)?.flag}</span>
                       <span>{selectedCountryCode}</span>
                       <ChevronDown className="w-3 h-3 text-slate-500" />
                     </button>
                     {showCountryDropdown && (
-                      <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
+                      <div className="absolute top-full left-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-slate-100 bg-slate-50">
                           <div className="flex items-center bg-white border border-slate-200 rounded-lg px-2">
                             <Search className="w-3 h-3 text-slate-400" />
@@ -1525,7 +1525,7 @@ export default function MainApp() {
                             />
                           </div>
                         </div>
-                        <div className="overflow-y-auto max-h-36">
+                        <div className="overflow-y-auto max-h-36 bg-white">
                           {countryCodes.filter(c =>
                             c.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
                             c.code.includes(countrySearch)
@@ -1539,11 +1539,11 @@ export default function MainApp() {
                                 setCountrySearch("");
                               }}
                               className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors ${
-                                selectedCountryCode === c.code ? "bg-teal-50 text-teal-700" : "text-slate-600"
+                                selectedCountryCode === c.code ? "bg-teal-50 text-teal-700 font-bold" : "text-slate-600"
                               }`}
                             >
                               <span>{c.flag}</span>
-                              <span className="flex-1">{c.country}</span>
+                              <span className="flex-1 text-slate-700">{c.country}</span>
                               <span className="text-teal-650 font-bold">{c.code}</span>
                             </button>
                           ))}
@@ -1557,7 +1557,7 @@ export default function MainApp() {
                     placeholder="Phone number"
                     value={profileForm.phone}
                     onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
-                    className="w-full text-xs p-3 bg-transparent text-slate-800 font-semibold focus:outline-none"
+                    className="w-full text-xs p-3 bg-transparent text-slate-800 font-semibold focus:outline-none rounded-r-2xl"
                   />
                 </div>
                 {formErrors.phone && (
