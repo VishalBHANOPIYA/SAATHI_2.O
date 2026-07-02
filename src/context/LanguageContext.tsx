@@ -73,6 +73,10 @@ export const translations = {
     welcomeToast: "Namaste",
     onboardingCameraFlip: "Flip Camera",
     onboardingCameraFlipDesc: "Toggles between front and back camera for screening vs vitals",
+    nuskheTitle: "Nani-Dadi Ke Nuskhe",
+    nuskheSubtitle: "Traditional home remedies for mild symptoms",
+    nuskheFooter: "These traditional remedies are supportive care only. If symptoms persist beyond 2-3 days, consult a doctor.",
+    nuskheYellowWarning: "These are gentle supportive remedies only. Please also consult a doctor for your symptoms.",
   },
   hi: {
     appTitle: "साथी",
@@ -141,6 +145,10 @@ export const translations = {
     welcomeToast: "नमस्ते",
     onboardingCameraFlip: "कैमरा पलटें",
     onboardingCameraFlipDesc: "स्क्रीनिंग बनाम वाइटल्स के लिए फ्रंट और बैक कैमरे के बीच स्विच करता है",
+    nuskheTitle: "नानी-दादी के नुस्खे",
+    nuskheSubtitle: "हल्के लक्षणों के लिए पारंपरिक घरेलू उपाय",
+    nuskheFooter: "ये पारंपरिक नुस्खे सहायक देखभाल के लिए हैं। यदि लक्षण 2-3 दिनों से अधिक बने रहें तो डॉक्टर से मिलें।",
+    nuskheYellowWarning: "ये हल्के सहायक उपाय हैं। कृपया डॉक्टर से भी मिलें।",
   },
   gu: {
     appTitle: "સાથી",
@@ -209,6 +217,10 @@ export const translations = {
     welcomeToast: "નમસ્તે",
     onboardingCameraFlip: "કેમેરા ફ્લિપ કરો",
     onboardingCameraFlipDesc: "સ્ક્રિનિંગ વિરુદ્ધ વાઇટલ્સ માટે આગળ અને પાછળના કેમેરા વચ્ચે સ્વિચ કરે છે",
+    nuskheTitle: "નાની-દાદીના નુસ્ખા",
+    nuskheSubtitle: "હળવા લક્ષણો માટે પરંપરાગત ઘરેલું ઉપાય",
+    nuskheFooter: "આ પરંપરાગત નુસ્ખા સહાયક સંભાળ માટે છે। જો લક્ષણો ૨-૩ દિવસથી વધુ રહે તો ડૉક્ટરને મળો।",
+    nuskheYellowWarning: "આ હળવા સહાયક ઉપાય છે। કૃપા કરી ડૉક્ટરની સલાહ પણ લો.",
   }
 };
 

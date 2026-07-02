@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   AlertTriangle,
   ShieldAlert,
@@ -21,6 +21,8 @@ import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
 import { shareHealthReport } from "@/utils/shareHelper";
 import { checkRateLimit } from "@/utils/rateLimit";
+import { findNuskhe } from "../utils/nuskheEngine";
+import { performOfflineTriage } from "../utils/offlineTriage";
 
 const screenTranslations = {
   en: {
@@ -294,6 +296,51 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const [temperature, setTemperature] = useState("98.6");
   const [screeningResult, setScreeningResult] = useState<string | null>(null);
   const [isScreeningLoading, setIsScreeningLoading] = useState(false);
+
+  // Nani-Dadi Ke Nuskhe Memoized Matcher
+  const { matchedNuskhe, triageLevel, speechText } = useMemo(() => {
+    if (!screeningResult) {
+      return { matchedNuskhe: [], triageLevel: "GREEN" as const, speechText: "" };
+    }
+
+    const activeKeys: string[] = [];
+    if (symptoms.fever) activeKeys.push("fever");
+    if (symptoms.cough) activeKeys.push("cough");
+    if (symptoms.fatigue) activeKeys.push("fatigue");
+    if (symptoms.soreThroat) activeKeys.push("sore throat");
+    if (symptoms.breath) activeKeys.push("breath");
+    if (symptoms.bodyAche) activeKeys.push("body ache");
+    if (symptoms.lossTaste) activeKeys.push("taste");
+
+    // Run offline triage on the text & symptoms
+    const inputForTriage = (activeKeys.join(" ") + " " + screeningResult).toLowerCase();
+    const triageRes = performOfflineTriage(inputForTriage, language);
+    const calculatedTriage = triageRes.triage;
+
+    const matched = findNuskhe(activeKeys, screeningResult, calculatedTriage, language);
+
+    // Prepare speech text containing both screening report and traditional remedies
+    let voiceText = screeningResult;
+    if (matched.length > 0) {
+      const remediesTitle = language === "hi"
+        ? "\n\nपारंपरिक घरेलू नुस्खे:\n"
+        : language === "gu"
+        ? "\n\nપરંપરાગત ઘરેલું નુસ્ખા:\n"
+        : "\n\nTraditional Home Remedies:\n";
+      voiceText += remediesTitle;
+
+      matched.forEach((n, idx) => {
+        const remedyDesc = language === "hi" ? n.language.hi : language === "gu" ? n.language.gu : n.remedy;
+        voiceText += `${idx + 1}. ${remedyDesc}\n`;
+      });
+    }
+
+    return {
+      matchedNuskhe: matched,
+      triageLevel: calculatedTriage,
+      speechText: voiceText
+    };
+  }, [screeningResult, symptoms, language]);
 
   // Prefill age from userProfile if available
   useEffect(() => {
@@ -1592,7 +1639,7 @@ Shared via Saathi.`;
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
                     {language === "hi" ? "स्क्रीनिंग रिपोर्ट" : language === "gu" ? "સ્ક્રીનીંગ રીપોર્ટ" : "Screening Report"}
                   </span>
-                  <ScreenSpeechPlayer text={screeningResult || ""} language={language} />
+                  <ScreenSpeechPlayer text={speechText || ""} language={language} />
                 </div>
                 <span className="bg-teal-100 text-teal-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
                   AI Screened
@@ -1614,6 +1661,86 @@ Shared via Saathi.`;
                   }
                 </span>
               </div>
+
+              {/* Nani-Dadi Ke Nuskhe Card (Traditional Home Remedies) */}
+              {triageLevel !== "RED" && matchedNuskhe.length > 0 && (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl p-5 space-y-4 shadow-sm text-left">
+                  <div className="flex items-center justify-between border-b border-amber-200/40 pb-3 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">👵🏽</span>
+                      <div>
+                        <h4 className="text-sm font-black text-amber-950 font-sans tracking-tight">
+                          {t.nuskheTitle}
+                        </h4>
+                        <p className="text-[10px] text-amber-750 font-medium font-sans">
+                          {t.nuskheSubtitle}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="bg-amber-100/80 border border-amber-200 text-amber-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                      Traditional Care
+                    </span>
+                  </div>
+
+                  {/* Yellow caution warning */}
+                  {triageLevel === "YELLOW" && (
+                    <div className="bg-amber-100/60 border border-amber-300 rounded-xl p-3 text-[10px] text-amber-900 font-bold flex gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 animate-bounce" />
+                      <span>{t.nuskheYellowWarning}</span>
+                    </div>
+                  )}
+
+                  {/* List of Remedies */}
+                  <div className="space-y-3">
+                    {matchedNuskhe.map((n) => {
+                      const remedyText = language === "hi" ? n.language.hi : language === "gu" ? n.language.gu : n.remedy;
+                      return (
+                        <div key={n.id} className="bg-white/80 backdrop-blur-sm border border-amber-100 rounded-xl p-3.5 space-y-2 shadow-xs transition-all hover:shadow-sm">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-base shrink-0">{n.emoji}</span>
+                              <span className="text-xs font-black text-amber-950 capitalize">
+                                {n.condition}
+                              </span>
+                            </div>
+                            <span className="text-[9px] font-mono text-amber-600/70 font-bold">
+                              Nuskha #{n.id}
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs text-slate-700 font-bold leading-relaxed">
+                            {remedyText}
+                          </p>
+
+                          {/* Ingredients pills */}
+                          {n.ingredients.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {n.ingredients.map((ing, i) => (
+                                <span key={i} className="bg-amber-50/60 hover:bg-amber-100 border border-amber-100 text-amber-800 text-[9px] px-2 py-0.5 rounded-full font-bold tracking-tight transition-all">
+                                  🌱 {ing}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Warning if any */}
+                          {n.warning && (
+                            <p className="text-[9px] text-amber-850 font-bold italic">
+                              ⚠️ {n.warning}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer closing line / persistent advice disclaimer */}
+                  <div className="text-[10px] text-amber-900 leading-normal flex gap-2 font-bold bg-amber-100/30 p-2.5 rounded-xl border border-amber-200/20">
+                    <Info className="w-4 h-4 shrink-0 text-amber-600 animate-pulse" />
+                    <span>{t.nuskheFooter}</span>
+                  </div>
+                </div>
+              )}
 
               <button
                 onClick={resetScreening}
