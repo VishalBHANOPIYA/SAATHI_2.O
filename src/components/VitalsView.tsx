@@ -361,7 +361,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         const imgData = ctx.getImageData(0, 0, w, h);
         const data = imgData.data;
 
-        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+
 
         const fyS = Math.floor(h * 0.20);
         const fyE = Math.floor(h * 0.32);
