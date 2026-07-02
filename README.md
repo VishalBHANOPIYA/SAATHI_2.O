@@ -46,6 +46,9 @@ Saathi (meaning *Companion* in Hindi) is a comprehensive, PWA-compatible, multil
     - **Demo Mode**: One-tap seeding of realistic patient records, medicine histories, and metrics for demonstration.
     - **Health Card Exporter**: One-click download of a professional, print-ready, branded A4 Health Card PDF summarizing user vitals, medications, and diagnoses.
 
+11. **Nani-Dadi Ke Nuskhe (Traditional Home Remedies)**
+    Integrates a culturally rich repository of traditional Indian home remedies (Nuskhe) triggered dynamically based on triage symptom matching for Low and Medium-risk conditions. Supports full localization (English, Hindi, and Gujarati) and displays key ingredients (like Tulsi, Ginger, Turmeric) alongside safety warnings.
+
 ---
 
 ## 🛠️ Tech Stack
