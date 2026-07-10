@@ -102,7 +102,9 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
     selectForNew: t.ashaSelectForNew || "Select Patient for New Screening",
     placeholderName: t.ashaPlaceholderName || "e.g. Ramesh Singh",
     placeholderAge: t.ashaPlaceholderAge || "e.g. 34",
-    placeholderVillage: t.ashaPlaceholderVillage || "e.g. Rampur village"
+    placeholderVillage: t.ashaPlaceholderVillage || "e.g. Rampur village",
+    lastCheck: t.ashaLastCheck || "Last Check: {date}",
+    attachedRecords: t.ashaAttachedRecords || "Records: {count}"
   };
 
   const [ashaSearchQuery, setAshaSearchQuery] = useState("");

@@ -955,19 +955,21 @@ export default function MainApp() {
   // --- ONBOARDING UI ---
   const renderOnboarding = () => {
     return (
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-900 via-teal-950 to-emerald-950 text-white z-50 flex flex-col font-sans p-6 sm:p-10 md:p-16 justify-between select-none animate-fadeIn items-center">
+      <div className="absolute inset-0 bg-[#F7F9FC] text-[#111827] z-50 flex flex-col font-sans p-6 sm:p-8 md:p-12 justify-between select-none animate-fadeIn items-center overflow-y-auto">
         {/* Decorative background blurs */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/20 rounded-full blur-3xl pointer-events-none -translate-x-1/4 translate-y-1/4" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/4 -translate-y-1/4" />
+        <div className="absolute top-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-x-1/4 translate-y-1/4" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl pointer-events-none translate-x-1/4 -translate-y-1/4" />
 
         {/* Top Header */}
-        <div className="flex justify-between items-center z-10 shrink-0 w-full max-w-lg">
-          <div className="flex items-center gap-1.5">
-            <Heart className="w-5 h-5 text-emerald-400 fill-emerald-400 animate-pulse" />
-            <span className="font-black text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">Saathi</span>
+        <div className="flex justify-between items-center z-10 shrink-0 w-full max-w-lg mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
+              <Heart className="w-5 h-5 text-primary fill-primary/20 animate-pulse" />
+            </div>
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Saathi</span>
           </div>
           {onboardStep >= 1 && onboardStep <= 3 && (
-            <span className="text-[10px] font-black text-teal-355 uppercase tracking-widest bg-teal-505/10 px-2 py-0.5 rounded-full border border-teal-400/20">
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20 shadow-soft">
               {t.onboardStepIndicator ? t.onboardStepIndicator.replace("{current}", String(onboardStep)) : `Step ${onboardStep} of 3`}
             </span>
           )}
@@ -975,24 +977,24 @@ export default function MainApp() {
 
         {/* STEP 0: Welcome & Language selection */}
         {onboardStep === 0 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-scaleUp text-center w-full max-w-lg">
-            <div className="space-y-2">
-              <div className="w-20 h-20 bg-teal-550/20 rounded-3xl flex items-center justify-center mx-auto border border-teal-400/20 animate-pulse">
-                <Heart className="w-10 h-10 text-teal-300 fill-teal-400/20" />
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-scaleUp text-center w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
+            <div className="space-y-3">
+              <div className="w-20 h-20 bg-primary/10 rounded-[24px] flex items-center justify-center mx-auto border border-primary/20 shadow-soft">
+                <Heart className="w-10 h-10 text-primary fill-primary/10" />
               </div>
-              <h2 className="text-3xl font-black tracking-tight mt-4 bg-gradient-to-r from-teal-200 to-emerald-300 bg-clip-text text-transparent">
+              <h2 className="text-3xl font-extrabold tracking-tight mt-4 text-textprimary">
                 Saathi
               </h2>
-              <p className="text-xs text-teal-200 max-w-xs mx-auto leading-relaxed font-semibold">
+              <p className="text-sm text-textsecondary max-w-xs mx-auto leading-relaxed font-semibold">
                 Your AI Health Companion
               </p>
             </div>
 
-            <div className="space-y-3 pt-6 w-full">
-              <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block">
+            <div className="space-y-3 pt-4 w-full text-left">
+              <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wider block text-center">
                 Select Your Language / भाषा चुनें / ભાષા પસંદ કરો
               </span>
-              <div className="flex flex-col gap-2.5">
+              <div className="grid grid-cols-1 gap-2.5">
                 {[
                   { code: "en", label: "English" },
                   { code: "hi", label: "हिंदी (Hindi)" },
@@ -1004,21 +1006,21 @@ export default function MainApp() {
                       setLanguage(l.code as any);
                       setShowWorldLangDropdown(false);
                     }}
-                    className={`py-3 px-4 rounded-2xl text-xs font-black border transition-all flex items-center justify-between ${
+                    className={`py-3 px-5 rounded-2xl text-xs font-bold border transition-all flex items-center justify-between ${
                       (language === l.code)
-                        ? "bg-teal-600 border-teal-450 text-white shadow-lg scale-[1.02]"
-                        : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                        ? "bg-primary/5 border-primary text-primary shadow-soft scale-[1.01]"
+                        : "bg-white border-slate-100 text-textsecondary hover:bg-slate-50"
                     }`}
                   >
                     <span>{l.label}</span>
-                    {language === l.code && <Check className="w-4 h-4 text-emerald-400" />}
+                    {language === l.code && <Check className="w-4 h-4 text-primary" />}
                   </button>
                 ))}
               </div>
 
               {/* World language selector (Fix 3) */}
               <div className="space-y-2 pt-2 relative text-left">
-                <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block text-center">
+                <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wider block text-center">
                   {t.onboardOrSelectOtherLanguage}
                 </span>
                 <div className="relative" ref={onboardLangRef}>
@@ -1029,27 +1031,27 @@ export default function MainApp() {
                     aria-expanded={showWorldLangDropdown}
                     aria-controls="onboard-lang-listbox"
                     onClick={() => setShowWorldLangDropdown(!showWorldLangDropdown)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 px-4 text-xs text-left font-bold flex items-center justify-between text-teal-200 hover:bg-white/10 transition-colors focus:border-teal-400 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-4 text-xs text-left font-bold flex items-center justify-between text-textsecondary hover:bg-slate-50 transition-colors focus:border-primary focus:outline-none"
                   >
                     <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-teal-400" />
-                      <span>
+                      <Globe className="w-4 h-4 text-primary" />
+                      <span className="text-textprimary">
                         {worldLanguages.find(wl => wl.code === language)?.label || t.selectLanguage}
                       </span>
                     </div>
-                    <ChevronDown className="w-4 h-4 text-teal-400" />
+                    <ChevronDown className="w-4 h-4 text-primary" />
                   </button>
 
                   {showWorldLangDropdown && (
-                    <div id="onboard-lang-listbox" role="listbox" aria-labelledby="onboard-lang-btn" className="absolute left-0 right-0 bottom-full mb-2 bg-teal-950 border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-48 flex flex-col">
-                      <div className="p-2 border-b border-white/10 flex items-center gap-2 bg-white/5">
-                        <Search className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                    <div id="onboard-lang-listbox" role="listbox" aria-labelledby="onboard-lang-btn" className="absolute left-0 right-0 bottom-full mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden max-h-48 flex flex-col">
+                      <div className="p-2 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
+                        <Search className="w-3.5 h-3.5 text-textsecondary shrink-0" />
                         <input
                           type="text"
                           placeholder="Search language..."
                           value={worldLangSearch}
                           onChange={e => setWorldLangSearch(e.target.value)}
-                          className="w-full text-xs bg-transparent text-white focus:outline-none placeholder-teal-600"
+                          className="w-full text-xs bg-transparent text-textprimary focus:outline-none placeholder-textsecondary"
                         />
                       </div>
                       <div className="overflow-y-auto flex-1">
@@ -1071,12 +1073,12 @@ export default function MainApp() {
                                 trigger.focus();
                               }
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-white/10 transition-colors flex items-center justify-between ${
-                              language === wl.code ? "bg-teal-600/30 text-emerald-300" : "text-slate-300"
+                            className={`w-full text-left px-4 py-3 text-xs font-semibold hover:bg-slate-55 transition-colors flex items-center justify-between ${
+                              language === wl.code ? "bg-primary/10 text-primary font-bold" : "text-textsecondary"
                             }`}
                           >
                             <span>{wl.label}</span>
-                            {language === wl.code && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                            {language === wl.code && <Check className="w-3.5 h-3.5 text-primary" />}
                           </button>
                         ))}
                       </div>
@@ -1090,7 +1092,7 @@ export default function MainApp() {
             <div className="pt-4">
               <button
                 onClick={() => setOnboardStep(1)}
-                className="w-full py-3.5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center justify-center gap-1.5 mx-auto"
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-xs font-bold text-white shadow-soft transition-all active:scale-[0.99] flex items-center justify-center gap-1.5 mx-auto"
               >
                 <span>{t.onboardGetStarted}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -1099,16 +1101,17 @@ export default function MainApp() {
           </div>
         )}
 
+
         {/* Slide 1 */}
         {onboardStep === 1 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="flex justify-between items-center shrink-0">
-              <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full">
                 {t.onboardFeature1Title}
               </span>
               <button 
                 onClick={() => setOnboardStep(4)} 
-                className="text-xs font-bold text-teal-300 hover:text-white transition-colors uppercase tracking-wider"
+                className="text-xs font-bold text-textsecondary hover:text-primary transition-colors uppercase tracking-wider"
               >
                 {t.skip}
               </button>
@@ -1117,7 +1120,7 @@ export default function MainApp() {
             <div className="flex-1 flex flex-col justify-center space-y-6">
               {/* Tappable Live Camera Demo Box */}
               <div
-                className="w-full aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden group shrink-0 cursor-pointer active:scale-[0.98] transition-transform"
+                className="w-full aspect-video bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center relative overflow-hidden group shrink-0 cursor-pointer active:scale-[0.98] transition-transform"
                 onClick={async () => {
                   if (onboardCamStream || onboardCamLoading) return;
                   setOnboardCamLoading(true);
@@ -1148,11 +1151,11 @@ export default function MainApp() {
                         }
                       }}
                     />
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/70 animate-scan pointer-events-none z-20" />
-                    <span className="absolute top-2 left-2 bg-emerald-500/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider z-20 animate-pulse">
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-accent/70 animate-scan pointer-events-none z-20" />
+                    <span className="absolute top-2 left-2 bg-accent/90 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider z-20 animate-pulse shadow-soft">
                       {t.cameraLivePreview}
                     </span>
-                    {/* Camera Flip Button (Fix 1) */}
+                    {/* Camera Flip Button */}
                     <button
                       onClick={async (e) => {
                         e.stopPropagation();
@@ -1170,58 +1173,58 @@ export default function MainApp() {
                           setOnboardCamErr(true);
                         }
                       }}
-                      className="absolute top-2 right-2 z-30 w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 hover:bg-black/70 transition-all active:scale-90"
+                      className="absolute top-2 right-2 z-30 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center border border-slate-100 hover:bg-white transition-all active:scale-90 shadow-soft"
                       title="Flip Camera"
                     >
-                      <SwitchCamera className="w-4 h-4 text-white" />
+                      <SwitchCamera className="w-4 h-4 text-primary" />
                     </button>
                   </>
                 ) : onboardCamErr ? (
                   /* Animated fallback illustration (permission denied) */
                   <>
-                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/10 to-emerald-500/10" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-accent/5" />
                     <div className="relative z-10 flex flex-col items-center gap-2">
                       <div className="relative">
-                        <Camera className="w-14 h-14 text-teal-300 animate-onboard-cam-pulse" />
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-ping" />
-                        <div className="absolute -bottom-1 -left-2 w-2 h-2 bg-teal-300 rounded-full animate-onboard-float-dot" />
-                        <div className="absolute top-1/2 right-[-14px] w-2.5 h-2.5 bg-emerald-300 rounded-full animate-onboard-float-dot2" />
+                        <Camera className="w-14 h-14 text-primary/75 animate-onboard-cam-pulse" />
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full animate-ping" />
+                        <div className="absolute -bottom-1 -left-2 w-2 h-2 bg-primary rounded-full animate-onboard-float-dot" />
+                        <div className="absolute top-1/2 right-[-14px] w-2.5 h-2.5 bg-accent rounded-full animate-onboard-float-dot2" />
                       </div>
-                      <span className="text-[9px] text-teal-200 font-bold">
+                      <span className="text-[9px] text-textsecondary font-bold">
                         {t.cameraUnavailable}
                       </span>
                     </div>
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/50 animate-scan pointer-events-none" />
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-accent/40 animate-scan pointer-events-none" />
                   </>
                 ) : (
                   /* Default: tap to activate */
                   <>
-                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/10 to-emerald-500/10" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-accent/5" />
                     {onboardCamLoading ? (
                       <div className="relative z-10 flex flex-col items-center gap-2">
-                        <div className="w-10 h-10 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[9px] text-teal-200 font-bold">
+                        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[9px] text-textsecondary font-bold">
                           {t.cameraOpening}
                         </span>
                       </div>
                     ) : (
                       <div className="relative z-10 flex flex-col items-center gap-2">
-                        <Camera className="w-14 h-14 text-teal-300 animate-onboard-cam-pulse" />
-                        <span className="text-[10px] text-teal-200 font-bold bg-white/10 px-3 py-1 rounded-full">
+                        <Camera className="w-14 h-14 text-primary animate-onboard-cam-pulse" />
+                        <span className="text-[10px] text-primary font-bold bg-primary/10 px-3 py-1 rounded-full">
                           {t.cameraTapForDemo}
                         </span>
                       </div>
                     )}
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/50 animate-scan pointer-events-none" />
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-accent/40 animate-scan pointer-events-none" />
                   </>
                 )}
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-white leading-tight">
+                <h3 className="text-xl font-extrabold text-textprimary leading-tight">
                   {t.onboardSlide1TitleDetailed}
                 </h3>
-                <p className="text-xs text-teal-200 leading-relaxed font-medium">
+                <p className="text-xs text-textsecondary leading-relaxed font-medium">
                   {t.onboardSlide1DescDetailed}
                 </p>
               </div>
@@ -1231,34 +1234,34 @@ export default function MainApp() {
 
         {/* Slide 2 */}
         {onboardStep === 2 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="flex justify-between items-center shrink-0">
-              <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full">
                 {t.onboardFeature2Title}
               </span>
               <button 
                 onClick={() => setOnboardStep(4)} 
-                className="text-xs font-bold text-teal-300 hover:text-white transition-colors uppercase tracking-wider"
+                className="text-xs font-bold text-textsecondary hover:text-primary transition-colors uppercase tracking-wider"
               >
                 {t.skip}
               </button>
             </div>
             
             <div className="flex-1 flex flex-col justify-center space-y-6">
-              <div className="w-full aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/10 to-teal-500/10" />
+              <div className="w-full aspect-video bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/5 to-primary/5" />
                 <div className="flex flex-col items-center gap-3 relative z-10">
-                  <div className="flex items-center gap-3">
-                    <Heart className="w-10 h-10 text-pink-400 fill-pink-500/20 animate-onboard-heartbeat" />
-                    <span className="text-xs font-bold text-slate-300">72 BPM</span>
+                  <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl shadow-soft border border-slate-100">
+                    <Heart className="w-8 h-8 text-rose-500 fill-rose-500/10 animate-onboard-heartbeat" />
+                    <span className="text-xs font-extrabold text-textprimary">72 BPM</span>
                   </div>
                   {/* Animated Heartbeat Waveform SVG */}
                   <svg viewBox="0 0 200 40" className="w-48 h-8" preserveAspectRatio="none">
                     <polyline
                       points="0,20 20,20 30,20 38,5 46,35 54,10 62,30 70,20 80,20 100,20 110,20 118,5 126,35 134,10 142,30 150,20 160,20 200,20"
                       fill="none"
-                      stroke="#f472b6"
-                      strokeWidth="2"
+                      stroke="#EF4444"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       className="animate-onboard-ecg"
@@ -1268,10 +1271,10 @@ export default function MainApp() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-white leading-tight">
+                <h3 className="text-xl font-extrabold text-textprimary leading-tight">
                   {t.onboardSlide2TitleDetailed}
                 </h3>
-                <p className="text-xs text-teal-200 leading-relaxed font-medium">
+                <p className="text-xs text-textsecondary leading-relaxed font-medium">
                   {t.onboardSlide2DescDetailed}
                 </p>
               </div>
@@ -1281,43 +1284,43 @@ export default function MainApp() {
 
         {/* Slide 3 */}
         {onboardStep === 3 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
+          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="flex justify-between items-center shrink-0">
-              <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full">
                 {t.onboardFeature3Title}
               </span>
               <button 
                 onClick={() => setOnboardStep(4)} 
-                className="text-xs font-bold text-teal-300 hover:text-white transition-colors uppercase tracking-wider"
+                className="text-xs font-bold text-textsecondary hover:text-primary transition-colors uppercase tracking-wider"
               >
                 {t.skip}
               </button>
             </div>
             
             <div className="flex-1 flex flex-col justify-center space-y-6">
-              <div className="w-full aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-teal-500/10" />
-                <div className="flex flex-col items-center gap-3 relative z-10 text-center px-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-4 h-4 rounded-full bg-red-400 animate-onboard-triage-red shadow-lg shadow-red-400/40" />
-                    <div className="w-5 h-5 rounded-full bg-amber-400 animate-onboard-triage-yellow shadow-lg shadow-amber-400/40" />
-                    <div className="w-6 h-6 rounded-full bg-emerald-400 animate-onboard-triage-green shadow-lg shadow-emerald-400/40" />
+              <div className="w-full aspect-video bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 to-primary/5" />
+                <div className="flex flex-col items-center gap-4 relative z-10 text-center px-4">
+                  <div className="flex items-center gap-4 bg-white px-5 py-2.5 rounded-2xl shadow-soft border border-slate-100">
+                    <div className="w-3.5 h-3.5 rounded-full bg-danger animate-onboard-triage-red shadow-lg shadow-danger/40" />
+                    <div className="w-4 h-4 rounded-full bg-warning animate-onboard-triage-yellow shadow-lg shadow-warning/40" />
+                    <div className="w-4.5 h-4.5 rounded-full bg-success animate-onboard-triage-green shadow-lg shadow-success/40" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-emerald-300" />
-                    <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">ABDM ABHA Health ID</span>
+                  <div className="flex items-center gap-2 bg-primary/5 border border-primary/10 px-3.5 py-1.5 rounded-xl">
+                    <FileText className="w-4 h-4 text-primary" />
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">ABDM ABHA Health ID</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-white leading-tight">
+                <h3 className="text-xl font-extrabold text-textprimary leading-tight">
                   {t.onboardSlide3TitleDetailed}
                 </h3>
-                <p className="text-xs text-teal-200 leading-relaxed font-medium">
+                <p className="text-xs text-textsecondary leading-relaxed font-medium">
                   {t.onboardSlide3DescDetailed}
                 </p>
-                <p className="text-[10px] text-emerald-400 font-bold italic mt-1 animate-pulse">
+                <p className="text-[10px] text-success font-bold italic mt-1 animate-pulse">
                   {t.onboardSlide3AbhaNote}
                 </p>
               </div>
@@ -1327,10 +1330,10 @@ export default function MainApp() {
 
         {/* Slide navigation controls */}
         {onboardStep >= 1 && onboardStep <= 3 && (
-          <div className="flex justify-between items-center gap-3 z-10 pt-4 border-t border-white/10 shrink-0 w-full max-w-lg">
+          <div className="flex justify-between items-center gap-3 z-10 pt-4 border-t border-slate-100 shrink-0 w-full max-w-lg">
             <button
               onClick={() => setOnboardStep(prev => prev - 1)}
-              className="py-3 px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold transition-all text-slate-350"
+              className="py-3 px-5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold transition-all text-textsecondary shadow-soft active:scale-[0.98]"
             >
               {t.back}
             </button>
@@ -1341,7 +1344,7 @@ export default function MainApp() {
                 <div
                   key={step}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    onboardStep === step ? "w-4 bg-emerald-450" : "w-1.5 bg-white/30"
+                    onboardStep === step ? "w-5 bg-primary" : "w-1.5 bg-slate-200"
                   }`}
                 />
               ))}
@@ -1349,7 +1352,7 @@ export default function MainApp() {
 
             <button
               onClick={() => setOnboardStep(prev => prev + 1)}
-              className="py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center gap-1.5"
+              className="py-3 px-6 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-xs font-bold text-white shadow-soft transition-all active:scale-[0.98] flex items-center gap-1.5"
             >
               <span>{t.next}</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -1359,14 +1362,14 @@ export default function MainApp() {
 
         {/* STEP 4: Profile intake form */}
         {onboardStep === 4 && (
-          <div className="flex-1 flex flex-col justify-between z-10 text-left h-full overflow-hidden w-full max-w-lg">
+          <div className="flex-1 flex flex-col justify-between z-10 text-left h-full overflow-hidden w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="space-y-4 overflow-y-auto no-scrollbar pb-4 flex-1 pr-1">
-              <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                <h3 className="text-md font-black tracking-tight text-white flex items-center gap-2">
-                  <span className="w-6 h-6 bg-teal-500/20 border border-teal-400/30 rounded-lg flex items-center justify-center text-teal-350 text-xs font-bold">4</span>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 className="text-md font-extrabold tracking-tight text-textprimary flex items-center gap-2">
+                  <span className="w-6 h-6 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-center text-primary text-xs font-bold">4</span>
                   {t.profileFormTitle}
                 </h3>
-                <span className="text-[9px] font-extrabold text-teal-350 uppercase bg-teal-500/10 px-2.5 py-1 rounded-full border border-teal-400/20 shrink-0">
+                <span className="text-[9px] font-extrabold text-primary uppercase bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 shrink-0">
                   {profileSubStep === "A" ? t.partA : t.partB}
                 </span>
               </div>
@@ -1375,44 +1378,44 @@ export default function MainApp() {
                 /* SUB-STEP A */
                 <div className="space-y-4 animate-scaleUp">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
-                      {t.fullName} <span className="text-red-405 font-bold">*</span>
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
+                      {t.fullName} <span className="text-danger font-bold">*</span>
                     </label>
                     <input
                       type="text"
                       placeholder={t.placeholderName}
                       value={profileForm.name}
                       onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
-                      className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
+                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
                     />
                     {formErrors.name && (
-                      <p className="text-[10px] text-red-405 font-bold flex items-center gap-1 mt-1">
+                      <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
                         ⚠️ {formErrors.name}
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
-                      {t.age} <span className="text-red-405 font-bold">*</span>
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
+                      {t.age} <span className="text-danger font-bold">*</span>
                     </label>
                     <input
                       type="number"
                       placeholder={t.placeholderAge}
                       value={profileForm.age}
                       onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))}
-                      className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
+                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
                     />
                     {formErrors.age && (
-                      <p className="text-[10px] text-red-405 font-bold flex items-center gap-1 mt-1">
+                      <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
                         ⚠️ {formErrors.age}
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide block">
-                      {t.gender} <span className="text-red-405 font-bold">*</span>
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide block">
+                      {t.gender} <span className="text-danger font-bold">*</span>
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       {["Male", "Female", "Other"].map(g => (
@@ -1420,10 +1423,10 @@ export default function MainApp() {
                           type="button"
                           key={g}
                           onClick={() => setProfileForm(p => ({ ...p, gender: g }))}
-                          className={`py-3.5 px-1 rounded-2xl text-xs font-black border transition-all ${
+                          className={`py-3.5 px-1 rounded-2xl text-xs font-bold border transition-all ${
                             profileForm.gender === g
-                              ? "bg-teal-600 border-teal-450 text-white shadow-lg"
-                              : "bg-white/5 border-white/10 text-slate-350 hover:bg-white/10"
+                              ? "bg-primary border-primary text-white shadow-soft"
+                              : "bg-slate-50 border-slate-200 text-textsecondary hover:bg-slate-100"
                           }`}
                         >
                           {g === "Male" ? t.male : g === "Female" ? t.female : t.other}
@@ -1433,10 +1436,10 @@ export default function MainApp() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
-                      {t.phone} <span className="text-red-405 font-bold">*</span>
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
+                      {t.phone} <span className="text-danger font-bold">*</span>
                     </label>
-                    <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl focus-within:border-teal-400 relative">
+                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-2xl focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 transition-all relative">
                       {/* Country code selector (Fix 2) */}
                       <div className="relative" ref={onboardCountryRef}>
                         <button
@@ -1446,28 +1449,28 @@ export default function MainApp() {
                           aria-expanded={showCountryDropdown}
                           aria-controls="onboard-country-listbox"
                           onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                          className="text-xs text-teal-300 bg-white/5 py-3.5 px-3 font-bold border-r border-white/10 flex items-center gap-1 hover:bg-white/10 transition-colors whitespace-nowrap rounded-l-2xl"
+                          className="text-xs text-primary bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200 transition-colors whitespace-nowrap rounded-l-2xl"
                         >
                           <span>{countryCodes.find(c => c.code === selectedCountryCode)?.flag}</span>
                           <span>{selectedCountryCode}</span>
                           <ChevronDown className="w-3 h-3" />
                         </button>
                         {showCountryDropdown && (
-                          <div id="onboard-country-listbox" role="listbox" aria-labelledby="onboard-country-btn" className="absolute top-full left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700/50 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
-                            <div className="p-2 border-b border-white/10 bg-slate-950">
-                              <div className="flex items-center bg-white/5 rounded-lg px-2 border border-white/10">
-                                <Search className="w-3 h-3 text-teal-400" />
+                          <div id="onboard-country-listbox" role="listbox" aria-labelledby="onboard-country-btn" className="absolute top-full left-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
+                            <div className="p-2 border-b border-slate-100 bg-slate-50">
+                              <div className="flex items-center bg-white rounded-lg px-2 border border-slate-200">
+                                <Search className="w-3 h-3 text-textsecondary" />
                                 <input
                                   type="text"
                                   placeholder="Search country..."
                                   value={countrySearch}
                                   onChange={e => setCountrySearch(e.target.value)}
-                                  className="w-full text-[10px] p-1.5 bg-transparent text-white focus:outline-none"
+                                  className="w-full text-[10px] p-1.5 bg-transparent text-textprimary focus:outline-none placeholder-textsecondary"
                                   autoFocus
                                 />
                               </div>
                             </div>
-                            <div className="overflow-y-auto max-h-36 bg-slate-900">
+                            <div className="overflow-y-auto max-h-36 bg-white">
                               {countryCodes.filter(c =>
                                 c.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
                                 c.code.includes(countrySearch)
@@ -1487,13 +1490,13 @@ export default function MainApp() {
                                       trigger.focus();
                                     }
                                   }}
-                                  className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-white/10 transition-colors ${
-                                    selectedCountryCode === c.code ? "bg-teal-600/30 text-white font-bold" : "text-slate-300"
+                                  className={`w-full text-left px-3 py-2.5 text-[10px] font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors ${
+                                    selectedCountryCode === c.code ? "bg-primary/10 text-primary font-bold" : "text-textsecondary"
                                   }`}
                                 >
                                   <span>{c.flag}</span>
-                                  <span className="flex-1 text-slate-200">{c.country}</span>
-                                  <span className="text-teal-400 font-bold">{c.code}</span>
+                                  <span className="flex-1 text-textprimary">{c.country}</span>
+                                  <span className="text-primary font-bold">{c.code}</span>
                                 </button>
                               ))}
                             </div>
@@ -1506,11 +1509,11 @@ export default function MainApp() {
                         placeholder={t.placeholderPhone}
                         value={profileForm.phone}
                         onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
-                        className="w-full text-xs p-3.5 bg-transparent text-white font-semibold focus:outline-none rounded-r-2xl"
+                        className="w-full text-xs p-3.5 bg-transparent text-textprimary font-semibold focus:outline-none rounded-r-2xl h-[48px]"
                       />
                     </div>
                     {formErrors.phone && (
-                      <p className="text-[10px] text-red-405 font-bold flex items-center gap-1 mt-1">
+                      <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
                         ⚠️ {formErrors.phone}
                       </p>
                     )}
@@ -1520,7 +1523,7 @@ export default function MainApp() {
                 /* SUB-STEP B */
                 <div className="space-y-4 animate-scaleUp">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide block">
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide block">
                       {t.conditions}
                     </label>
                     <div className="flex flex-wrap gap-1.5">
@@ -1541,10 +1544,10 @@ export default function MainApp() {
                             type="button"
                             key={c.key}
                             onClick={() => handleConditionClick(c.key)}
-                            className={`py-2 px-3 rounded-full text-[10px] font-bold border transition-all ${
+                            className={`py-2 px-3.5 rounded-full text-[10px] font-bold border transition-all ${
                               isSelected
-                                ? "bg-emerald-500/20 border-emerald-450 text-white font-extrabold shadow-sm"
-                                : "bg-white/5 border-white/10 text-slate-350 hover:bg-white/10"
+                                ? "bg-primary border-primary text-white shadow-soft"
+                                : "bg-slate-50 border-slate-200 text-textsecondary hover:bg-slate-100"
                             }`}
                           >
                             {c.label}
@@ -1555,7 +1558,7 @@ export default function MainApp() {
 
                     {profileForm.conditions.includes("Other") && (
                       <div className="space-y-1 mt-2 animate-fadeIn">
-                        <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
+                        <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
                           {t.specifyOtherCondition}
                         </label>
                         <input
@@ -1563,7 +1566,7 @@ export default function MainApp() {
                           placeholder="e.g. Acid Reflux"
                           value={profileForm.otherCondition}
                           onChange={e => setProfileForm(p => ({ ...p, otherCondition: e.target.value }))}
-                          className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
+                          className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
                         />
                       </div>
                     )}
@@ -1571,13 +1574,13 @@ export default function MainApp() {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide block">
+                      <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide block">
                         {t.bloodGroup}
                       </label>
                       <select
                         value={profileForm.bloodGroup}
                         onChange={e => setProfileForm(p => ({ ...p, bloodGroup: e.target.value }))}
-                        className="w-full text-xs p-3 rounded-2xl bg-teal-950 border border-white/10 text-teal-150 font-bold focus:outline-none focus:border-teal-400 h-[44px]"
+                        className="w-full text-xs p-3 rounded-2xl bg-slate-50 border border-slate-200 text-textprimary font-bold focus:outline-none focus:border-primary h-[48px]"
                       >
                         {["Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
                           <option key={bg} value={bg}>{bg}</option>
@@ -1586,7 +1589,7 @@ export default function MainApp() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
+                      <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
                         {t.allergies}
                       </label>
                       <input
@@ -1594,13 +1597,13 @@ export default function MainApp() {
                         placeholder="e.g. Peanuts, Penicillin"
                         value={profileForm.allergies}
                         onChange={e => setProfileForm(p => ({ ...p, allergies: e.target.value }))}
-                        className="w-full text-xs p-3 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10 h-[44px]"
+                        className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[48px]"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
                       {t.medications}
                     </label>
                     <input
@@ -1608,12 +1611,12 @@ export default function MainApp() {
                       placeholder="e.g. Metformin 500mg daily"
                       value={profileForm.medications}
                       onChange={e => setProfileForm(p => ({ ...p, medications: e.target.value }))}
-                      className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
+                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
                       {t.abhaNumberOptional}
                     </label>
                     <input
@@ -1624,25 +1627,25 @@ export default function MainApp() {
                         const raw = e.target.value.replace(/\D/g, "").slice(0, 14);
                         setProfileForm(p => ({ ...p, abha: raw }));
                       }}
-                      className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
+                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
                     />
-                    <p className="text-[9px] text-teal-300 font-semibold mt-0.5">
+                    <p className="text-[9px] text-textsecondary font-semibold mt-0.5">
                       {t.abhaSubtext}
                     </p>
                     {formErrors.abha && (
-                      <p className="text-[10px] text-red-405 font-bold flex items-center gap-1 mt-1">
+                      <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
                         ⚠️ {formErrors.abha}
                       </p>
                     )}
                   </div>
 
-                  <div className="border-t border-white/10 pt-3 mt-1 space-y-3">
-                    <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block">
+                  <div className="border-t border-slate-100 pt-3 mt-1 space-y-3">
+                    <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wider block">
                       {t.emergencyContactOptional}
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-teal-250 uppercase">
+                        <label className="text-[9px] font-bold text-textsecondary uppercase">
                           {t.emergencyName}
                         </label>
                         <input
@@ -1650,11 +1653,11 @@ export default function MainApp() {
                           placeholder="e.g. Sunita Sharma"
                           value={profileForm.emergencyName}
                           onChange={e => setProfileForm(p => ({ ...p, emergencyName: e.target.value }))}
-                          className="w-full text-xs p-3 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10 h-[44px]"
+                          className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[48px]"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-teal-250 uppercase">
+                        <label className="text-[9px] font-bold text-textsecondary uppercase">
                           {t.emergencyPhone}
                         </label>
                         <input
@@ -1663,12 +1666,12 @@ export default function MainApp() {
                           placeholder="10-digit number"
                           value={profileForm.emergencyPhone}
                           onChange={e => setProfileForm(p => ({ ...p, emergencyPhone: e.target.value.replace(/\D/g, "") }))}
-                          className="w-full text-xs p-3 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10 h-[44px]"
+                          className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[48px]"
                         />
                       </div>
                     </div>
                     {formErrors.emergencyPhone && (
-                      <p className="text-[10px] text-red-405 font-bold flex items-center gap-1 mt-1">
+                      <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
                         ⚠️ {formErrors.emergencyPhone}
                       </p>
                     )}
@@ -1678,7 +1681,7 @@ export default function MainApp() {
             </div>
 
             {/* Navigation Actions for Profile Step 4 */}
-            <div className="flex justify-between items-center gap-3 z-10 pt-4 border-t border-white/10 shrink-0">
+            <div className="flex justify-between items-center gap-3 z-10 pt-4 border-t border-slate-100 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -1689,7 +1692,7 @@ export default function MainApp() {
                     setOnboardStep(3);
                   }
                 }}
-                className="py-3 px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold transition-all text-slate-350"
+                className="py-3 px-5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold transition-all text-textsecondary shadow-soft active:scale-[0.98]"
               >
                 {t.back}
               </button>
@@ -1702,7 +1705,7 @@ export default function MainApp() {
                       setProfileSubStep("B");
                     }
                   }}
-                  className="py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center gap-1.5"
+                  className="py-3 px-6 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-xs font-bold text-white shadow-soft transition-all active:scale-[0.98] flex items-center gap-1.5 animate-pulse"
                 >
                   <span>{t.nextDetails}</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1711,7 +1714,7 @@ export default function MainApp() {
                 <button
                   type="button"
                   onClick={handleSaveProfile}
-                  className="py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center gap-1.5"
+                  className="py-3 px-6 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-xs font-bold text-white shadow-soft transition-all active:scale-[0.98] flex items-center gap-1.5"
                 >
                   <span>{t.finishSetup}</span>
                   <Check className="w-3.5 h-3.5" />
@@ -1728,12 +1731,14 @@ export default function MainApp() {
     if (!showProfileModal) return null;
 
     return (
-      <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fadeIn text-left">
-        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm md:max-w-lg w-full max-h-[85vh] md:max-h-[90vh] overflow-y-auto space-y-4 animate-scaleUp no-scrollbar">
+      <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[60] flex items-center justify-center p-4 animate-fadeIn text-left">
+        <div className="bg-white/95 rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-soft max-w-sm md:max-w-lg w-full max-h-[85vh] md:max-h-[90vh] overflow-y-auto space-y-5 animate-scaleUp no-scrollbar backdrop-blur-md">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2 text-slate-800">
-              <Heart className="w-5 h-5 text-teal-600 fill-teal-50 animate-pulse" />
-              <h3 className="text-sm font-black uppercase tracking-wide">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-primary fill-primary/20 animate-pulse" />
+              </div>
+              <h3 className="text-sm font-extrabold tracking-wide text-textprimary">
                 {t.healthProfile}
               </h3>
             </div>
@@ -1742,7 +1747,7 @@ export default function MainApp() {
                 setShowProfileModal(false);
                 setFormErrors({});
               }}
-              className="p-1.5 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-655 transition-colors"
+              className="p-1.5 rounded-full hover:bg-slate-50 text-textsecondary hover:text-textprimary transition-colors border border-slate-100 shadow-soft"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1751,51 +1756,51 @@ export default function MainApp() {
           <div className="space-y-4">
             {/* Section 1: Basic Info */}
             <div className="space-y-3">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+              <span className="text-[10px] font-bold text-textsecondary uppercase tracking-widest block">
                 {t.basicInformation}
               </span>
               
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-650 uppercase tracking-wide">
-                  {t.fullName} <span className="text-red-500 font-bold">*</span>
+                <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide">
+                  {t.fullName} <span className="text-danger font-bold">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. Aarav Sharma"
                   value={profileForm.name}
                   onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                  className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[44px]"
                 />
                 {formErrors.name && (
-                  <p className="text-[9px] text-red-500 font-bold">⚠️ {formErrors.name}</p>
+                  <p className="text-[9px] text-danger font-bold">⚠️ {formErrors.name}</p>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-650 uppercase tracking-wide">
-                    {t.age} <span className="text-red-500 font-bold">*</span>
+                  <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide">
+                    {t.age} <span className="text-danger font-bold">*</span>
                   </label>
                   <input
                     type="number"
                     placeholder="e.g. 28"
                     value={profileForm.age}
                     onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))}
-                    className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                    className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[44px]"
                   />
                   {formErrors.age && (
-                    <p className="text-[9px] text-red-500 font-bold">⚠️ {formErrors.age}</p>
+                    <p className="text-[9px] text-danger font-bold">⚠️ {formErrors.age}</p>
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-650 uppercase tracking-wide block">
-                    {t.gender} <span className="text-red-500 font-bold">*</span>
+                  <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide block">
+                    {t.gender} <span className="text-danger font-bold">*</span>
                   </label>
                   <select
                     value={profileForm.gender}
                     onChange={e => setProfileForm(p => ({ ...p, gender: e.target.value }))}
-                    className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-bold focus:outline-none focus:border-teal-555 h-[44px]"
+                    className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 text-textprimary font-bold focus:outline-none focus:border-primary h-[44px]"
                   >
                     <option value="Male">{t.male}</option>
                     <option value="Female">{t.female}</option>
@@ -1805,11 +1810,11 @@ export default function MainApp() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-650 uppercase tracking-wide">
-                  {t.phone} <span className="text-red-500 font-bold">*</span>
+                <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide">
+                  {t.phone} <span className="text-danger font-bold">*</span>
                 </label>
-                <div className="flex items-center border border-slate-200 bg-slate-50 rounded-2xl focus-within:border-teal-500 relative">
-                  {/* Country code selector in edit profile modal (Fix 2) */}
+                <div className="flex items-center border border-slate-200 bg-slate-50 rounded-2xl focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 transition-all relative">
+                  {/* Country code selector in edit profile modal */}
                   <div className="relative" ref={profileCountryRef}>
                     <button
                       type="button"
@@ -1818,23 +1823,23 @@ export default function MainApp() {
                       aria-expanded={showCountryDropdown}
                       aria-controls="profile-country-listbox"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="text-xs text-slate-700 bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200/50 transition-colors whitespace-nowrap rounded-l-2xl"
+                      className="text-xs text-primary bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200 transition-colors whitespace-nowrap rounded-l-2xl h-[44px]"
                     >
                       <span>{countryCodes.find(c => c.code === selectedCountryCode)?.flag}</span>
                       <span>{selectedCountryCode}</span>
-                      <ChevronDown className="w-3 h-3 text-slate-500" />
+                      <ChevronDown className="w-3 h-3 text-primary" />
                     </button>
                     {showCountryDropdown && (
                       <div id="profile-country-listbox" role="listbox" aria-labelledby="profile-country-btn" className="absolute top-full left-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-slate-100 bg-slate-50">
                           <div className="flex items-center bg-white border border-slate-200 rounded-lg px-2">
-                            <Search className="w-3 h-3 text-slate-400" />
+                            <Search className="w-3 h-3 text-textsecondary" />
                             <input
                               type="text"
                               placeholder="Search country..."
                               value={countrySearch}
                               onChange={e => setCountrySearch(e.target.value)}
-                              className="w-full text-[10px] p-1.5 bg-transparent text-slate-800 focus:outline-none"
+                              className="w-full text-[10px] p-1.5 bg-transparent text-textprimary focus:outline-none placeholder-textsecondary"
                               autoFocus
                             />
                           </div>
@@ -1859,13 +1864,13 @@ export default function MainApp() {
                                   trigger.focus();
                                 }
                               }}
-                              className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors ${
-                                selectedCountryCode === c.code ? "bg-teal-50 text-teal-700 font-bold" : "text-slate-600"
+                              className={`w-full text-left px-3 py-2.5 text-[10px] font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors ${
+                                selectedCountryCode === c.code ? "bg-primary/10 text-primary font-bold" : "text-textsecondary"
                               }`}
                             >
                               <span>{c.flag}</span>
-                              <span className="flex-1 text-slate-700">{c.country}</span>
-                              <span className="text-teal-655 font-bold">{c.code}</span>
+                              <span className="flex-1 text-textprimary">{c.country}</span>
+                              <span className="text-primary font-bold">{c.code}</span>
                             </button>
                           ))}
                         </div>
@@ -1878,23 +1883,23 @@ export default function MainApp() {
                     placeholder="Phone number"
                     value={profileForm.phone}
                     onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
-                    className="w-full text-xs p-3 bg-transparent text-slate-800 font-semibold focus:outline-none rounded-r-2xl"
+                    className="w-full text-xs p-3 bg-transparent text-textprimary font-semibold focus:outline-none rounded-r-2xl h-[44px]"
                   />
                 </div>
                 {formErrors.phone && (
-                  <p className="text-[9px] text-red-500 font-bold">⚠️ {formErrors.phone}</p>
+                  <p className="text-[9px] text-danger font-bold">⚠️ {formErrors.phone}</p>
                 )}
               </div>
             </div>
 
             {/* Section 2: Health Background */}
             <div className="space-y-3 border-t border-slate-100 pt-3">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+              <span className="text-[10px] font-bold text-textsecondary uppercase tracking-widest block">
                 {t.healthDetails}
               </span>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-650 uppercase tracking-wide block">
+                <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide block">
                   {t.conditions}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -1915,10 +1920,10 @@ export default function MainApp() {
                         type="button"
                         key={c.key}
                         onClick={() => handleConditionClick(c.key)}
-                        className={`py-1.5 px-2.5 rounded-full text-[9px] font-bold border transition-all ${
+                        className={`py-1.5 px-3 rounded-full text-[9px] font-bold border transition-all ${
                           isSelected
-                            ? "bg-teal-50 border-teal-600 text-teal-800 font-extrabold"
-                            : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                            ? "bg-primary border-primary text-white shadow-soft"
+                            : "bg-slate-50 border-slate-200 text-textsecondary hover:bg-slate-100"
                         }`}
                       >
                         {c.label}
@@ -1929,7 +1934,7 @@ export default function MainApp() {
 
                 {profileForm.conditions.includes("Other") && (
                   <div className="space-y-1 mt-2">
-                    <label className="text-[9px] font-bold text-slate-650 uppercase">
+                    <label className="text-[9px] font-bold text-textsecondary uppercase">
                       {t.specifyOtherCondition}
                     </label>
                     <input
@@ -1937,7 +1942,7 @@ export default function MainApp() {
                       placeholder="Specify..."
                       value={profileForm.otherCondition}
                       onChange={e => setProfileForm(p => ({ ...p, otherCondition: e.target.value }))}
-                      className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                      className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-primary h-[44px]"
                     />
                   </div>
                 )}
@@ -1945,13 +1950,13 @@ export default function MainApp() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-650 uppercase block">
+                  <label className="text-[9px] font-bold text-textsecondary uppercase block">
                     {t.bloodGroup}
                   </label>
                   <select
                     value={profileForm.bloodGroup}
                     onChange={e => setProfileForm(p => ({ ...p, bloodGroup: e.target.value }))}
-                    className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-bold focus:outline-none focus:border-teal-555 h-[44px]"
+                    className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-bold focus:outline-none focus:border-primary h-[44px]"
                   >
                     {["Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
                       <option key={bg} value={bg}>{bg}</option>
@@ -1960,7 +1965,7 @@ export default function MainApp() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-650 uppercase">
+                  <label className="text-[9px] font-bold text-textsecondary uppercase">
                     {t.allergies}
                   </label>
                   <input
@@ -1968,13 +1973,13 @@ export default function MainApp() {
                     placeholder="e.g. Penicillin"
                     value={profileForm.allergies}
                     onChange={e => setProfileForm(p => ({ ...p, allergies: e.target.value }))}
-                    className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                    className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-primary h-[44px]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-650 uppercase">
+                <label className="text-[9px] font-bold text-textsecondary uppercase">
                   {t.medications}
                 </label>
                 <input
@@ -1982,12 +1987,12 @@ export default function MainApp() {
                   placeholder="e.g. Aspirin 75mg"
                   value={profileForm.medications}
                   onChange={e => setProfileForm(p => ({ ...p, medications: e.target.value }))}
-                  className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                  className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-primary h-[44px]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-650 uppercase">
+                <label className="text-[9px] font-bold text-textsecondary uppercase">
                   {t.abhaNumberOptional}
                 </label>
                 <input
@@ -1998,23 +2003,23 @@ export default function MainApp() {
                     const raw = e.target.value.replace(/\D/g, "").slice(0, 14);
                     setProfileForm(p => ({ ...p, abha: raw }));
                   }}
-                  className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                  className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-primary h-[44px]"
                 />
-                <p className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                <p className="text-[9px] text-textsecondary font-semibold mt-0.5">
                   {t.abhaSubtext}
                 </p>
                 {formErrors.abha && (
-                  <p className="text-[9px] text-red-500 font-bold">⚠️ {formErrors.abha}</p>
+                  <p className="text-[9px] text-danger font-bold">⚠️ {formErrors.abha}</p>
                 )}
               </div>
 
               <div className="border-t border-slate-100 pt-3 space-y-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+                <span className="text-[10px] font-bold text-textsecondary uppercase tracking-widest block">
                   {t.emergencyContact}
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-slate-650 uppercase">
+                    <label className="text-[9px] font-bold text-textsecondary uppercase">
                       {t.emergencyName}
                     </label>
                     <input
@@ -2022,11 +2027,11 @@ export default function MainApp() {
                       placeholder="e.g. Sunita"
                       value={profileForm.emergencyName}
                       onChange={e => setProfileForm(p => ({ ...p, emergencyName: e.target.value }))}
-                      className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                      className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-primary h-[44px]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-slate-650 uppercase">
+                    <label className="text-[9px] font-bold text-textsecondary uppercase">
                       {t.emergencyPhone}
                     </label>
                     <input
@@ -2035,26 +2040,14 @@ export default function MainApp() {
                       placeholder="10-digit"
                       value={profileForm.emergencyPhone}
                       onChange={e => setProfileForm(p => ({ ...p, emergencyPhone: e.target.value.replace(/\D/g, "") }))}
-                      className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
+                      className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-primary h-[44px]"
                     />
                   </div>
                 </div>
                 {formErrors.emergencyPhone && (
-                  <p className="text-[9px] text-red-500 font-bold">⚠️ {formErrors.emergencyPhone}</p>
+                  <p className="text-[9px] text-danger font-bold">⚠️ {formErrors.emergencyPhone}</p>
                 )}
               </div>
-            </div>
-
-            {/* Reset App button inside Profile Modal */}
-            <div className="pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={handleResetApp}
-                className="w-full py-2.5 px-4 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold text-center flex items-center justify-center gap-1.5 transition-all"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>{t.resetApp}</span>
-              </button>
             </div>
 
             {/* Actions */}
@@ -2065,7 +2058,7 @@ export default function MainApp() {
                   setShowProfileModal(false);
                   setFormErrors({});
                 }}
-                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 text-xs font-bold text-center"
+                className="flex-1 py-3 px-4 rounded-2xl border border-slate-200 text-textsecondary hover:bg-slate-50 text-xs font-bold text-center transition-all shadow-soft active:scale-[0.98]"
               >
                 {t.cancel}
               </button>
@@ -2078,7 +2071,7 @@ export default function MainApp() {
                     handleSaveProfile();
                   }
                 }}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold text-center shadow-md"
+                className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-white text-xs font-bold text-center transition-all shadow-soft active:scale-[0.98]"
               >
                 {t.saveChanges}
               </button>
@@ -2096,7 +2089,7 @@ export default function MainApp() {
                     window.location.reload();
                   }
                 }}
-                className="w-full py-2 px-4 rounded-xl border border-rose-200 text-rose-500 hover:bg-rose-50 text-[10px] font-extrabold text-center uppercase tracking-wider transition-all"
+                className="w-full py-3 px-4 rounded-2xl border border-rose-200 text-rose-500 hover:bg-rose-50/50 text-[10px] font-bold text-center uppercase tracking-wider transition-all shadow-soft active:scale-[0.98]"
               >
                 {t.resetApp}
               </button>

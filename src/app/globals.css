@@ -3,13 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --primary-teal: #0d9488; /* teal-600 */
-  --primary-teal-light: #ccfbf1; /* teal-100 */
+  --primary-teal: #4F46E5;
+  --primary-teal-light: #EEF2FF;
+  --background: #F7F9FC;
+  --foreground: #111827;
 }
 
-/* Custom styles for native mobile app feel */
 html {
   overflow-x: hidden;
+  scroll-behavior: smooth;
+  background-color: #F7F9FC;
 }
 
 body {
@@ -197,4 +200,68 @@ body {
 }
 .animate-onboard-triage-green {
   animation: onboard-triage-green 2s ease-in-out infinite 0.6s;
+}
+
+/* Premium Design System Styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-panel-dark {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-premium {
+  background: #FFFFFF;
+  border-radius: 24px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.03), 0 1px 3px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.06);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #4F46E5 0%, #6D5EF9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-pill {
+  border-radius: 9999px;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 20px -6px rgba(79, 70, 229, 0.3);
+}
+
+.btn-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -6px rgba(79, 70, 229, 0.45);
+}
+
+.btn-pill:active {
+  transform: translateY(0);
+}
+
+.input-premium {
+  border-radius: 16px;
+  background-color: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  transition: all 0.2s ease-in-out;
+}
+
+.input-premium:focus {
+  border-color: #6D5EF9;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(109, 94, 249, 0.1);
+  outline: none;
 }

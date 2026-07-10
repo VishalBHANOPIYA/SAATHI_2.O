@@ -921,11 +921,13 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     <div className="p-4 space-y-4 animate-fadeIn text-left">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <Mic className="w-5 h-5 text-teal-650" />
+          <h2 className="text-lg font-extrabold text-textprimary flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Mic className="w-4 h-4 text-primary" />
+            </div>
             {l.header}
           </h2>
-          <p className="text-xs text-slate-500 leading-normal">{l.desc}</p>
+          <p className="text-xs text-textsecondary leading-normal">{l.desc}</p>
         </div>
         <button
           onClick={() => {
@@ -935,10 +937,10 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
               stopSpeaking();
             }
           }}
-          className={`p-2 rounded-xl border transition-all ${
+          className={`p-2 rounded-2xl border transition-all shadow-soft active:scale-95 ${
             isMuted
-              ? "bg-red-50 text-red-500 border-red-255"
-              : "bg-teal-50 text-teal-605 border-teal-200 hover:bg-teal-100"
+              ? "bg-red-50 text-red-500 border-red-200"
+              : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
           }`}
           title={isMuted ? "Unmute Assistant Voice" : "Mute Assistant Voice"}
         >
@@ -947,11 +949,11 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       </div>
 
       {talkError && (
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded-2xl p-3 flex gap-2 animate-scaleUp">
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-3xl p-4 flex gap-2.5 animate-scaleUp shadow-soft">
           <AlertTriangle className="w-4.5 h-4.5 text-red-500 shrink-0 mt-0.5" />
           <div className="flex-grow space-y-1">
             <span className="text-xs font-bold block">{l.recordingError}</span>
-            <p className="text-[10px] font-medium leading-normal">{talkError}</p>
+            <p className="text-[10px] font-semibold leading-normal">{talkError}</p>
           </div>
           <button onClick={() => setTalkError(null)} className="text-slate-400 hover:text-slate-600 self-start">
             <X className="w-4 h-4" />
@@ -970,16 +972,16 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       )}
 
       {!triageResult && isTriaging && (
-        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 animate-fadeIn">
+        <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-8 border border-slate-100/80 shadow-soft flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 animate-fadeIn">
           <div className="relative">
-            <div className="absolute inset-0 bg-teal-500/10 rounded-full animate-ping scale-150 duration-1000" />
-            <div className="bg-teal-50 border border-teal-100 p-5 rounded-full relative z-10 text-teal-600">
+            <div className="absolute inset-0 bg-primary/10 rounded-full animate-ping scale-150 duration-1000" />
+            <div className="bg-primary/10 border border-primary/20 p-5 rounded-full relative z-10 text-primary">
               <Loader2 className="w-10 h-10 animate-spin" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">{l.triaging}</h3>
-            <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+            <h3 className="text-sm font-extrabold text-textprimary uppercase tracking-wider">{l.triaging}</h3>
+            <p className="text-[10px] text-textsecondary max-w-xs leading-normal font-bold">
               {t.triagingStatus || "Saathi AI is evaluating your symptoms and checking guidelines..."}
             </p>
           </div>
@@ -987,13 +989,13 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       )}
 
       {!triageResult && !isTriaging && isTranscribing && (
-        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 animate-fadeIn">
-          <div className="bg-teal-50 border border-teal-100 p-5 rounded-full text-teal-600 animate-bounce">
+        <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-8 border border-slate-100/80 shadow-soft flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 animate-fadeIn">
+          <div className="bg-primary/10 border border-primary/20 p-5 rounded-full text-primary animate-bounce">
             <Mic className="w-10 h-10 animate-pulse" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">{l.processing}</h3>
-            <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+            <h3 className="text-sm font-extrabold text-textprimary uppercase tracking-wider">{l.processing}</h3>
+            <p className="text-[10px] text-textsecondary max-w-xs leading-normal font-bold">
               {t.transcribingStatus || "Groq Whisper AI is converting your voice into editable text..."}
             </p>
           </div>
@@ -1001,7 +1003,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       )}
 
       {!triageResult && !isTriaging && !isTranscribing && isRecording && (
-        <div className="bg-white rounded-3xl p-6 border border-red-100 shadow-sm flex flex-col items-center justify-center min-h-[300px] text-center space-y-5 animate-fadeIn">
+        <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-6 border border-red-100 shadow-soft flex flex-col items-center justify-center min-h-[300px] text-center space-y-5 animate-fadeIn">
           <div className="relative">
             <div className="absolute inset-0 bg-red-500/10 rounded-full animate-ping scale-150 duration-700" />
             <div className="bg-red-50 border border-red-100 p-6 rounded-full relative z-10 text-red-500">
@@ -1011,7 +1013,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
           <div className="space-y-1">
             <span className="text-[10px] font-extrabold text-red-500 uppercase tracking-widest">{l.recording}</span>
-            <div className="text-3xl font-black text-slate-800 tracking-wider font-mono">
+            <div className="text-3xl font-black text-textprimary tracking-wider font-mono">
               {formatDuration(recordingDuration)}
             </div>
           </div>
@@ -1027,14 +1029,14 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           <div className="flex gap-2 w-full max-w-xs pt-2">
             <button
               onClick={stopRecording}
-              className="flex-grow bg-emerald-650 hover:bg-emerald-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
+              className="flex-grow bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-2 min-h-[44px]"
             >
               <div className="w-2.5 h-2.5 bg-white rounded-[2px] shrink-0" />
               <span>{l.stop}</span>
             </button>
             <button
               onClick={cancelRecording}
-              className="px-5 border border-slate-200 text-slate-500 font-extrabold text-xs rounded-xl hover:bg-slate-50 transition-colors min-h-[44px]"
+              className="px-5 border border-slate-200 text-textsecondary font-extrabold text-xs rounded-2xl hover:bg-slate-50 transition-colors shadow-soft min-h-[44px] active:scale-[0.98]"
             >
               {l.cancel}
             </button>
@@ -1045,7 +1047,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       {!triageResult && !isTriaging && !isTranscribing && !isRecording && transcriptText && (
         triageHistory.length > 1 ? (
           /* Follow-up question chat-style flow */
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 animate-fadeIn">
+          <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/80 shadow-soft space-y-4 animate-fadeIn">
             <div className="space-y-3 max-h-[300px] overflow-y-auto p-1.5 scrollbar-thin flex flex-col gap-2.5">
               {triageHistory.map((msg, idx) => (
                 <div
@@ -1053,10 +1055,10 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                   className={`flex ${msg.role === "assistant" ? "justify-start" : "justify-end"} animate-scaleUp`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs font-semibold leading-relaxed shadow-sm ${
+                    className={`max-w-[85%] rounded-[20px] px-4 py-2.5 text-xs font-bold leading-relaxed shadow-soft ${
                       msg.role === "assistant"
-                        ? "bg-slate-100 text-slate-700 rounded-tl-none border border-slate-200"
-                        : "bg-teal-605 text-white rounded-tr-none font-bold"
+                        ? "bg-slate-50 text-textprimary rounded-tl-none border border-slate-100"
+                        : "bg-gradient-to-r from-primary to-secondary text-white rounded-tr-none"
                     }`}
                   >
                     {msg.content}
@@ -1074,7 +1076,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder={t.placeholderTypeAnswer || "Type your answer..."}
-                  className="flex-grow px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-teal-505 text-slate-755 h-[44px]"
+                  className="flex-grow px-4 py-3 input-premium text-xs font-bold focus:outline-none focus:border-primary text-textprimary placeholder-textsecondary h-[44px]"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && chatInput.trim()) {
                       submitFollowUpAnswer(chatInput.trim());
@@ -1087,7 +1089,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                       submitFollowUpAnswer(chatInput.trim());
                     }
                   }}
-                  className="bg-teal-605 text-white p-3 rounded-xl hover:bg-teal-700 active:scale-95 transition-all shadow-sm min-w-[44px] h-[44px] flex items-center justify-center"
+                  className="bg-gradient-to-r from-primary to-secondary text-white p-3 rounded-2xl hover:shadow-premium active:scale-[0.98] transition-all shadow-soft min-w-[44px] h-[44px] flex items-center justify-center"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -1097,14 +1099,14 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
               <div className="flex justify-center gap-2">
                 <button
                   onClick={startRecording}
-                  className="bg-slate-50 hover:bg-slate-100 text-teal-600 border border-slate-200 font-extrabold text-[10px] py-2 px-3 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all shadow-sm min-h-[36px]"
+                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-extrabold text-[10px] py-2 px-4 rounded-xl flex items-center gap-1.5 active:scale-[0.98] transition-all shadow-soft min-h-[36px]"
                 >
                   <Mic className="w-3.5 h-3.5" />
                   <span>{t.btnSpeakAnswer || "Speak your answer"}</span>
                 </button>
                 <button
                   onClick={resetTriageFlow}
-                  className="bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-extrabold text-[10px] py-2 px-3 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all shadow-sm min-h-[36px]"
+                  className="bg-slate-50 hover:bg-slate-100 text-textsecondary border border-slate-200 font-extrabold text-[10px] py-2 px-4 rounded-xl flex items-center gap-1.5 active:scale-[0.98] transition-all shadow-soft min-h-[36px]"
                 >
                   <span>{l.cancel}</span>
                 </button>
@@ -1113,32 +1115,34 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           </div>
         ) : (
           /* Initial draft drafting screen */
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 animate-fadeIn">
+          <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/80 shadow-soft space-y-4 animate-fadeIn">
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                <Info className="w-4.5 h-4.5 text-teal-600" />
+              <h3 className="text-sm font-extrabold text-textprimary flex items-center gap-1.5">
+                <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Info className="w-3.5 h-3.5 text-primary" />
+                </div>
                 {l.editingTitle}
               </h3>
-              <p className="text-[10px] text-slate-500 leading-normal">{l.editingDesc}</p>
+              <p className="text-[10px] text-textsecondary leading-normal font-semibold">{l.editingDesc}</p>
             </div>
 
             <textarea
               value={transcriptText}
               onChange={(e) => setTranscriptText(e.target.value)}
-              className="w-full h-32 p-3 border border-slate-200 bg-slate-50 rounded-2xl text-xs font-semibold focus:outline-none focus:border-teal-500 text-slate-700 leading-relaxed resize-none shadow-inner"
+              className="w-full h-32 p-4 input-premium text-xs font-semibold focus:outline-none focus:border-primary text-textprimary leading-relaxed resize-none shadow-inner"
             />
 
             <div className="flex gap-2">
               <button
                 onClick={() => handleTriage()}
-                className="flex-grow bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="flex-grow bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-white font-extrabold text-xs py-3 rounded-2xl shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <span>{l.btnAnalyze}</span>
                 <Sparkles className="w-4 h-4" />
               </button>
               <button
                 onClick={resetTriageFlow}
-                className="px-4 border border-slate-200 text-slate-650 font-bold text-xs rounded-xl hover:bg-slate-50 transition-colors min-h-[44px]"
+                className="px-4 border border-slate-200 text-textsecondary font-bold text-xs rounded-2xl hover:bg-slate-50 transition-colors shadow-soft min-h-[44px] active:scale-[0.98]"
               >
                 {l.btnRecordAgain}
               </button>
@@ -1149,7 +1153,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
       {!triageResult && !isTriaging && !isTranscribing && !isRecording && !transcriptText && (
         <div className="space-y-4">
-          <div className="bg-gradient-to-br from-teal-600 to-emerald-600 rounded-3xl p-6 text-white shadow-md flex flex-col items-center text-center space-y-5 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary to-secondary rounded-[32px] p-8 text-white shadow-soft flex flex-col items-center text-center space-y-5 relative overflow-hidden">
             <div className="absolute -right-8 -bottom-8 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
             <div className="absolute -left-8 -top-8 w-20 h-20 bg-white/10 rounded-full blur-lg pointer-events-none" />
 
@@ -1157,33 +1161,35 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
               <span className="bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-widest border border-white/10">
                 Multilingual AI Screening
               </span>
-              <p className="text-[11px] text-teal-100 font-medium leading-relaxed max-w-[90%] mx-auto pt-1">
+              <p className="text-[11px] text-white/90 font-bold leading-relaxed max-w-[90%] mx-auto pt-1">
                 {l.speakLangNotice}
               </p>
             </div>
 
             <button
               onClick={startRecording}
-              className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 border-4 border-teal-500/20 group relative z-10"
+              className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-soft transition-transform hover:scale-105 active:scale-95 border-4 border-white/20 group relative z-10"
             >
-              <Mic className="w-10 h-10 text-teal-600 group-hover:scale-110 transition-transform" />
+              <Mic className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
             </button>
 
-            <span className="text-xs font-black tracking-wide text-white/90 relative z-10">
+            <span className="text-xs font-extrabold tracking-wide text-white/90 relative z-10">
               {l.tapRecord}
             </span>
           </div>
 
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-3">
+          <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/80 shadow-soft space-y-3">
             <div className="flex items-center gap-1.5 px-0.5">
-              <Info className="w-4 h-4 text-teal-600" />
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Or type your symptoms</span>
+              <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Info className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <span className="text-xs font-bold text-textprimary uppercase tracking-wide">Or type your symptoms</span>
             </div>
             <textarea
               placeholder={l.textPlaceholder}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              className="w-full h-24 p-3 border border-slate-200 bg-slate-50 rounded-2xl text-xs font-semibold focus:outline-none focus:border-teal-500 text-slate-700 leading-normal resize-none shadow-inner"
+              className="w-full h-24 p-4 input-premium text-xs font-semibold focus:outline-none focus:border-primary text-textprimary leading-normal resize-none shadow-inner"
             />
             <button
               onClick={() => {
@@ -1193,7 +1199,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                 }
               }}
               disabled={!chatInput.trim()}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm min-h-[44px]"
+              className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-white font-extrabold text-xs py-3 rounded-2xl transition-all disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-soft min-h-[44px]"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{l.btnSubmitText}</span>

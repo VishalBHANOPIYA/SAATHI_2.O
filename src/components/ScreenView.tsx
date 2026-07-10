@@ -1046,150 +1046,113 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
       const data = await response.json();
       if (data.success) {
-        setScreeningResult(data.assessment);
-      } else {
-        setScreeningResult("Unable to generate screening report. Please verify your connection and try again.");
-      }
-    } catch (error) {
-      console.error(error);
-      const isRateLimit = error instanceof Error && error.message === "RateLimitExceeded";
-      if (isRateLimit) {
-        const symptomsList: string[] = [];
-        if (symptoms.fever) symptomsList.push(language === "hi" ? "बुखार" : language === "gu" ? "તાવ" : "Fever");
-        if (symptoms.cough) symptomsList.push(language === "hi" ? "खांसी" : language === "gu" ? "ખાંસી" : "Cough");
-        if (symptoms.breath) symptomsList.push(language === "hi" ? "सांस लेने में तकलीफ" : language === "gu" ? "શ્વાસ લેવામાં તકલીફ" : "Shortness of breath");
-        
-        const offlineReport = language === "hi"
-          ? `[सिस्टम व्यस्त - ऑफ़लाइन स्थानीय आकलन]
-आयु: ${age} वर्ष, तापमान: ${temperature}°F
-लक्षण: ${symptomsList.join(", ") || "कोई गंभीर लक्षण नहीं"}
-जोखिम स्तर: मध्यम। पर्याप्त आराम करें, तरल पदार्थ लें और लक्षणों की निगरानी करें।`
-          : language === "gu"
-          ? `[સિસ્ટમ વ્યસ્ત - ઑફલાઇન સ્થાનિક આકારણી]
-ઉંમર: ${age} વર્ષ, તાપમાન: ${temperature}°F
-લક્ષણો: ${symptomsList.join(", ") || "કોઈ ગંભીર લક્ષણો નથી"}
-જોખમ સ્તર: મધ્યમ. પૂરતો આરામ કરો અને પુષ્કળ પ્રવાહી લો.`
-          : `[System Busy - Offline Fallback Assessment]
-Age: ${age} years, Temp: ${temperature}°F
-Symptoms: ${symptomsList.join(", ") || "None severe"}
-Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
-        setScreeningResult(offlineReport);
-      } else {
-        setScreeningResult("An error occurred during screening. Please try again.");
-      }
-    } finally {
-      setIsScreeningLoading(false);
-    }
-  };
+               {/* Capture or Upload Options */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  onClick={startScreenCamera}
+                  className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-extrabold text-xs py-3 rounded-2xl hover:bg-indigo-750 shadow-soft active:scale-[0.98] transition-all min-h-[44px]"
+                >
+                  <Camera className="w-4 h-4" />
+                  {sTrans.startCamera}
+                </button>
+                <label className="flex items-center justify-center gap-2 bg-white/50 border border-slate-200 text-slate-750 font-extrabold text-xs py-3 rounded-2xl hover:bg-white/70 hover:shadow-soft cursor-pointer shadow-sm active:scale-[0.98] transition-all text-center min-h-[44px]">
+                  <UploadCloud className="w-4 h-4 text-slate-500" />
+                  <span>{sTrans.uploadImage}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
 
-  const resetScreening = () => {
-    setSymptoms({
-      fever: false,
-      cough: false,
-      fatigue: false,
-      soreThroat: false,
-      breath: false,
-      bodyAche: false,
-      lossTaste: false
-    });
-    setAge(32);
-    setTemperature("98.6");
-    setScreeningResult(null);
-  };
-
-  // Run canvas re-draw when screenImage is ready in ROI mode
-  useEffect(() => {
-    if (screenStep === "roi" && screenImage && screenCanvasRef.current) {
-      const canvas = screenCanvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        const img = new Image();
-        img.src = screenImage;
-        img.onload = () => {
-          canvas.width = 320;
-          canvas.height = 320;
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        };
-      }
-    }
-  }, [screenStep, screenImage]);
-
-  // Stop camera feed when activeTab changes
-  useEffect(() => {
-    if (activeTab !== "screen") {
-      stopScreenCameraStream();
-    }
-  }, [activeTab]);
-
-  const handleSymptomToggle = (symptomKey: keyof typeof symptoms) => {
-    setSymptoms(prev => ({
-      ...prev,
-      [symptomKey]: !prev[symptomKey]
-    }));
-  };
-
-  return (
-    <div className="p-4 space-y-4 animate-fadeIn text-left">
-      {/* Toggle between Hero Demo and Questionnaire */}
-      <div className="flex bg-slate-100 p-1 rounded-xl">
-        <button
-          onClick={() => {
-            stopScreenCameraStream();
-            setScreenMode("camera");
-            setScreenStep("select");
-          }}
-          className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
-            screenMode === "camera"
-              ? "bg-white text-teal-700 shadow-sm"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          {sTrans.heroTitle}
-        </button>
-        <button
-          onClick={() => {
-            stopScreenCameraStream();
-            setScreenMode("symptoms");
-          }}
-          className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
-            screenMode === "symptoms"
-              ? "bg-white text-teal-700 shadow-sm"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          {language === "hi" ? "लक्षण प्रश्नावली" : language === "gu" ? "લક્ષણ પ્રશ્નાવલી" : "AI Symptom Checker"}
-        </button>
-      </div>
-
-      {screenMode === "camera" ? (
-        <div className="space-y-4 relative">
-          {screenToast && (
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900/95 text-white text-[11px] font-bold px-3 py-2 rounded-xl shadow-md border border-slate-700/50 backdrop-blur animate-scale-up">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
-              <span>{screenToast.message}</span>
+              {/* Try with sample */}
+              <div className="pt-3 flex flex-col items-center border-t border-dashed border-slate-200 mt-2">
+                <span className="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">
+                  {language === "hi" ? "या नमूना छवि के साथ प्रयास करें" : language === "gu" ? "અથવા નમૂના ચિત્ર સાથે પ્રયાસ કરો" : "Or Try with a Sample"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSampleSelect(selectedCondition)}
+                  className="flex items-center justify-center gap-2 bg-purple-50/60 border border-purple-150 text-purple-700 hover:bg-purple-100/70 font-extrabold text-xs py-3 px-4 rounded-2xl shadow-soft active:scale-[0.98] transition-all w-full min-h-[38px]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-500 animate-pulse" />
+                  <span>
+                    {selectedCondition === "anemia" && (language === "hi" ? "नाखून का नमूना (एनीमिया)" : language === "gu" ? "નખનો નમૂનો (એનિમિયા)" : "Fingernail Sample (Anemia)")}
+                    {selectedCondition === "jaundice" && (language === "hi" ? "आंख का नमूना (पीलिया)" : language === "gu" ? "આંખનો નમૂનો (કમળો)" : "Eye Sclera Sample (Jaundice)")}
+                    {selectedCondition === "skin" && (language === "hi" ? "त्वचा का नमूना (चकत्ते)" : language === "gu" ? "ત્વચાનો નમૂનો (કાળજી)" : "Skin Rash Sample (Skin Check)")}
+                  </span>
+                </button>
+              </div>
             </div>
           )}
-          {/* 1. SELECT CONDITION STEP */}
-          {screenStep === "select" && (
-            <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-                  {sTrans.selectCondition}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { key: "anemia", label: sTrans.anemia, color: "border-teal-200 bg-teal-50/20 text-teal-700" },
-                    { key: "jaundice", label: sTrans.jaundice, color: "border-amber-200 bg-amber-50/20 text-amber-700" },
-                    { key: "skin", label: sTrans.skin, color: "border-rose-200 bg-rose-50/20 text-rose-700" },
-                  ].map(opt => (
-                    <button
+
+          {/* 2. CAMERA CAPTURE STEP */}
+          {screenStep === "capture" && (
+            <div className="bg-slate-900 rounded-3xl overflow-hidden shadow-premium relative flex flex-col items-center p-5 space-y-4">
+              <div className="relative w-full aspect-square max-w-[320px] rounded-2xl overflow-hidden bg-black border-2 border-indigo-500/30 shadow-medium">
+                <video
+                  ref={screenVideoRef}
+                  className={`w-full h-full object-cover transform ${facingMode === "user" ? "-scale-x-100" : ""}`}
+                  playsInline
+                  muted
+                />
+                {/* Floating camera flip button (Fix 1) */}
+                <button
+                  type="button"
+                  onClick={toggleCameraFacing}
+                  className="absolute top-3 right-3 bg-slate-900/60 hover:bg-slate-900/80 text-white p-2.5 rounded-full shadow-lg border border-white/20 transition-all active:scale-95 z-30 flex items-center justify-center"
+                  title="Flip Camera"
+                >
+                  <SwitchCamera className="w-4 h-4 text-white" />
+                </button>
+                {/* Absolute guide box overlay */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-[180px] h-[180px] border-2 border-dashed border-indigo-400 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]">
+                    <div className="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-indigo-400"></div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-indigo-400"></div>
+                    <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-indigo-400"></div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-indigo-400"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center space-y-2 max-w-[280px]">
+                <p className="text-xs text-slate-300 font-extrabold leading-normal">
+                  {selectedCondition === "anemia" && sTrans.guideAnemia}
+                  {selectedCondition === "jaundice" && sTrans.guideJaundice}
+                  {selectedCondition === "skin" && sTrans.guideSkin}
+                </p>
+              </div>
+
+              <div className="flex gap-3 w-full max-w-[320px]">
+                <button
+                  onClick={() => {
+                    stopScreenCameraStream();
+                    setScreenStep("select");
+                  }}
+                  className="flex-1 bg-white/10 text-white border border-white/10 font-extrabold text-xs py-3 rounded-2xl hover:bg-white/20 min-h-[36px]"
+                >
+                  {sTrans.cancel}
+                </button>
+                <button
+                  onClick={captureScreenPhoto}
+                  disabled={isCapturingMulti}
+                  className="flex-1 bg-indigo-600 text-white font-extrabold text-xs py-3 rounded-2xl hover:bg-indigo-700 shadow-soft active:scale-[0.98] transition-all min-h-[36px] flex items-center justify-center"
+                >
+                  {isCapturingMulti ? "Capturing..." : sTrans.captureBtn}
+                </button>
+              </div>
+            </div>
+          )}    <button
                       key={opt.key}
                       type="button"
                       onClick={() => setSelectedCondition(opt.key as "anemia" | "jaundice" | "skin")}
-                      className={`p-2.5 rounded-xl border text-xs font-bold text-center flex flex-col items-center justify-center gap-1.5 transition-all ${
+                      className={`p-3 rounded-2xl border text-xs font-black text-center flex flex-col items-center justify-center gap-1.5 transition-all shadow-sm ${
                         selectedCondition === opt.key
-                          ? "bg-teal-600 border-teal-600 text-white shadow-md scale-[1.02]"
-                          : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                          ? "bg-indigo-600 border-indigo-600 text-white shadow-soft scale-[1.02]"
+                          : "bg-white/40 border-white/20 text-slate-600 hover:bg-white/60 hover:shadow-soft"
                       }`}
                     >
                       <ShieldAlert className={`w-4 h-4 ${selectedCondition === opt.key ? "text-white" : "text-slate-400"}`} />
@@ -1200,9 +1163,9 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
               </div>
 
               {/* Instructions based on selection */}
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-normal flex gap-2 border-slate-200">
-                <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                <span>
+              <div className="bg-indigo-50/50 border border-indigo-100/50 rounded-2xl p-3.5 text-xs text-slate-700 leading-normal flex gap-2.5">
+                <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <span className="font-semibold text-slate-650 text-slate-600">
                   {selectedCondition === "anemia" && sTrans.guideAnemia}
                   {selectedCondition === "jaundice" && sTrans.guideJaundice}
                   {selectedCondition === "skin" && sTrans.guideSkin}

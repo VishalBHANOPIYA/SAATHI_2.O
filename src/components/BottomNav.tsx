@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, ShieldAlert, Activity, Mic, FileText, Pill } from "lucide-react";
+import { Home, Stethoscope, Heart, Mic, FileText, Pill } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface BottomNavProps {
@@ -18,7 +18,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
       <button
         onClick={() => setActiveTab("home")}
         className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "home" ? "text-teal-600 font-bold" : "text-slate-400 hover:text-slate-600"
+          activeTab === "home" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
         }`}
       >
         <Home className="w-5 h-5" />
@@ -28,27 +28,27 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
       <button
         onClick={() => setActiveTab("screen")}
         className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "screen" ? "text-teal-600 font-bold" : "text-slate-400 hover:text-slate-600"
+          activeTab === "screen" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
         }`}
       >
-        <ShieldAlert className="w-5 h-5" />
+        <Stethoscope className="w-5 h-5" />
         <span className="text-[9px] font-semibold">{t.screen}</span>
       </button>
 
       <button
         onClick={() => setActiveTab("vitals")}
         className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "vitals" ? "text-teal-600 font-bold" : "text-slate-400 hover:text-slate-600"
+          activeTab === "vitals" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
         }`}
       >
-        <Activity className="w-5 h-5" />
+        <Heart className="w-5 h-5" />
         <span className="text-[9px] font-semibold">{t.vitals}</span>
       </button>
 
       <button
         onClick={() => setActiveTab("talk")}
         className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "talk" ? "text-teal-600 font-bold" : "text-slate-400 hover:text-slate-600"
+          activeTab === "talk" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
         }`}
       >
         <Mic className="w-5 h-5" />
@@ -58,7 +58,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
       <button
         onClick={() => setActiveTab("records")}
         className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "records" ? "text-teal-600 font-bold" : "text-slate-400 hover:text-slate-600"
+          activeTab === "records" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
         }`}
       >
         <FileText className="w-5 h-5" />
@@ -68,7 +68,7 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
       <button
         onClick={() => setActiveTab("medicines")}
         className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "medicines" ? "text-teal-600 font-bold" : "text-slate-400 hover:text-slate-600"
+          activeTab === "medicines" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
         }`}
       >
         <Pill className="w-5 h-5" />
