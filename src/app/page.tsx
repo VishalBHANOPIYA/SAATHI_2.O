@@ -115,6 +115,155 @@ export default function MainApp() {
   const [worldLangSearch, setWorldLangSearch] = useState("");
   const [showWorldLangDropdown, setShowWorldLangDropdown] = useState(false);
 
+  // Refs for custom dropdown containers (Fix 2 & Fix 3)
+  const onboardCountryRef = React.useRef<HTMLDivElement>(null);
+  const profileCountryRef = React.useRef<HTMLDivElement>(null);
+  const onboardLangRef = React.useRef<HTMLDivElement>(null);
+  const settingsLangRef = React.useRef<HTMLDivElement>(null);
+
+  // Synchronize dropdowns so only one can be open at a time
+  useEffect(() => {
+    if (showCountryDropdown) {
+      setShowWorldLangDropdown(false);
+    }
+  }, [showCountryDropdown]);
+
+  useEffect(() => {
+    if (showWorldLangDropdown) {
+      setShowCountryDropdown(false);
+    }
+  }, [showWorldLangDropdown]);
+
+  // Focus, click, scroll, and escape handlers for custom dropdowns (Fix 2 & Fix 3)
+  useEffect(() => {
+    const handleInteraction = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      // Close country code dropdown if open and interaction is outside
+      if (showCountryDropdown) {
+        const insideOnboard = onboardCountryRef.current?.contains(target);
+        const insideProfile = profileCountryRef.current?.contains(target);
+
+        // If it is a scroll event, verify if scroll happened inside the dropdown list
+        if (e.type === "scroll") {
+          const activeContainer = onboardCountryRef.current || profileCountryRef.current;
+          if (activeContainer) {
+            const scrollableList = activeContainer.querySelector(".overflow-y-auto");
+            if (scrollableList && (scrollableList === target || scrollableList.contains(target))) {
+              return;
+            }
+          }
+        }
+
+        if (!insideOnboard && !insideProfile) {
+          setShowCountryDropdown(false);
+        }
+      }
+
+      // Close language dropdown if open and interaction is outside
+      if (showWorldLangDropdown) {
+        const insideOnboard = onboardLangRef.current?.contains(target);
+        const insideSettings = settingsLangRef.current?.contains(target);
+
+        // If it is a scroll event, verify if scroll happened inside the dropdown list
+        if (e.type === "scroll") {
+          const activeContainer = onboardLangRef.current || settingsLangRef.current;
+          if (activeContainer) {
+            const scrollableList = activeContainer.querySelector(".overflow-y-auto");
+            if (scrollableList && (scrollableList === target || scrollableList.contains(target))) {
+              return;
+            }
+          }
+        }
+
+        if (!insideOnboard && !insideSettings) {
+          setShowWorldLangDropdown(false);
+        }
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        let activeContainer: HTMLElement | null = null;
+        if (showCountryDropdown) {
+          activeContainer = (onboardCountryRef.current || profileCountryRef.current) as HTMLElement | null;
+        } else if (showWorldLangDropdown) {
+          activeContainer = (onboardLangRef.current || settingsLangRef.current) as HTMLElement | null;
+        }
+
+        if (activeContainer) {
+          const trigger = activeContainer.parentElement?.firstElementChild as HTMLElement;
+          if (trigger && typeof trigger.focus === "function") {
+            trigger.focus();
+          }
+        }
+        setShowCountryDropdown(false);
+        setShowWorldLangDropdown(false);
+        return;
+      }
+
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        let activeContainer: HTMLElement | null = null;
+        if (showCountryDropdown) {
+          activeContainer = (onboardCountryRef.current || profileCountryRef.current) as HTMLElement | null;
+        } else if (showWorldLangDropdown) {
+          activeContainer = (onboardLangRef.current || settingsLangRef.current) as HTMLElement | null;
+        }
+
+        if (!activeContainer) return;
+
+        // Find focusable items in the active dropdown (inputs and buttons)
+        const focusables = Array.from(
+          activeContainer.querySelectorAll("input, button:not([disabled])")
+        ) as HTMLElement[];
+
+        if (focusables.length === 0) return;
+
+        const activeEl = document.activeElement as HTMLElement;
+        const currentIndex = focusables.indexOf(activeEl);
+
+        let nextIndex = currentIndex;
+        if (e.key === "ArrowDown") {
+          if (currentIndex === -1) {
+            nextIndex = 0;
+          } else {
+            nextIndex = currentIndex < focusables.length - 1 ? currentIndex + 1 : 0;
+          }
+        } else if (e.key === "ArrowUp") {
+          if (currentIndex === -1) {
+            nextIndex = focusables.length - 1;
+          } else {
+            nextIndex = currentIndex > 0 ? currentIndex - 1 : focusables.length - 1;
+          }
+        }
+
+        focusables[nextIndex]?.focus();
+        e.preventDefault();
+      }
+    };
+
+    const handleWindowBlur = () => {
+      setShowCountryDropdown(false);
+      setShowWorldLangDropdown(false);
+    };
+
+    // Use capture phase to handle events reliably before propagation is stopped
+    document.addEventListener("pointerdown", handleInteraction, true);
+    document.addEventListener("focusin", handleInteraction, true);
+    document.addEventListener("scroll", handleInteraction, true);
+    window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleInteraction, true);
+      document.removeEventListener("focusin", handleInteraction, true);
+      document.removeEventListener("scroll", handleInteraction, true);
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("blur", handleWindowBlur);
+    };
+  }, [showCountryDropdown, showWorldLangDropdown]);
+
   // Stop camera stream when leaving onboard step 1
   useEffect(() => {
     if (onboardStep !== 1 && onboardCamStream) {
@@ -696,9 +845,13 @@ export default function MainApp() {
                 <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block text-center">
                   Or Select Other World Language / या अन्य भाषा चुनें
                 </span>
-                <div className="relative">
+                <div className="relative" ref={onboardLangRef}>
                   <button
                     type="button"
+                    id="onboard-lang-btn"
+                    aria-haspopup="listbox"
+                    aria-expanded={showWorldLangDropdown}
+                    aria-controls="onboard-lang-listbox"
                     onClick={() => setShowWorldLangDropdown(!showWorldLangDropdown)}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 px-4 text-xs text-left font-bold flex items-center justify-between text-teal-200 hover:bg-white/10 transition-colors focus:border-teal-400 focus:outline-none"
                   >
@@ -714,7 +867,7 @@ export default function MainApp() {
                   </button>
 
                   {showWorldLangDropdown && (
-                    <div className="absolute left-0 right-0 bottom-full mb-2 bg-teal-950 border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-48 flex flex-col">
+                    <div id="onboard-lang-listbox" role="listbox" aria-labelledby="onboard-lang-btn" className="absolute left-0 right-0 bottom-full mb-2 bg-teal-950 border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-48 flex flex-col">
                       <div className="p-2 border-b border-white/10 flex items-center gap-2 bg-white/5">
                         <Search className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                         <input
@@ -733,10 +886,16 @@ export default function MainApp() {
                           <button
                             key={wl.code}
                             type="button"
-                            onClick={() => {
+                            role="option"
+                            aria-selected={language === wl.code}
+                            onClick={(e) => {
                               setLanguage(wl.code);
                               setShowWorldLangDropdown(false);
                               setWorldLangSearch("");
+                              const trigger = e.currentTarget.closest('.relative')?.firstElementChild as HTMLElement;
+                              if (trigger && typeof trigger.focus === "function") {
+                                trigger.focus();
+                              }
                             }}
                             className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-white/10 transition-colors flex items-center justify-between ${
                               language === wl.code ? "bg-teal-600/30 text-emerald-300" : "text-slate-300"
@@ -1135,9 +1294,13 @@ export default function MainApp() {
                     </label>
                     <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl focus-within:border-teal-400 relative">
                       {/* Country code selector (Fix 2) */}
-                      <div className="relative">
+                      <div className="relative" ref={onboardCountryRef}>
                         <button
                           type="button"
+                          id="onboard-country-btn"
+                          aria-haspopup="listbox"
+                          aria-expanded={showCountryDropdown}
+                          aria-controls="onboard-country-listbox"
                           onClick={() => setShowCountryDropdown(!showCountryDropdown)}
                           className="text-xs text-teal-300 bg-white/5 py-3.5 px-3 font-bold border-r border-white/10 flex items-center gap-1 hover:bg-white/10 transition-colors whitespace-nowrap rounded-l-2xl"
                         >
@@ -1146,7 +1309,7 @@ export default function MainApp() {
                           <ChevronDown className="w-3 h-3" />
                         </button>
                         {showCountryDropdown && (
-                          <div className="absolute top-full left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700/50 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
+                          <div id="onboard-country-listbox" role="listbox" aria-labelledby="onboard-country-btn" className="absolute top-full left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700/50 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
                             <div className="p-2 border-b border-white/10 bg-slate-950">
                               <div className="flex items-center bg-white/5 rounded-lg px-2 border border-white/10">
                                 <Search className="w-3 h-3 text-teal-400" />
@@ -1168,10 +1331,16 @@ export default function MainApp() {
                                 <button
                                   key={c.code}
                                   type="button"
-                                  onClick={() => {
+                                  role="option"
+                                  aria-selected={selectedCountryCode === c.code}
+                                  onClick={(e) => {
                                     setSelectedCountryCode(c.code);
                                     setShowCountryDropdown(false);
                                     setCountrySearch("");
+                                    const trigger = e.currentTarget.closest('.relative')?.firstElementChild as HTMLElement;
+                                    if (trigger && typeof trigger.focus === "function") {
+                                      trigger.focus();
+                                    }
                                   }}
                                   className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-white/10 transition-colors ${
                                     selectedCountryCode === c.code ? "bg-teal-600/30 text-white font-bold" : "text-slate-300"
@@ -1500,9 +1669,13 @@ export default function MainApp() {
                 </label>
                 <div className="flex items-center border border-slate-200 bg-slate-50 rounded-2xl focus-within:border-teal-500 relative">
                   {/* Country code selector in edit profile modal (Fix 2) */}
-                  <div className="relative">
+                  <div className="relative" ref={profileCountryRef}>
                     <button
                       type="button"
+                      id="profile-country-btn"
+                      aria-haspopup="listbox"
+                      aria-expanded={showCountryDropdown}
+                      aria-controls="profile-country-listbox"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
                       className="text-xs text-slate-700 bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200/50 transition-colors whitespace-nowrap rounded-l-2xl"
                     >
@@ -1511,7 +1684,7 @@ export default function MainApp() {
                       <ChevronDown className="w-3 h-3 text-slate-500" />
                     </button>
                     {showCountryDropdown && (
-                      <div className="absolute top-full left-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
+                      <div id="profile-country-listbox" role="listbox" aria-labelledby="profile-country-btn" className="absolute top-full left-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-slate-100 bg-slate-50">
                           <div className="flex items-center bg-white border border-slate-200 rounded-lg px-2">
                             <Search className="w-3 h-3 text-slate-400" />
@@ -1533,10 +1706,16 @@ export default function MainApp() {
                             <button
                               key={c.code}
                               type="button"
-                              onClick={() => {
+                              role="option"
+                              aria-selected={selectedCountryCode === c.code}
+                              onClick={(e) => {
                                 setSelectedCountryCode(c.code);
                                 setShowCountryDropdown(false);
                                 setCountrySearch("");
+                                const trigger = e.currentTarget.closest('.relative')?.firstElementChild as HTMLElement;
+                                if (trigger && typeof trigger.focus === "function") {
+                                  trigger.focus();
+                                }
                               }}
                               className={`w-full text-left px-3 py-2 text-[10px] font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors ${
                                 selectedCountryCode === c.code ? "bg-teal-50 text-teal-700 font-bold" : "text-slate-600"
@@ -1544,7 +1723,7 @@ export default function MainApp() {
                             >
                               <span>{c.flag}</span>
                               <span className="flex-1 text-slate-700">{c.country}</span>
-                              <span className="text-teal-650 font-bold">{c.code}</span>
+                              <span className="text-teal-655 font-bold">{c.code}</span>
                             </button>
                           ))}
                         </div>
@@ -2260,9 +2439,13 @@ export default function MainApp() {
                 </div>
 
                 {/* World language selector inside Settings (Fix 3) */}
-                <div className="relative pt-1 text-left">
+                <div className="relative pt-1 text-left" ref={settingsLangRef}>
                   <button
                     type="button"
+                    id="settings-lang-btn"
+                    aria-haspopup="listbox"
+                    aria-expanded={showWorldLangDropdown}
+                    aria-controls="settings-lang-listbox"
                     onClick={() => setShowWorldLangDropdown(!showWorldLangDropdown)}
                     className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-left font-bold flex items-center justify-between text-slate-700 hover:bg-slate-100 transition-colors focus:border-teal-400 focus:outline-none"
                   >
@@ -2278,7 +2461,7 @@ export default function MainApp() {
                   </button>
 
                   {showWorldLangDropdown && (
-                    <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-40 flex flex-col">
+                    <div id="settings-lang-listbox" role="listbox" aria-labelledby="settings-lang-btn" className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-40 flex flex-col">
                       <div className="p-1.5 border-b border-slate-100 flex items-center gap-1.5 bg-slate-50">
                         <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <input
@@ -2297,10 +2480,16 @@ export default function MainApp() {
                           <button
                             key={wl.code}
                             type="button"
-                            onClick={() => {
+                            role="option"
+                            aria-selected={language === wl.code}
+                            onClick={(e) => {
                               setLanguage(wl.code);
                               setShowWorldLangDropdown(false);
                               setWorldLangSearch("");
+                              const trigger = e.currentTarget.closest('.relative')?.firstElementChild as HTMLElement;
+                              if (trigger && typeof trigger.focus === "function") {
+                                trigger.focus();
+                              }
                             }}
                             className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center justify-between ${
                               language === wl.code ? "bg-teal-50 text-teal-700" : "text-slate-600"

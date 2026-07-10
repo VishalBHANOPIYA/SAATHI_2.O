@@ -18,13 +18,28 @@ export function speakText(
   const utterance = new SpeechSynthesisUtterance(text);
   activeUtterance = utterance;
 
-  // Select suitable voice
-  let voiceLang = "en-IN";
-  if (lang === "hi") {
-    voiceLang = "hi-IN";
-  } else if (lang === "gu") {
-    voiceLang = "gu-IN";
-  }
+  // Map language code to BCP-47 for TTS (Part 7):
+  const ttsLocaleMap: Record<string, string> = {
+    'en': 'en-IN',
+    'hi': 'hi-IN', 
+    'gu': 'gu-IN',
+    'bn': 'bn-IN',
+    'ta': 'ta-IN',
+    'te': 'te-IN',
+    'mr': 'mr-IN',
+    'pa': 'pa-IN',
+    'ur': 'ur-PK',
+    'ar': 'ar-SA',
+    'fr': 'fr-FR',
+    'es': 'es-ES',
+    'de': 'de-DE',
+    'zh': 'zh-CN',
+    'pt': 'pt-BR',
+    'ru': 'ru-RU',
+    'sw': 'sw-KE',
+  };
+
+  const voiceLang = ttsLocaleMap[lang] || 'en-IN';
 
   // Get all voices
   let voices = window.speechSynthesis.getVoices();

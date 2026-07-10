@@ -1,0 +1,18 @@
+<USER_REQUEST>
+Fix the following 10 issues in Saathi. Complete ALL fixes, then 
+commit to GitHub and deploy to Vercel production. Do not break 
+any existing feature. Production build must pass.
+
+═══════════════════════════════════════════════
+FIX 1 — CAMERA FLIP BUTTON (Onboarding + Screening + Vitals)
+═══════════════════════════════════════════════
+Currently only the back camera opens everywhere. Add a camera 
+flip button that appears as a floating circular icon 
+(top-right corner of every live camera preview) with a 
+rotate/flip icon (lucide: FlipHorizontal2 or SwitchCamera).
+
+- On click: toggle between facingMode "user" (front) and 
+  "environment" (back) by stopping current tracks and 
+  restarting getUserMedia with the new facingMode.
+- Default: "environment" (back) for screening 
+<truncated 20820 bytes>
