@@ -67,7 +67,7 @@ export default function MainApp() {
   const [onboardCamFacing, setOnboardCamFacing] = useState<"user" | "environment">("environment");
 
   // Country codes for international phone selector (Fix 2)
-  const countryCodes = [
+  const [countryCodes, setCountryCodes] = useState([
     { code: "+91", country: "India", flag: "🇮🇳", short: "IN" },
     { code: "+1", country: "United States", flag: "🇺🇸", short: "US" },
     { code: "+44", country: "United Kingdom", flag: "🇬🇧", short: "GB" },
@@ -88,7 +88,7 @@ export default function MainApp() {
     { code: "+94", country: "Sri Lanka", flag: "🇱🇰", short: "LK" },
     { code: "+60", country: "Malaysia", flag: "🇲🇾", short: "MY" },
     { code: "+65", country: "Singapore", flag: "🇸🇬", short: "SG" },
-  ];
+  ]);
   const [selectedCountryCode, setSelectedCountryCode] = useState("+91");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
@@ -355,6 +355,9 @@ export default function MainApp() {
       try {
         const parsed = JSON.parse(savedProfile);
         setUserProfile(parsed);
+        if (parsed.countryCode) {
+          setSelectedCountryCode(parsed.countryCode);
+        }
         setProfileForm({
           name: parsed.name || "",
           age: String(parsed.age || ""),
@@ -487,50 +490,122 @@ export default function MainApp() {
   // Automatically detect user's country code on first load (Fix: Auto-detect Country Code)
   useEffect(() => {
     const detectCountry = async () => {
-      // 1. Try localStorage first
+      // 1. Try localStorage or saved profile first
       const cachedCode = safeGetItem("saathi_country_code");
       if (cachedCode) {
         setSelectedCountryCode(cachedCode);
         return;
       }
 
-      // Helper function to set country code and save to localStorage
-      const selectCountryByShortCode = (shortCode: string): boolean => {
-        const matched = countryCodes.find(c => c.short === shortCode.toUpperCase());
-        if (matched) {
-          setSelectedCountryCode(matched.code);
-          safeSetItem("saathi_country_code", matched.code);
-          return true;
+      const savedProfile = safeGetItem("saathi_user_profile");
+      if (savedProfile) {
+        try {
+          const parsed = JSON.parse(savedProfile);
+          if (parsed.countryCode) {
+            setSelectedCountryCode(parsed.countryCode);
+            safeSetItem("saathi_country_code", parsed.countryCode);
+            return;
+          }
+        } catch (e) {
+          console.error("Failed to parse saved profile in detectCountry:", e);
         }
-        return false;
+      }
+
+      // Helper function to set country code and save to localStorage (with dynamic additions)
+      const selectCountryByShortCode = (shortCode: string, name?: string, callingCode?: string): boolean => {
+        const upperShort = shortCode.toUpperCase();
+        
+        // Comprehensive mapping of common ISO code to calling code as reference
+        const ISO_TO_CALLING_CODE: Record<string, string> = {
+          US: "+1", CA: "+1", MX: "+52", GB: "+44", DE: "+49", FR: "+33", IT: "+39", ES: "+34", NL: "+31", SE: "+46", NO: "+47", FI: "+358", DK: "+45", CH: "+41", AT: "+43", BE: "+32", IE: "+353", PT: "+351", GR: "+30", PL: "+48", CZ: "+420", HU: "+36", RO: "+40", BG: "+359", HR: "+385", SK: "+421", SI: "+386", EE: "+372", LV: "+371", LT: "+370",
+          IN: "+91", CN: "+86", JP: "+81", KR: "+82", SG: "+65", MY: "+60", TH: "+66", ID: "+62", PH: "+63", VN: "+84", PK: "+92", BD: "+880", LK: "+94", NP: "+977", MM: "+95", KH: "+855", LA: "+856", MN: "+976", AF: "+93", MV: "+960", BT: "+975",
+          AE: "+971", SA: "+966", IL: "+972", TR: "+90", EG: "+20", ZA: "+27", NG: "+234", KE: "+254", GH: "+233", MA: "+212", DZ: "+213", TN: "+216", LY: "+218", SD: "+249", ET: "+251", SO: "+252", DJ: "+253", SN: "+221", GM: "+220", MR: "+222", ML: "+223", GN: "+224", SL: "+232", LR: "+231", CI: "+225", TG: "+228", BJ: "+229", NE: "+227", BF: "+226",
+          AU: "+61", NZ: "+64", FJ: "+679", PG: "+675", SB: "+677", VU: "+678", TO: "+676", WS: "+685",
+          BR: "+55", AR: "+54", CL: "+56", CO: "+57", PE: "+51", VE: "+58", EC: "+593", BO: "+591", PY: "+595", UY: "+598", GY: "+592", SR: "+597", GF: "+594",
+          RU: "+7", UA: "+380", BY: "+375", KZ: "+7", UZ: "+998", AZ: "+994", GE: "+995", AM: "+374", MD: "+373", KG: "+996", TJ: "+992", TM: "+993"
+        };
+
+        const code = callingCode || ISO_TO_CALLING_CODE[upperShort];
+        if (!code) return false;
+
+        const countryName = name || upperShort;
+
+        // Generate flag emoji
+        let flag = "🌐";
+        try {
+          const codePoints = upperShort.split('').map(char => 127397 + char.charCodeAt(0));
+          flag = String.fromCodePoint(...codePoints);
+        } catch (e) {
+          console.error("Error generating flag:", e);
+        }
+
+        const newCountry = {
+          code,
+          country: countryName,
+          flag,
+          short: upperShort
+        };
+
+        setCountryCodes(prev => {
+          if (prev.some(c => c.short === upperShort)) {
+            return prev;
+          }
+          return [...prev, newCountry];
+        });
+
+        setSelectedCountryCode(code);
+        safeSetItem("saathi_country_code", code);
+        return true;
       };
 
-      // Helper function to try IP geolocation
+      // Helper function to try IP geolocation (sequentially)
       const detectCountryByIP = async () => {
+        // Try FreeIPAPI first (fast, free HTTPS, supports calling codes)
+        try {
+          const response = await fetch("https://freeipapi.com/api/json");
+          if (response.ok) {
+            const data = await response.json();
+            const countryCode = data.countryCode;
+            const countryName = data.countryName;
+            const callingCode = data.countriesCallingCodes && data.countriesCallingCodes[0] 
+              ? `+${data.countriesCallingCodes[0]}` 
+              : undefined;
+            if (countryCode && selectCountryByShortCode(countryCode, countryName, callingCode)) {
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn("freeipapi.com failed, trying fallback...", e);
+        }
+
+        // Try IPAPI.co
         try {
           const response = await fetch("https://ipapi.co/json/");
           if (response.ok) {
             const data = await response.json();
             const countryCode = data.country_code;
-            if (countryCode && selectCountryByShortCode(countryCode)) {
+            const countryName = data.country_name;
+            const callingCode = data.country_calling_code;
+            if (countryCode && selectCountryByShortCode(countryCode, countryName, callingCode)) {
               return;
             }
           }
         } catch (e) {
-          console.warn("ipapi.co failed, trying fallback...", e);
+          console.warn("ipapi.co failed, trying next fallback...", e);
         }
 
+        // Try IPInfo (no token fallback)
         try {
-          const response = await fetch("https://ip-api.com/json/");
+          const response = await fetch("https://ipinfo.io/json");
           if (response.ok) {
             const data = await response.json();
-            const countryCode = data.countryCode;
+            const countryCode = data.country;
             if (countryCode && selectCountryByShortCode(countryCode)) {
               return;
             }
           }
         } catch (e) {
-          console.warn("ip-api.com failed, trying next fallback...", e);
+          console.warn("ipinfo.io failed, using default...", e);
         }
 
         // Default to India (+91) if all else fails
@@ -542,6 +617,25 @@ export default function MainApp() {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
+            
+            // Try BigDataCloud reverse geocoding first (fast, free, over HTTPS, no key)
+            try {
+              const response = await fetch(
+                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+              );
+              if (response.ok) {
+                const data = await response.json();
+                const countryCode = data.countryCode;
+                const countryName = data.countryName;
+                if (countryCode && selectCountryByShortCode(countryCode, countryName)) {
+                  return;
+                }
+              }
+            } catch (e) {
+              console.warn("BigDataCloud reverse geocoding failed, trying OSM Nominatim fallback...", e);
+            }
+
+            // Fallback to OSM Nominatim
             try {
               const response = await fetch(
                 `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=3&addressdetails=1`,
@@ -554,15 +648,17 @@ export default function MainApp() {
               if (response.ok) {
                 const data = await response.json();
                 const countryCode = data.address?.country_code;
-                if (countryCode && selectCountryByShortCode(countryCode)) {
+                const countryName = data.address?.country;
+                if (countryCode && selectCountryByShortCode(countryCode.toUpperCase(), countryName)) {
                   return;
                 }
               }
-              await detectCountryByIP();
             } catch (error) {
               console.warn("OSM Nominatim reverse geocoding failed, trying IP detection:", error);
-              await detectCountryByIP();
             }
+
+            // If reverse geocoding fails, try IP fallback
+            await detectCountryByIP();
           },
           async (error) => {
             console.log("Geolocation permission denied or error, using IP fallback:", error);
@@ -625,12 +721,7 @@ export default function MainApp() {
 
   const toggleDemoMode = () => {
     if (!demoModeActive) {
-      let confirmMsg = "Activate Demo Mode? This will seed realistic patients, vitals history, and medicine schedules for demonstration purposes. Your existing records will not be deleted.";
-      if (language === "hi") {
-        confirmMsg = "डेमो मोड सक्रिय करें? यह प्रदर्शन के लिए रोगियों, वाइटल्स इतिहास और दवा कार्यक्रम को लोड करेगा। आपके मौजूदा रिकॉर्ड हटाए नहीं जाएंगे।";
-      } else if (language === "gu") {
-        confirmMsg = "ડેમો મોડ સક્રિય કરવો છે? આ નિદર્શન માટે દર્દીઓ, વાઇટલ્સ ઇતિહાસ અને દવાઓનું શેડ્યૂલ લોડ કરશે. તમારા અસ્તિત્વમાં રહેલા રેકોર્ડ્સ કાઢી નાખવામાં આવશે નહીં.";
-      }
+      const confirmMsg = t.demoActivateConfirm;
 
       if (window.confirm(confirmMsg)) {
         setDemoModeActive(true);
@@ -653,12 +744,7 @@ export default function MainApp() {
         safeSetItem("saathi_medicines", JSON.stringify(updatedMedicines));
       }
     } else {
-      let confirmMsg = "Deactivate Demo Mode? This will remove all demonstration records and data, keeping only your genuine user records.";
-      if (language === "hi") {
-        confirmMsg = "डेमो मोड बंद करें? यह सभी प्रदर्शन रिकॉर्ड और डेटा को हटा देगा, केवल आपके वास्तविक उपयोगकर्ता रिकॉर्ड को रखेगा।";
-      } else if (language === "gu") {
-        confirmMsg = "ડેમો મોડ બંધ કરવો છે? આ નિદર્શન માટેના તમામ રેકોર્ડ્સ અને ડેટા કાઢી નાખશે, ફક્ત તમારા જ રેકોર્ડ્સ રાખશે.";
-      }
+      const confirmMsg = t.demoDeactivateConfirm;
 
       if (window.confirm(confirmMsg)) {
         setDemoModeActive(false);
@@ -755,15 +841,15 @@ export default function MainApp() {
   const validateSubStepA = () => {
     const errors: { [key: string]: string } = {};
     if (!profileForm.name.trim()) {
-      errors.name = language === "hi" ? "नाम दर्ज करना आवश्यक है" : language === "gu" ? "નામ દાખલ કરવું જરૂરી છે" : "Name is required";
+      errors.name = t.valNameRequired;
     }
     const ageNum = Number(profileForm.age);
     if (!profileForm.age || isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
-      errors.age = language === "hi" ? "कृपया मान्य आयु (1-120) दर्ज करें" : language === "gu" ? "કૃપા કરીને માન્ય ઉંમર (1-120) દાખલ કરો" : "Please enter a valid age (1-120)";
+      errors.age = t.valAgeValid;
     }
     const phoneTrim = profileForm.phone.trim();
     if (!phoneTrim || phoneTrim.length < 4 || phoneTrim.length > 15 || !/^\d+$/.test(phoneTrim)) {
-      errors.phone = language === "hi" ? "कृपया मान्य मोबाइल नंबर दर्ज करें" : language === "gu" ? "કૃપા કરીને માન્ય મોબાઇલ નંબર દાખલ કરો" : "Please enter a valid phone number";
+      errors.phone = t.valPhoneValid;
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -773,11 +859,11 @@ export default function MainApp() {
     const errors: { [key: string]: string } = {};
     const emergencyPhone = profileForm.emergencyPhone.trim();
     if (emergencyPhone && (emergencyPhone.length < 4 || emergencyPhone.length > 15 || !/^\d+$/.test(emergencyPhone))) {
-      errors.emergencyPhone = language === "hi" ? "आपातकालीन फोन नंबर मान्य होना चाहिए" : language === "gu" ? "ઇમરજન્સી ફોન નંબર માન્ય હોવો જોઈએ" : "Please enter a valid emergency phone number";
+      errors.emergencyPhone = t.valEmergencyPhoneValid;
     }
     const abhaTrim = profileForm.abha.replace(/\D/g, "");
     if (abhaTrim && abhaTrim.length !== 14) {
-      errors.abha = language === "hi" ? "कृपया 14 अंकों का मान्य आभा नंबर दर्ज करें" : language === "gu" ? "કૃપા કરીને 14 આંકડાનો માન્ય આભા નંબર દાખલ કરો" : "ABHA number must be exactly 14 digits";
+      errors.abha = t.valAbhaValid;
     }
     setFormErrors(prev => ({ ...prev, ...errors }));
     return Object.keys(errors).length === 0;
@@ -838,7 +924,7 @@ export default function MainApp() {
 
       // Trigger Namaste Toast
       const firstName = finalProfile.name.split(" ")[0];
-      const toastMsg = language === "hi" ? `नमस्ते, ${firstName}!` : language === "gu" ? `નમસ્તે, ${firstName}!` : `Namaste, ${firstName}!`;
+      const toastMsg = `${t.namaste || 'Namaste'}, ${firstName}!`;
       setWelcomeToast(toastMsg);
       setTimeout(() => {
         setWelcomeToast(null);
@@ -857,11 +943,7 @@ export default function MainApp() {
 
   const handleResetApp = useCallback(() => {
     const confirmed = window.confirm(
-      language === "hi" 
-        ? "क्या आप निश्चित रूप से ऐप को रीसेट करना चाहते हैं और ऑनबोर्डिंग को फिर से शुरू करना चाहते हैं?" 
-        : language === "gu" 
-        ? "શું તમે ખરેખર એપ્લિકેશન રીસેટ કરવા અને ઓનબોર્ડિંગ ફરીથી શરૂ કરવા માંગો છો?" 
-        : "Are you sure you want to reset the app and redo the onboarding flow?"
+      t.resetConfirmShort
     );
     if (confirmed) {
       safeRemoveItem("saathi_onboarding_complete");
@@ -885,8 +967,8 @@ export default function MainApp() {
             <span className="font-black text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">Saathi</span>
           </div>
           {onboardStep >= 1 && onboardStep <= 3 && (
-            <span className="text-[10px] font-black text-teal-355 uppercase tracking-widest bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-400/20">
-              {language === "hi" ? `चरण ${onboardStep} / ३` : language === "gu" ? `પગલું ${onboardStep} / ૩` : `Step ${onboardStep} of 3`}
+            <span className="text-[10px] font-black text-teal-355 uppercase tracking-widest bg-teal-505/10 px-2 py-0.5 rounded-full border border-teal-400/20">
+              {t.onboardStepIndicator ? t.onboardStepIndicator.replace("{current}", String(onboardStep)) : `Step ${onboardStep} of 3`}
             </span>
           )}
         </div>
@@ -937,7 +1019,7 @@ export default function MainApp() {
               {/* World language selector (Fix 3) */}
               <div className="space-y-2 pt-2 relative text-left">
                 <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block text-center">
-                  Or Select Other World Language / या अन्य भाषा चुनें
+                  {t.onboardOrSelectOtherLanguage}
                 </span>
                 <div className="relative" ref={onboardLangRef}>
                   <button
@@ -952,9 +1034,7 @@ export default function MainApp() {
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4 text-teal-400" />
                       <span>
-                        {worldLanguages.find(wl => wl.code === language)?.label || 
-                         (language !== "en" && language !== "hi" && language !== "gu" ? language : 
-                          (language === "hi" ? "कोई भाषा चुनें" : language === "gu" ? "ભાષા પસંદ કરો" : "Choose a language"))}
+                        {worldLanguages.find(wl => wl.code === language)?.label || t.selectLanguage}
                       </span>
                     </div>
                     <ChevronDown className="w-4 h-4 text-teal-400" />
@@ -1004,18 +1084,6 @@ export default function MainApp() {
                   )}
                 </div>
 
-                {language !== "en" && language !== "hi" && language !== "gu" && (
-                  <div className="mt-2 text-left bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl p-2.5 text-[10px] font-semibold leading-normal animate-fadeIn flex items-start gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                    <span>
-                      {language === "hi"
-                        ? `ब्राउज़र ऑटो-अनुवाद फ़ॉलबैक के माध्यम से इंटरफ़ेस का ${worldLanguages.find(wl => wl.code === language)?.label || language} में अनुवाद किया जा रहा है...`
-                        : language === "gu"
-                        ? `બ્રાઉઝર ઓટો-ટ્રાન્સલેટ ફોલબેક દ્વારા ઈન્ટરફેસનું ${worldLanguages.find(wl => wl.code === language)?.label || language} માં ભાષાંતર થઈ રહ્યું છે...`
-                        : `Translating interface to ${worldLanguages.find(wl => wl.code === language)?.label || language} via browser auto-translate fallback...`}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1024,7 +1092,7 @@ export default function MainApp() {
                 onClick={() => setOnboardStep(1)}
                 className="w-full py-3.5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center justify-center gap-1.5 mx-auto"
               >
-                <span>{language === "hi" ? "शुरू करें" : language === "gu" ? "શરૂ કરો" : "Get Started"}</span>
+                <span>{t.onboardGetStarted}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -1036,7 +1104,7 @@ export default function MainApp() {
           <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
-                {language === "hi" ? "सुविधा १: कैमरा जांच" : language === "gu" ? "સુવિધા ૧: કેમેરા તપાસ" : "Feature 1: Camera Screening"}
+                {t.onboardFeature1Title}
               </span>
               <button 
                 onClick={() => setOnboardStep(4)} 
@@ -1082,7 +1150,7 @@ export default function MainApp() {
                     />
                     <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/70 animate-scan pointer-events-none z-20" />
                     <span className="absolute top-2 left-2 bg-emerald-500/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider z-20 animate-pulse">
-                      {language === "hi" ? "लाइव प्रीव्यू" : language === "gu" ? "લાઇવ પ્રીવ્યૂ" : "Live Preview"}
+                      {t.cameraLivePreview}
                     </span>
                     {/* Camera Flip Button (Fix 1) */}
                     <button
@@ -1120,7 +1188,7 @@ export default function MainApp() {
                         <div className="absolute top-1/2 right-[-14px] w-2.5 h-2.5 bg-emerald-300 rounded-full animate-onboard-float-dot2" />
                       </div>
                       <span className="text-[9px] text-teal-200 font-bold">
-                        {language === "hi" ? "कैमरा अनुपलब्ध" : language === "gu" ? "કેમેરા અનુપલબ્ધ" : "Camera unavailable"}
+                        {t.cameraUnavailable}
                       </span>
                     </div>
                     <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400/50 animate-scan pointer-events-none" />
@@ -1133,14 +1201,14 @@ export default function MainApp() {
                       <div className="relative z-10 flex flex-col items-center gap-2">
                         <div className="w-10 h-10 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
                         <span className="text-[9px] text-teal-200 font-bold">
-                          {language === "hi" ? "कैमरा खोल रहे हैं..." : language === "gu" ? "કેમેરા ખોલી રહ્યા છીએ..." : "Opening camera..."}
+                          {t.cameraOpening}
                         </span>
                       </div>
                     ) : (
                       <div className="relative z-10 flex flex-col items-center gap-2">
                         <Camera className="w-14 h-14 text-teal-300 animate-onboard-cam-pulse" />
                         <span className="text-[10px] text-teal-200 font-bold bg-white/10 px-3 py-1 rounded-full">
-                          {language === "hi" ? "लाइव डेमो के लिए टैप करें" : language === "gu" ? "લાઇવ ડેમો માટે ટેપ કરો" : "Tap for live demo"}
+                          {t.cameraTapForDemo}
                         </span>
                       </div>
                     )}
@@ -1151,14 +1219,10 @@ export default function MainApp() {
 
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-white leading-tight">
-                  {language === "hi" ? "बिना रक्त परीक्षण के स्वास्थ्य की जांच करें" : language === "gu" ? "લોહીની તપાસ વિના સ્વાસ્થ્ય તપાસો" : "Check health with just your camera"}
+                  {t.onboardSlide1TitleDetailed}
                 </h3>
                 <p className="text-xs text-teal-200 leading-relaxed font-medium">
-                  {language === "hi" 
-                    ? "सिर्फ अपने चेहरे, आंख या जीभ के स्कैन से एनीमिया और पीलिया जैसी बीमारियों का तुरंत पता लगाएं।" 
-                    : language === "gu" 
-                    ? "માત્ર તમારા ચહેરો, આંખ અથવા જીભના સ્કેનથી પાંડુરોગ અને કમળા જેવી બીમારીઓની ત્વરિત તપાસ કરો." 
-                    : "Instantly screen for conditions like anemia and jaundice using advanced non-invasive computer vision scans."}
+                  {t.onboardSlide1DescDetailed}
                 </p>
               </div>
             </div>
@@ -1170,7 +1234,7 @@ export default function MainApp() {
           <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
-                {language === "hi" ? "सुविधा २: वाइटल्स और आवाज जांच" : language === "gu" ? "સુવિધા ૨: વાઇટલ્સ અને અવાજ તપાસ" : "Feature 2: Vitals & Voice"}
+                {t.onboardFeature2Title}
               </span>
               <button 
                 onClick={() => setOnboardStep(4)} 
@@ -1205,14 +1269,10 @@ export default function MainApp() {
 
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-white leading-tight">
-                  {language === "hi" ? "वाइटल्स मापें और अपने लक्षण बोलें" : language === "gu" ? "વાઇટલ્સ માપો અને તમારા લક્ષણો બોલો" : "Measure vitals & speak your symptoms"}
+                  {t.onboardSlide2TitleDetailed}
                 </h3>
                 <p className="text-xs text-teal-200 leading-relaxed font-medium">
-                  {language === "hi" 
-                    ? "कैमरे से संपर्क रहित हृदय गति मापें और एआई के साथ स्थानीय भाषा में बात करके तुरंत स्वास्थ्य परामर्श लें।" 
-                    : language === "gu" 
-                    ? "કેમેરાથી સંપર્ક વિના હૃદયના ધબકારા માપો અને AI સાથે સ્થાનિક ભાષામાં વાત કરી ત્વરિત સ્વાસ્થ્ય સલાહ મેળવો." 
-                    : "Measure heart rate & breathing rate contactless via camera, and speak symptoms in your language to get instant screening support."}
+                  {t.onboardSlide2DescDetailed}
                 </p>
               </div>
             </div>
@@ -1224,7 +1284,7 @@ export default function MainApp() {
           <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-teal-355 tracking-widest">
-                {language === "hi" ? "सुविधा ३: पूर्ण स्वास्थ्य प्रबंधन" : language === "gu" ? "સુવિધા ૩: પૂર્ણ સ્વાસ્થ્ય સંચાલન" : "Feature 3: Complete Health"}
+                {t.onboardFeature3Title}
               </span>
               <button 
                 onClick={() => setOnboardStep(4)} 
@@ -1252,21 +1312,13 @@ export default function MainApp() {
 
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-white leading-tight">
-                  {language === "hi" ? "सही समय पर सही देखभाल" : language === "gu" ? "યોગ્ય સમયે યોગ્ય સંભાળ" : "Right care at the right time"}
+                  {t.onboardSlide3TitleDetailed}
                 </h3>
                 <p className="text-xs text-teal-200 leading-relaxed font-medium">
-                  {language === "hi" 
-                    ? "रंग-कोडित ट्राइएज रिस्क बैंड, डॉक्टर से परामर्श, डिजिटल आयुष्मान भारत हेल्थ आईडी कार्ड और ऑफ़लाइन दवाओं के रिमाइंडर।" 
-                    : language === "gu" 
-                    ? "અલગ અલગ જોખમ બેન્ડ્સ, ડૉક્ટર સંપર્ક, ડિજિટલ આયુષ્માન ભારત હેલ્થ આઈડી કાર્ડ અને ઓફલાઇન દવા રીમાઇન્ડર્સ." 
-                    : "Red/Yellow/Green triage categories, direct doctor consulting, dynamic ABHA cards, and automated offline medication reminders."}
+                  {t.onboardSlide3DescDetailed}
                 </p>
                 <p className="text-[10px] text-emerald-400 font-bold italic mt-1 animate-pulse">
-                  {language === "hi" 
-                    ? "आप अगले चरण में अपनी ABHA आईडी जोड़ सकते हैं" 
-                    : language === "gu" 
-                    ? "તમે આગલા પગલામાં તમારી ABHA ID ઉમેરી શકો છો" 
-                    : "You can add your ABHA ID in the next step"}
+                  {t.onboardSlide3AbhaNote}
                 </p>
               </div>
             </div>
@@ -1280,7 +1332,7 @@ export default function MainApp() {
               onClick={() => setOnboardStep(prev => prev - 1)}
               className="py-3 px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold transition-all text-slate-350"
             >
-              {language === "hi" ? "पीछे" : language === "gu" ? "પાછળ" : "Back"}
+              {t.back}
             </button>
 
             {/* Dots */}
@@ -1299,7 +1351,7 @@ export default function MainApp() {
               onClick={() => setOnboardStep(prev => prev + 1)}
               className="py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center gap-1.5"
             >
-              <span>{language === "hi" ? "अगला" : language === "gu" ? "આગળ" : "Next"}</span>
+              <span>{t.next}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -1315,9 +1367,7 @@ export default function MainApp() {
                   {t.profileFormTitle}
                 </h3>
                 <span className="text-[9px] font-extrabold text-teal-350 uppercase bg-teal-500/10 px-2.5 py-1 rounded-full border border-teal-400/20 shrink-0">
-                  {profileSubStep === "A" 
-                    ? (language === "hi" ? "भाग १" : language === "gu" ? "भाग १" : "Part A") 
-                    : (language === "hi" ? "भाग २" : language === "gu" ? "भाग २" : "Part B")}
+                  {profileSubStep === "A" ? t.partA : t.partB}
                 </span>
               </div>
 
@@ -1330,7 +1380,7 @@ export default function MainApp() {
                     </label>
                     <input
                       type="text"
-                      placeholder={language === "hi" ? "जैसे: Aarav Sharma" : "e.g. Aarav Sharma"}
+                      placeholder={t.placeholderName}
                       value={profileForm.name}
                       onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
                       className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
@@ -1348,7 +1398,7 @@ export default function MainApp() {
                     </label>
                     <input
                       type="number"
-                      placeholder={language === "hi" ? "जैसे: 28" : "e.g. 28"}
+                      placeholder={t.placeholderAge}
                       value={profileForm.age}
                       onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))}
                       className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
@@ -1453,7 +1503,7 @@ export default function MainApp() {
                       <input
                         type="tel"
                         maxLength={15}
-                        placeholder={language === "hi" ? "फ़ोन नंबर" : "Phone number"}
+                        placeholder={t.placeholderPhone}
                         value={profileForm.phone}
                         onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
                         className="w-full text-xs p-3.5 bg-transparent text-white font-semibold focus:outline-none rounded-r-2xl"
@@ -1475,15 +1525,15 @@ export default function MainApp() {
                     </label>
                     <div className="flex flex-wrap gap-1.5">
                       {[
-                        { key: "Diabetes", label: language === "hi" ? "मधुमेह" : language === "gu" ? "મધુમેહ" : "Diabetes" },
-                        { key: "High Blood Pressure", label: language === "hi" ? "उच्च रक्तचाप" : language === "gu" ? "હાઈ બ્લડ પ્રેશર" : "High BP" },
-                        { key: "Heart Disease", label: language === "hi" ? "हृदय रोग" : language === "gu" ? "હૃદય રોગ" : "Heart Disease" },
-                        { key: "Asthma/Respiratory", label: language === "hi" ? "अस्थमा" : language === "gu" ? "અસ્થમા" : "Asthma" },
-                        { key: "Thyroid", label: language === "hi" ? "थायराइड" : language === "gu" ? "થાઇરોઇડ" : "Thyroid" },
-                        { key: "Kidney Disease", label: language === "hi" ? "गुर्दे की बीमारी" : language === "gu" ? "કિડનીની બીમારી" : "Kidney" },
-                        { key: "Anemia", label: language === "hi" ? "एनीमिया" : language === "gu" ? "એનિમિયા" : "Anemia" },
-                        { key: "Other", label: language === "hi" ? "अन्य" : language === "gu" ? "અન્ય" : "Other" },
-                        { key: "None", label: language === "hi" ? "कोई नहीं" : language === "gu" ? "કોઈ નહીં" : "None" }
+                        { key: "Diabetes", label: t.condDiabetes },
+                        { key: "High Blood Pressure", label: t.condHighBP },
+                        { key: "Heart Disease", label: t.condHeartDisease },
+                        { key: "Asthma/Respiratory", label: t.condAsthma },
+                        { key: "Thyroid", label: t.condThyroid },
+                        { key: "Kidney Disease", label: t.condKidney },
+                        { key: "Anemia", label: t.condAnemia },
+                        { key: "Other", label: t.condOther },
+                        { key: "None", label: t.condNone }
                       ].map(c => {
                         const isSelected = profileForm.conditions.includes(c.key);
                         return (
@@ -1506,7 +1556,7 @@ export default function MainApp() {
                     {profileForm.conditions.includes("Other") && (
                       <div className="space-y-1 mt-2 animate-fadeIn">
                         <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
-                          {language === "hi" ? "अन्य स्थिति निर्दिष्ट करें" : language === "gu" ? "અન્ય સ્થિતિ સ્પષ્ટ કરો" : "Specify Other Condition"}
+                          {t.specifyOtherCondition}
                         </label>
                         <input
                           type="text"
@@ -1564,7 +1614,7 @@ export default function MainApp() {
 
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-teal-200 uppercase tracking-wide">
-                      {language === "hi" ? "आभा नंबर (वैकल्पिक)" : language === "gu" ? "આભા નંબર (વૈકલ્પિક)" : "ABHA Number (optional)"}
+                      {t.abhaNumberOptional}
                     </label>
                     <input
                       type="text"
@@ -1577,11 +1627,7 @@ export default function MainApp() {
                       className="w-full text-xs p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold focus:outline-none focus:border-teal-400 focus:bg-white/10"
                     />
                     <p className="text-[9px] text-teal-300 font-semibold mt-0.5">
-                      {language === "hi" 
-                        ? "आयुष्मान भारत स्वास्थ्य खाता — वैकल्पिक" 
-                        : language === "gu" 
-                        ? "આયુષ્માન ભારત હેલ્થ એકાઉન્ટ — વૈકલ્પિક" 
-                        : "Ayushman Bharat Health Account — optional"}
+                      {t.abhaSubtext}
                     </p>
                     {formErrors.abha && (
                       <p className="text-[10px] text-red-405 font-bold flex items-center gap-1 mt-1">
@@ -1592,12 +1638,12 @@ export default function MainApp() {
 
                   <div className="border-t border-white/10 pt-3 mt-1 space-y-3">
                     <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider block">
-                      {language === "hi" ? "आपातकालीन संपर्क (वैकल्पिक)" : language === "gu" ? "ઇમરજન્સી સંપર્ક (વૈકલ્પિક)" : "Emergency Contact (Optional)"}
+                      {t.emergencyContactOptional}
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-teal-250 uppercase">
-                          {language === "hi" ? "नाम" : language === "gu" ? "નામ" : "Name"}
+                          {t.emergencyName}
                         </label>
                         <input
                           type="text"
@@ -1609,7 +1655,7 @@ export default function MainApp() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-teal-250 uppercase">
-                          {language === "hi" ? "फोन" : language === "gu" ? "ફોન" : "Phone"}
+                          {t.emergencyPhone}
                         </label>
                         <input
                           type="tel"
@@ -1645,7 +1691,7 @@ export default function MainApp() {
                 }}
                 className="py-3 px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold transition-all text-slate-350"
               >
-                {language === "hi" ? "पीछे" : language === "gu" ? "પાછળ" : "Back"}
+                {t.back}
               </button>
 
               {profileSubStep === "A" ? (
@@ -1658,7 +1704,7 @@ export default function MainApp() {
                   }}
                   className="py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center gap-1.5"
                 >
-                  <span>{language === "hi" ? "आगे बढ़ें" : language === "gu" ? "આગળ વધો" : "Next Details"}</span>
+                  <span>{t.nextDetails}</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               ) : (
@@ -1667,7 +1713,7 @@ export default function MainApp() {
                   onClick={handleSaveProfile}
                   className="py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black shadow-lg transition-all text-white flex items-center gap-1.5"
                 >
-                  <span>{language === "hi" ? "पूर्ण करें" : language === "gu" ? "સમાપ્ત કરો" : "Finish Setup"}</span>
+                  <span>{t.finishSetup}</span>
                   <Check className="w-3.5 h-3.5" />
                 </button>
               )}

@@ -1,41 +1,64 @@
-import { en } from "./translations/en";
-import { hi } from "./translations/hi";
-import { gu } from "./translations/gu";
-import { bn } from "./translations/bn";
-import { ta } from "./translations/ta";
-import { te } from "./translations/te";
-import { mr } from "./translations/mr";
-import { pa } from "./translations/pa";
-import { ur } from "./translations/ur";
-import { ar } from "./translations/ar";
-import { fr } from "./translations/fr";
-import { es } from "./translations/es";
-import { de } from "./translations/de";
-import { zh } from "./translations/zh";
-import { pt } from "./translations/pt";
-import { ru } from "./translations/ru";
-import { sw } from "./translations/sw";
-import { fallback } from "./translations/fallback";
+import en from "../../locales/en.json";
+import hi from "../../locales/hi.json";
+import gu from "../../locales/gu.json";
+import bn from "../../locales/bn.json";
+import ta from "../../locales/ta.json";
+import te from "../../locales/te.json";
+import mr from "../../locales/mr.json";
+import pa from "../../locales/pa.json";
+import ur from "../../locales/ur.json";
+import ar from "../../locales/ar.json";
+import fr from "../../locales/fr.json";
+import es from "../../locales/es.json";
+import de from "../../locales/de.json";
+import zh from "../../locales/zh.json";
+import pt from "../../locales/pt.json";
+import ru from "../../locales/ru.json";
+import sw from "../../locales/sw.json";
+import ja from "../../locales/ja.json";
+import ko from "../../locales/ko.json";
+import it from "../../locales/it.json";
+import tr from "../../locales/tr.json";
+import nl from "../../locales/nl.json";
+import pl from "../../locales/pl.json";
+import th from "../../locales/th.json";
+import vi from "../../locales/vi.json";
+import id from "../../locales/id.json";
+import kn from "../../locales/kn.json";
+import ml from "../../locales/ml.json";
+import or from "../../locales/or.json";
 
 export const translations: Record<string, Record<string, string>> = {
-  en,
-  hi,
-  gu,
-  bn,
-  ta,
-  te,
-  mr,
-  pa,
-  ur,
-  ar,
-  fr,
-  es,
-  de,
-  zh,
-  pt,
-  ru,
-  sw,
-  fallback,
+  en: en as any,
+  hi: hi as any,
+  gu: gu as any,
+  bn: bn as any,
+  ta: ta as any,
+  te: te as any,
+  mr: mr as any,
+  pa: pa as any,
+  ur: ur as any,
+  ar: ar as any,
+  fr: fr as any,
+  es: es as any,
+  de: de as any,
+  zh: zh as any,
+  pt: pt as any,
+  ru: ru as any,
+  sw: sw as any,
+  ja: ja as any,
+  ko: ko as any,
+  it: it as any,
+  tr: tr as any,
+  nl: nl as any,
+  pl: pl as any,
+  th: th as any,
+  vi: vi as any,
+  id: id as any,
+  kn: kn as any,
+  ml: ml as any,
+  or: or as any,
+  fallback: en as any,
 };
 
 export type SupportedLanguage = string;
@@ -55,10 +78,8 @@ export function t(
     translationSet = translations[mainLang];
   }
 
-  // 3. Fallback to English (or if lang doesn't exist, check fallback.ts)
+  // 3. Fallback to English
   if (!translationSet) {
-    // If it's a known language code not explicitly configured or other languages:
-    // we use fallback which is English UI but allows translation at runtime
     translationSet = translations.fallback || translations.en;
   }
 
