@@ -1734,7 +1734,7 @@ export default function MainApp() {
             <div className="flex items-center gap-2 text-slate-800">
               <Heart className="w-5 h-5 text-teal-600 fill-teal-50 animate-pulse" />
               <h3 className="text-sm font-black uppercase tracking-wide">
-                {language === "hi" ? "स्वास्थ्य प्रोफ़ाइल" : language === "gu" ? "સ્વાસ્થ્ય પ્રોફાઇલ" : "Health Profile"}
+                {t.healthProfile}
               </h3>
             </div>
             <button
@@ -1752,7 +1752,7 @@ export default function MainApp() {
             {/* Section 1: Basic Info */}
             <div className="space-y-3">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                {language === "hi" ? "१. बुनियादी जानकारी" : language === "gu" ? "૧. મૂળભૂત માહિતી" : "1. Basic Information"}
+                {t.basicInformation}
               </span>
               
               <div className="space-y-1">
@@ -1890,7 +1890,7 @@ export default function MainApp() {
             {/* Section 2: Health Background */}
             <div className="space-y-3 border-t border-slate-100 pt-3">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                {language === "hi" ? "२. स्वास्थ्य विवरण" : language === "gu" ? "૨. સ્વાસ્થ્ય વિગતો" : "2. Health Details"}
+                {t.healthDetails}
               </span>
 
               <div className="space-y-1.5">
@@ -1899,15 +1899,15 @@ export default function MainApp() {
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {[
-                    { key: "Diabetes", label: language === "hi" ? "मधुमेह" : language === "gu" ? "મધુમેહ" : "Diabetes" },
-                    { key: "High Blood Pressure", label: language === "hi" ? "उच्च रक्तचाप" : language === "gu" ? "હાઈ બ્લડ પ્રેશર" : "High BP" },
-                    { key: "Heart Disease", label: language === "hi" ? "हृदय रोग" : language === "gu" ? "હૃદય રોગ" : "Heart Disease" },
-                    { key: "Asthma/Respiratory", label: language === "hi" ? "अस्थमा" : language === "gu" ? "અસ્થમા" : "Asthma" },
-                    { key: "Thyroid", label: language === "hi" ? "थायराइड" : language === "gu" ? "થાઇરોઇડ" : "Thyroid" },
-                    { key: "Kidney Disease", label: language === "hi" ? "गुर्दे की बीमारी" : language === "gu" ? "કિડનીની બીમારી" : "Kidney" },
-                    { key: "Anemia", label: language === "hi" ? "एनीमिया" : language === "gu" ? "એનિમિયા" : "Anemia" },
-                    { key: "Other", label: language === "hi" ? "अन्य" : language === "gu" ? "અન્ય" : "Other" },
-                    { key: "None", label: language === "hi" ? "कोई नहीं" : language === "gu" ? "કોઈ નહીં" : "None" }
+                    { key: "Diabetes", label: t.condDiabetes },
+                    { key: "High Blood Pressure", label: t.condHighBP },
+                    { key: "Heart Disease", label: t.condHeartDisease },
+                    { key: "Asthma/Respiratory", label: t.condAsthma },
+                    { key: "Thyroid", label: t.condThyroid },
+                    { key: "Kidney Disease", label: t.condKidney },
+                    { key: "Anemia", label: t.condAnemia },
+                    { key: "Other", label: t.condOther },
+                    { key: "None", label: t.condNone }
                   ].map(c => {
                     const isSelected = profileForm.conditions.includes(c.key);
                     return (
@@ -1930,7 +1930,7 @@ export default function MainApp() {
                 {profileForm.conditions.includes("Other") && (
                   <div className="space-y-1 mt-2">
                     <label className="text-[9px] font-bold text-slate-650 uppercase">
-                      {language === "hi" ? "अन्य स्थिति निर्दिष्ट करें" : language === "gu" ? "અન્ય સ્થિતિ સ્પષ્ટ કરો" : "Specify Other Condition"}
+                      {t.specifyOtherCondition}
                     </label>
                     <input
                       type="text"
@@ -1988,7 +1988,7 @@ export default function MainApp() {
 
               <div className="space-y-1">
                 <label className="text-[9px] font-bold text-slate-650 uppercase">
-                  {language === "hi" ? "आभा नंबर (वैकल्पिक)" : language === "gu" ? "આભા નંબર (વૈકલ્પિક)" : "ABHA Number (optional)"}
+                  {t.abhaNumberOptional}
                 </label>
                 <input
                   type="text"
@@ -2001,11 +2001,7 @@ export default function MainApp() {
                   className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-555 h-[44px]"
                 />
                 <p className="text-[9px] text-slate-400 font-semibold mt-0.5">
-                  {language === "hi" 
-                    ? "आयुष्मान भारत स्वास्थ्य खाता — वैकल्पिक" 
-                    : language === "gu" 
-                    ? "આયુષ્માન ભારત હેલ્થ એકાઉન્ટ — વૈકલ્પિક" 
-                    : "Ayushman Bharat Health Account — optional"}
+                  {t.abhaSubtext}
                 </p>
                 {formErrors.abha && (
                   <p className="text-[9px] text-red-500 font-bold">⚠️ {formErrors.abha}</p>
@@ -2014,12 +2010,12 @@ export default function MainApp() {
 
               <div className="border-t border-slate-100 pt-3 space-y-2">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                  {language === "hi" ? "आपातकालीन संपर्क" : language === "gu" ? "ઇમરજન્સી સંપર્ક" : "Emergency Contact"}
+                  {t.emergencyContact}
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <label className="text-[9px] font-bold text-slate-650 uppercase">
-                      {language === "hi" ? "नाम" : language === "gu" ? "નામ" : "Name"}
+                      {t.emergencyName}
                     </label>
                     <input
                       type="text"
@@ -2031,7 +2027,7 @@ export default function MainApp() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[9px] font-bold text-slate-650 uppercase">
-                      {language === "hi" ? "फोन" : language === "gu" ? "ફોન" : "Phone"}
+                      {t.emergencyPhone}
                     </label>
                     <input
                       type="tel"
@@ -2071,7 +2067,7 @@ export default function MainApp() {
                 }}
                 className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 text-xs font-bold text-center"
               >
-                {language === "hi" ? "रद्द करें" : language === "gu" ? "રદ કરો" : "Cancel"}
+                {t.cancel}
               </button>
               <button
                 type="button"
@@ -2084,7 +2080,7 @@ export default function MainApp() {
                 }}
                 className="flex-1 py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold text-center shadow-md"
               >
-                {language === "hi" ? "सहेजें" : language === "gu" ? "સાચવો" : "Save Changes"}
+                {t.saveChanges}
               </button>
             </div>
 
@@ -2093,11 +2089,7 @@ export default function MainApp() {
               <button
                 type="button"
                 onClick={() => {
-                  const confirmMsg = language === "hi"
-                    ? "क्या आप वाकई ऐप रीसेट करना और ऑनबोर्डिंग दोबारा करना चाहते हैं? सभी प्रोफ़ाइल डेटा हटा दिया जाएगा।"
-                    : language === "gu"
-                    ? "શું તમે ખરેખર એપ્લિકેશન રીસેટ કરવા અને ઓનબોર્ડિંગ ફરીથી કરવા માંગો છો? તમામ પ્રોફાઇલ ડેટા દૂર કરવામાં આવશે."
-                    : "Are you sure you want to reset the app and redo onboarding? All profile data will be removed.";
+                  const confirmMsg = t.resetConfirm;
                   if (window.confirm(confirmMsg)) {
                     safeRemoveItem("saathi_onboarding_complete");
                     safeRemoveItem("saathi_user_profile");
@@ -2195,11 +2187,7 @@ export default function MainApp() {
         <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 text-[10px] text-red-805 flex items-center gap-2 shrink-0 z-30 animate-fadeIn text-left">
           <WifiOff className="w-4 h-4 text-red-600 shrink-0" />
           <span className="font-extrabold tracking-wide">
-            {language === "hi" 
-              ? "आप ऑफ़लाइन हैं। कैमरा और वाइटल्स जांच काम करेंगे; वॉयस एआई को इंटरनेट चाहिए।" 
-              : language === "gu" 
-              ? "તમે ઓફલાઇન છો. કેમેરા અને વાઇટલ્સ કામ કરશે; વોઇસ એઆઇ માટે ઇન્ટરનેટ જરૂરી છે." 
-              : "You're offline — camera screening & vitals still work; voice/triage needs internet."}
+            {t.offlineBanner}
           </span>
         </div>
       )}
@@ -2221,7 +2209,7 @@ export default function MainApp() {
               className="bg-white text-teal-700 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0 min-h-[44px] min-w-[44px] justify-center"
             >
               <Download className="w-3 h-3" />
-              {language === "hi" ? "इंस्टॉल" : language === "gu" ? "ઇન્સ્ટોલ" : "Install"}
+              {t.install}
             </button>
           )}
 
@@ -2236,7 +2224,7 @@ export default function MainApp() {
             <button
               onClick={openProfileFromSidebar}
               className="w-7 h-7 rounded-full bg-white/20 border border-white/30 text-white font-black text-[11px] flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 shrink-0 min-h-[44px] min-w-[44px]"
-              title={language === "hi" ? "प्रोफ़ाइल संपादित करें" : language === "gu" ? "પ્રોફાઇલ સંપાદિત કરો" : "Edit Profile"}
+              title={t.editProfile}
               id="profile-avatar-btn"
             >
               {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
@@ -2450,15 +2438,11 @@ export default function MainApp() {
             </div>
             <div className="space-y-2">
               <h3 className="text-lg font-black text-slate-800 uppercase tracking-wide">
-                {language === "hi" ? "दवा लेने का समय!" : language === "gu" ? "દવા લેવાનો સમય!" : "Medicine Reminder!"}
+                {t.medicineReminder}
               </h3>
               <p className="text-sm font-bold text-teal-600">{pendingReminderAlert.name}</p>
               <p className="text-xs text-slate-500">
-                {language === "hi" 
-                  ? `खुराक: ${pendingReminderAlert.dose} | आवृत्ति: ${pendingReminderAlert.frequency}` 
-                  : language === "gu" 
-                  ? `ખુરાક: ${pendingReminderAlert.dose} | આવૃત્તિ: ${pendingReminderAlert.frequency}` 
-                  : `Dosage: ${pendingReminderAlert.dose} | Frequency: ${pendingReminderAlert.frequency}`}
+                {t.medicineDosageFrequency.replace("{dose}", pendingReminderAlert.dose).replace("{frequency}", pendingReminderAlert.frequency)}
               </p>
             </div>
             <div className="pt-2">
@@ -2466,7 +2450,7 @@ export default function MainApp() {
                 onClick={() => setPendingReminderAlert(null)}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-colors"
               >
-                {language === "hi" ? "मैंने दवा ले ली है" : language === "gu" ? "મેં દવા લઈ લીધી છે" : "I have taken it"}
+                {t.medicineTaken}
               </button>
             </div>
           </div>
@@ -2481,7 +2465,7 @@ export default function MainApp() {
               <div className="flex items-center gap-2 text-slate-800">
                 <Settings className="w-5 h-5 text-teal-650 animate-spin-slow" />
                 <h3 className="text-sm font-black uppercase tracking-wide">
-                  {language === "hi" ? "साधन सेटिंग्स" : language === "gu" ? "સાધન સેટિંગ્સ" : "Application Settings"}
+                  {t.applicationSettings}
                 </h3>
               </div>
               <button
@@ -2499,15 +2483,11 @@ export default function MainApp() {
                   <div className="flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-emerald-600" />
                     <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wide">
-                      {language === "hi" ? "आशा कार्यकर्ता मोड" : language === "gu" ? "આશા કાર્યકર મોડ" : "ASHA Worker Mode"}
+                      {t.ashaWorkerMode}
                     </span>
                   </div>
                   <p className="text-[9px] text-slate-500 leading-normal">
-                    {language === "hi" 
-                      ? "एक साथ कई मरीजों की स्क्रीनिंग, प्रोफाइल प्रबंधन और स्वास्थ्य डैशबोर्ड सक्षम करें।"
-                      : language === "gu" 
-                      ? "એકસાથે બહુવિધ દર્દીઓનું સ્ક્રિનિંગ, પ્રોફાઇલ સંચાલન અને આરોગ્ય ડેશબોર્ડ સક્ષમ કરો." 
-                      : "Enable screening of multiple patient profiles, records history, and a community dashboard."}
+                    {t.ashaWorkerModeDesc}
                   </p>
                 </div>
                 
@@ -2536,7 +2516,7 @@ export default function MainApp() {
               {/* Setting 2: Language Selector inside Settings */}
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                 <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wide block">
-                  {language === "hi" ? "भाषा बदलें" : language === "gu" ? "ભાષા બદલો" : "Select Language"}
+                  {t.selectLanguage}
                 </span>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -2595,8 +2575,7 @@ export default function MainApp() {
                       <Globe className="w-3.5 h-3.5 text-teal-600" />
                       <span className="truncate">
                         {worldLanguages.find(wl => wl.code === language)?.label || 
-                         (language !== "en" && language !== "hi" && language !== "gu" ? language : 
-                          (language === "hi" ? "कोई भाषा चुनें" : language === "gu" ? "ભાષા પસંદ કરો" : "Other Language"))}
+                         (language !== "en" && language !== "hi" && language !== "gu" ? language : t.otherLanguage)}
                       </span>
                     </div>
                     <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -2650,11 +2629,7 @@ export default function MainApp() {
                   <div className="mt-1.5 text-left bg-amber-50 border border-amber-100 text-amber-800 rounded-xl p-2 text-[9px] font-semibold leading-normal animate-fadeIn flex items-start gap-1">
                     <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
                     <span>
-                      {language === "hi"
-                        ? `ब्राउज़र ऑटो-अनुवाद फ़ॉलबैक के माध्यम से इंटरफ़ेस का ${worldLanguages.find(wl => wl.code === language)?.label || language} में अनुवाद किया जा रहा है...`
-                        : language === "gu"
-                        ? `બ્રાઉઝર ઓટો-ટ્રાન્સલેટ ફોલબેક દ્વારા ઈન્ટરફેસનું ${worldLanguages.find(wl => wl.code === language)?.label || language} માં ભાષાંતર થઈ રહ્યું છે...`
-                        : `Translating interface to ${worldLanguages.find(wl => wl.code === language)?.label || language} via browser auto-translate fallback...`}
+                      {t.translatingTo.replace("{lang}", worldLanguages.find(wl => wl.code === language)?.label || language)}
                     </span>
                   </div>
                 )}
@@ -2666,15 +2641,11 @@ export default function MainApp() {
                   <div className="flex items-center gap-1.5 text-slate-800">
                     <Bell className="w-4 h-4 text-teal-650" />
                     <span className="text-xs font-extrabold uppercase tracking-wide">
-                      {language === "hi" ? "अभिभावक अलर्ट" : language === "gu" ? "વાલી ચેતવણીઓ" : "Caregiver Alerts"}
+                      {t.caregiverAlerts}
                     </span>
                   </div>
                   <p className="text-[9px] text-slate-500 leading-normal">
-                    {language === "hi" 
-                      ? "उच्च जोखिम स्क्रीनिंग परिणाम या छूटी हुई दवाओं के मामले में रिश्तेदारों को एसएमएस भेजें।" 
-                      : language === "gu" 
-                      ? "ઉચ્ચ જોખમ સ્ક્રિનિંગ પરિણામ અથવા ચુકી ગયેલ દવાઓના કિસ્સામાં સંબંધીઓને એસએમએસ મોકલો."
-                      : "Trigger automatic alerts to configured primary caregivers on high-risk vital readings."}
+                    {t.caregiverAlertsDesc}
                   </p>
                 </div>
                 <button
@@ -2695,15 +2666,11 @@ export default function MainApp() {
                   <div className="flex items-center gap-1.5 text-slate-800">
                     <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
                     <span className="text-xs font-extrabold uppercase tracking-wide">
-                      {language === "hi" ? "डेमो मोड (सैंडबॉक्स)" : language === "gu" ? "ડેમો મોડ (સેન્ડબોક્સ)" : "Demo Mode (Sandbox)"}
+                      {t.demoModeSandbox}
                     </span>
                   </div>
                   <p className="text-[9px] text-slate-500 leading-normal">
-                    {language === "hi" 
-                      ? "प्रदर्शन के लिए वास्तविक रोगियों, वाइटल्स इतिहास और दवा कार्यक्रम को लोड करें।" 
-                      : language === "gu" 
-                      ? "નિદર્શન માટે વાસ્તવિક દર્દીઓ, વાઇટલ્સ ઇતિહાસ અને દવાઓ લોડ કરો."
-                      : "Seed realistic demonstration patient records, vitals history, and medicine schedules."}
+                    {t.demoModeDesc}
                   </p>
                 </div>
                 <button
@@ -2730,7 +2697,7 @@ export default function MainApp() {
                     }}
                     className="text-[9px] font-black text-rose-500 hover:text-rose-650 uppercase tracking-wider bg-rose-50 hover:bg-rose-100/60 border border-rose-100 px-3 py-1.5 rounded-xl transition-all"
                   >
-                    {language === "hi" ? "डेटा रीसेट करें" : language === "gu" ? "ડેટા રીસેટ કરો" : "Reset App Data"}
+                    {t.resetAppData}
                   </button>
                 </div>
               </div>
@@ -2746,15 +2713,11 @@ export default function MainApp() {
             <div className="flex items-center gap-3 text-red-600 border-b border-slate-100 pb-3">
               <AlertTriangle className="w-6 h-6 text-red-500 animate-bounce" />
               <h3 className="text-sm font-black uppercase tracking-wide">
-                {language === "hi" ? "फ़ैक्टरी रीसेट" : language === "gu" ? "ફેક્ટરી રીસેટ" : "Confirm Factory Reset"}
+                {t.confirmFactoryReset}
               </h3>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              {language === "hi"
-                ? "सभी ऑफ़लाइन नैदानिक डेटा, सक्रिय प्रोफ़ाइल और वाइटल्स इतिहास स्थायी रूप से हटा दिए जाएंगे। इसे वापस नहीं लाया जा सकता।"
-                : language === "gu"
-                ? "તમામ ઑફલાઇન ડાયગ્નોસ્ટિક ડેટા, સક્રિય પ્રોફાઇલ અને વાઇટલ્સ હિસ્ટ્રી કાયમી ધોરણે ભૂંસી નાખવામાં આવશે. આ ક્રિયા પાછી ખેંચી શકાશે નહીં."
-                : "All local offline diagnostic records, patient profiles, vital scans, and schedules will be permanently erased. This action cannot be undone."}
+              {t.factoryResetWarning}
             </p>
             <div className="flex gap-2.5 pt-2">
               <button
@@ -2764,7 +2727,7 @@ export default function MainApp() {
                 }}
                 className="flex-1 bg-slate-105 hover:bg-slate-200 text-slate-700 font-extrabold text-xs py-3 rounded-xl transition-all active:scale-95 min-h-[44px] bg-slate-100 border border-slate-200"
               >
-                {language === "hi" ? "रद्द करें" : language === "gu" ? "રદ કરો" : "Cancel"}
+                {t.cancel}
               </button>
               <button
                 onClick={() => {
@@ -2779,8 +2742,8 @@ export default function MainApp() {
                 }`}
               >
                 {resetCountdown > 0
-                  ? (language === "hi" ? `पुष्टि करें (${resetCountdown}s)` : language === "gu" ? `ખાતરી કરો (${resetCountdown}s)` : `Confirm (${resetCountdown}s)`)
-                  : (language === "hi" ? "रीसेट करें" : language === "gu" ? "રીસેટ કરો" : "Reset Now")}
+                  ? t.confirmCountdown.replace("{countdown}", resetCountdown.toString())
+                  : t.resetNow}
               </button>
             </div>
           </div>

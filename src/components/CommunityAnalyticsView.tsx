@@ -21,7 +21,31 @@ interface CommunityAnalyticsViewProps {
 export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = React.memo(({
   patientsList
 }) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
+
+  const l = {
+    anonymizedHeader: t.ashaAnonymizedHeader || "🔒 Aggregated & Anonymized Data Panel",
+    anonymizedDesc: t.ashaAnonymizedDesc || "All community metrics shown below are compiled using aggregate screening records and village metadata. Personal identities have been anonymized to protect patient privacy.",
+    activeOutbreakCards: t.ashaActiveOutbreakCards || "Active Outbreak Warning Cards",
+    ruleTriggered: t.ashaRuleTriggered || "Rule Triggered",
+    feverExceeded: t.ashaFeverExceeded || "Fever Threshold Exceeded",
+    potentialOutbreak: t.ashaPotentialOutbreak || "Potential {infection} Outbreak in {village}",
+    casesThreshold: t.ashaCasesThreshold || "Fever-related cases in {village} reached {cases} cases this week, exceeding the local public health safety threshold of {threshold} cases.",
+    recommendedActions: t.ashaRecommendedActions || "Recommended Actions:",
+    actionVector: t.ashaActionVector || "Mobilize vector control, conduct mosquito breeding site checks in {village}.",
+    actionCamp: t.ashaActionCamp || "Host an active fever screening camp and distribute insecticide-treated bed nets.",
+    actionLog: t.ashaActionLog || "Log teleconsultation requests for all high-risk febrile patients.",
+    commonSymptoms: t.ashaCommonSymptoms || "Common Symptoms & Risks by Area",
+    aggregatedConditions: t.ashaAggregatedConditions || "Aggregated conditions distribution across villages (Anonymized)",
+    feverFlu: t.ashaFeverFlu || "Fever / Flu",
+    respiratory: t.ashaRespiratory || "Respiratory",
+    cardio: t.ashaCardio || "Cardio",
+    anemiaNutrition: t.ashaAnemiaNutrition || "Anemia / Nutrition",
+    epidemiologicalTrend: t.ashaEpidemiologicalTrend || "Epidemiological Trend Line",
+    trackingDays: t.ashaTrackingDays || "Medium and High risk case tracking over last 10 days (Aggregated)",
+    highRiskRed: t.ashaHighRiskRed || "High Risk (Red)",
+    mediumRiskYellow: t.ashaMediumRiskYellow || "Medium Risk (Yellow)"
+  };
 
   // --- COMMUNITY HEALTH ANALYTICS DATA ---
   const { riskTypesByArea, casesOverTime, outbreakAlerts } = useMemo(() => {
@@ -117,14 +141,10 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
         <Lock className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <h4 className="text-xs font-black text-teal-800 uppercase tracking-wide">
-            🔒 Aggregated & Anonymized Data Panel
+            {l.anonymizedHeader}
           </h4>
           <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
-            {language === "hi"
-              ? "यह डैशबोर्ड सार्वजनिक स्वास्थ्य निगरानी के लिए सभी मरीजों की स्क्रीनिंग से प्राप्त केवल एकत्रित और अज्ञात डेटा प्रदर्शित करता है। व्यक्तिगत विवरण सुरक्षित रूप से स्थानीय रूप से संग्रहीत किए जाते हैं।"
-              : language === "gu"
-              ? "આ ડેશબોર્ડ જાહેર આરોગ્ય દેખરેખ માટે તમામ દર્દીઓના સ્ક્રિનિંગમાંથી મેળવેલ માત્ર એકત્રિત અને અનામી ડેટા પ્રદર્શિત કરે છે. વ્યક્તિગત વિગતો સુરક્ષિત રીતે સ્થાનિક રીતે સંગ્રહિત કરવામાં આવે છે."
-              : "All community metrics shown below are compiled using aggregate screening records and village metadata. Personal identities have been anonymized to protect patient privacy."}
+            {l.anonymizedDesc}
           </p>
         </div>
       </div>
@@ -134,7 +154,7 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
         <div className="space-y-3">
           <h4 className="text-xs font-black text-rose-500 uppercase tracking-wider flex items-center gap-1.5 px-1">
             <AlertTriangle className="w-4 h-4 text-rose-500 animate-pulse" />
-            <span>Active Outbreak Warning Cards</span>
+            <span>{l.activeOutbreakCards}</span>
           </h4>
 
           <div className="grid grid-cols-1 gap-3">
@@ -147,24 +167,29 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
                 <div className="space-y-2 flex-grow">
                   <div className="flex justify-between items-start">
                     <span className="bg-rose-500 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
-                      Rule Triggered
+                      {l.ruleTriggered}
                     </span>
                     <span className="text-[9px] text-rose-600 font-extrabold bg-rose-100 px-2 py-0.5 rounded-full">
-                      Fever Threshold Exceeded
+                      {l.feverExceeded}
                     </span>
                   </div>
                   <h3 className="font-extrabold text-sm text-slate-800">
-                    Potential {alert.possibleInfection} Outbreak in <strong className="text-rose-600 underline decoration-dotted">{alert.village}</strong>
+                    {l.potentialOutbreak
+                      .replace("{infection}", alert.possibleInfection)
+                      .replace("{village}", alert.village)}
                   </h3>
                   <p className="text-[10px] text-slate-500 leading-normal">
-                    Fever-related cases in <strong>{alert.village}</strong> reached <strong>{alert.feverCases} cases</strong> this week, exceeding the local public health safety threshold of <strong>{alert.threshold} cases</strong>.
+                    {l.casesThreshold
+                      .replace("{village}", alert.village)
+                      .replace("{cases}", String(alert.feverCases))
+                      .replace("{threshold}", String(alert.threshold))}
                   </p>
                   <div className="pt-2 border-t border-rose-100/50 flex flex-col gap-1.5">
-                    <span className="text-[9px] font-black text-rose-700 uppercase tracking-wide">Recommended Actions:</span>
+                    <span className="text-[9px] font-black text-rose-700 uppercase tracking-wide">{l.recommendedActions}</span>
                     <ul className="list-disc list-inside text-[9px] text-slate-600 space-y-1 pl-1 font-semibold">
-                      <li>Mobilize vector control, conduct mosquito breeding site checks in {alert.village}.</li>
-                      <li>Host an active fever screening camp and distribute insecticide-treated bed nets.</li>
-                      <li>Log teleconsultation requests for all high-risk febrile patients.</li>
+                      <li>{l.actionVector.replace("{village}", alert.village)}</li>
+                      <li>{l.actionCamp}</li>
+                      <li>{l.actionLog}</li>
                     </ul>
                   </div>
                 </div>
@@ -178,9 +203,9 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
       <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 text-left">
         <div>
           <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-            Common Symptoms & Risks by Area
+            {l.commonSymptoms}
           </h3>
-          <p className="text-[9px] text-slate-400 mt-0.5">Aggregated conditions distribution across villages (Anonymized)</p>
+          <p className="text-[9px] text-slate-400 mt-0.5">{l.aggregatedConditions}</p>
         </div>
 
         <div className="h-64 w-full">
@@ -193,10 +218,10 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
                 contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
               />
               <Legend wrapperStyle={{ fontSize: 10, fontWeight: 700, paddingTop: 10 }} iconType="circle" />
-              <Bar dataKey="Fever" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} name="Fever / Flu" />
-              <Bar dataKey="Respiratory" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} name="Respiratory" />
-              <Bar dataKey="Cardiovascular" stackId="a" fill="#0d9488" radius={[0, 0, 0, 0]} name="Cardio" />
-              <Bar dataKey="Anemia" stackId="a" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Anemia / Nutrition" />
+              <Bar dataKey="Fever" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} name={l.feverFlu} />
+              <Bar dataKey="Respiratory" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} name={l.respiratory} />
+              <Bar dataKey="Cardiovascular" stackId="a" fill="#0d9488" radius={[0, 0, 0, 0]} name={l.cardio} />
+              <Bar dataKey="Anemia" stackId="a" fill="#8b5cf6" radius={[4, 4, 0, 0]} name={l.anemiaNutrition} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -206,9 +231,9 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
       <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 text-left">
         <div>
           <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-            Epidemiological Trend Line
+            {l.epidemiologicalTrend}
           </h3>
-          <p className="text-[9px] text-slate-400 mt-0.5">Medium and High risk case tracking over last 10 days (Aggregated)</p>
+          <p className="text-[9px] text-slate-400 mt-0.5">{l.trackingDays}</p>
         </div>
 
         <div className="h-64 w-full">
@@ -231,8 +256,8 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
                 contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
               />
               <Legend wrapperStyle={{ fontSize: 10, fontWeight: 700, paddingTop: 10 }} iconType="circle" />
-              <Area type="monotone" name="High Risk (Red)" dataKey="High Risk" stroke="#ef4444" fill="url(#colorHighRisk)" strokeWidth={2} />
-              <Area type="monotone" name="Medium Risk (Yellow)" dataKey="Medium Risk" stroke="#f59e0b" fill="url(#colorMediumRisk)" strokeWidth={2} />
+              <Area type="monotone" name={l.highRiskRed} dataKey="High Risk" stroke="#ef4444" fill="url(#colorHighRisk)" strokeWidth={2} />
+              <Area type="monotone" name={l.mediumRiskYellow} dataKey="Medium Risk" stroke="#f59e0b" fill="url(#colorMediumRisk)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

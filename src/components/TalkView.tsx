@@ -152,6 +152,7 @@ function TriageResultCard({
   onConnectDoctor?: () => void;
   onReset?: () => void;
 }) {
+  const { t } = useLanguage();
   const isRed = result.triage === "RED";
   const isYellow = result.triage === "YELLOW";
 
@@ -160,53 +161,32 @@ function TriageResultCard({
   const emergencyPhone = userProfile?.emergencyContact?.phone;
   const hasEmergencyContact = !!(emergencyPhone && emergencyName);
 
-  const smsText = language === "hi"
-    ? `आपातकाल: ${patientName} को चिकित्सीय मदद की आवश्यकता है। साथी (Saathi) के माध्यम से भेजा गया।`
-    : language === "gu"
-    ? `કટોકટી: ${patientName} ને તબીબી મદદની જરૂર છે. સાથી (Saathi) દ્વારા મોકલેલ.`
-    : `EMERGENCY: ${patientName} needs medical help. Sent via Saathi.`;
-
-  const tLabels = cardLabels[language as "en" | "hi" | "gu"] || cardLabels.en;
+  const smsText = (t.smsTextTemplate || "EMERGENCY: {name} needs medical help. Sent via Saathi.")
+    .replace("{name}", patientName);
 
   let bgClass = "bg-emerald-50/70 border-emerald-200 text-emerald-800";
   let badgeClass = "bg-emerald-600 text-white";
-  let titleText = tLabels.green;
+  let titleText = t.cardGreen;
 
   if (isRed) {
     bgClass = "bg-rose-50/70 border-rose-200 text-rose-800";
     badgeClass = "bg-red-600 text-white animate-pulse";
-    titleText = tLabels.emergency;
+    titleText = t.cardEmergency;
   } else if (isYellow) {
     bgClass = "bg-amber-50/70 border-amber-250 text-amber-900";
     badgeClass = "bg-amber-500 text-white";
-    titleText = tLabels.yellow;
+    titleText = t.cardYellow;
   }
 
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
 
-  const offlineBadgeLabels = {
-    en: "Offline basic guidance",
-    hi: "ऑफ़लाइन बुनियादी मार्गदर्शन",
-    gu: "ઑફલાઇન મૂળભૂત માર્ગદર્શન"
-  };
-
-  const speakLabels = {
-    en: { play: "Play Voice", stop: "Stop Voice", unavailable: "Voice not available" },
-    hi: { play: "आवाज सुनें", stop: "आवाज रोकें", unavailable: "आवाज उपलब्ध नहीं" },
-    gu: { play: "અવાજ સાંભળો", stop: "અવાજ બંધ કરો", unavailable: "અવાજ ઉપલબ્ધ નથી" }
-  };
-
   const getSpeechText = () => {
-    if (language === "hi") {
-      const level = result.triage === "RED" ? "लाल" : result.triage === "YELLOW" ? "पीला" : "हरा";
-      return `ट्राइएज स्तर ${level}। ${titleText}। सलाह: ${result.advice}`;
-    }
-    if (language === "gu") {
-      const level = result.triage === "RED" ? "લાલ" : result.triage === "YELLOW" ? "પીળો" : "લીલો";
-      return `ટ્રાયેજ સ્તર ${level}। ${titleText}। સલાહ: ${result.advice}`;
-    }
-    return `Triage Level ${result.triage}. ${titleText}. Recommended Advice: ${result.advice}`;
+    const localizedReason = t[result.reason as keyof typeof t] || result.reason;
+    const localizedAdvice = t[result.advice as keyof typeof t] || result.advice;
+    const levelKey = result.triage === "RED" ? "highRisk" : result.triage === "YELLOW" ? "moderateRisk" : "lowRisk";
+    const levelName = t[levelKey] || result.triage;
+    return `${t.latestTriage || "Triage"}: ${levelName}. ${titleText}. ${t.cardAdvice || "Advice"}: ${localizedAdvice}`;
   };
 
   useEffect(() => {
@@ -253,7 +233,9 @@ function TriageResultCard({
     }
   };
 
-  const sLabels = speakLabels[language as "en" | "hi" | "gu"] || speakLabels.en;
+  const getConcernText = (concern: string) => {
+    return t[concern as keyof typeof t] || concern;
+  };
 
   return (
     <div className="space-y-4 animate-scaleUp text-left">
@@ -261,7 +243,7 @@ function TriageResultCard({
         <div className="flex items-center justify-between">
           <div className="flex flex-wrap gap-1.5 items-center">
             <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider ${badgeClass} self-start shadow-sm`}>
-              Triage Level: {result.triage}
+              Triage: {t[result.triage === "RED" ? "highRisk" : result.triage === "YELLOW" ? "moderateRisk" : "lowRisk"] || result.triage}
             </span>
             {result.confidence && (
               <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full tracking-wide self-start ${
@@ -276,7 +258,7 @@ function TriageResultCard({
             )}
             {result.isOffline && (
               <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wide bg-slate-600 text-white border border-slate-500 self-start shadow-sm">
-                {offlineBadgeLabels[language as "en" | "hi" | "gu"] || offlineBadgeLabels.en}
+                {t.offlineBasicGuidance || "Offline basic guidance"}
               </span>
             )}
             {result.latencySec !== undefined && (
@@ -296,18 +278,18 @@ function TriageResultCard({
                 {isSpeaking ? (
                   <>
                     <VolumeX className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
-                    <span>{sLabels.stop}</span>
+                    <span>{t.stopVoice || "Stop Voice"}</span>
                   </>
                 ) : (
                   <>
                     <Volume2 className="w-3.5 h-3.5 text-teal-605" />
-                    <span>{sLabels.play}</span>
+                    <span>{t.playVoice || "Play Voice"}</span>
                   </>
                 )}
               </button>
             ) : (
               <span className="text-[9px] font-extrabold text-slate-400 italic">
-                {sLabels.unavailable}
+                {t.voiceUnavailable || "Voice not available"}
               </span>
             )}
             <span className="text-xs font-bold flex items-center gap-1 text-slate-700">
@@ -321,12 +303,12 @@ function TriageResultCard({
         
         <div className="space-y-2 border-t border-slate-200/50 pt-2 text-xs">
           <div>
-            <strong className="block text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{tLabels.reason}:</strong>
-            <p className="mt-0.5 leading-relaxed font-semibold text-slate-700">{result.reason}</p>
+            <strong className="block text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{t.cardReason || "Reasoning"}:</strong>
+            <p className="mt-0.5 leading-relaxed font-semibold text-slate-700">{t[result.reason as keyof typeof t] || result.reason}</p>
           </div>
           <div className="border-t border-slate-200/20 pt-2">
-            <strong className="block text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{tLabels.advice}:</strong>
-            <p className="mt-0.5 leading-relaxed font-semibold text-slate-700">{result.advice}</p>
+            <strong className="block text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{t.cardAdvice || "Recommended Advice"}:</strong>
+            <p className="mt-0.5 leading-relaxed font-semibold text-slate-700">{t[result.advice as keyof typeof t] || result.advice}</p>
           </div>
         </div>
       </div>
@@ -335,12 +317,12 @@ function TriageResultCard({
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
           <h4 className="text-xs font-bold text-slate-750 uppercase tracking-wider flex items-center gap-1.5">
             <ShieldAlert className="w-4 h-4 text-teal-650" />
-            {tLabels.concerns}
+            {t.cardConcerns || "Possible Concerns"}
           </h4>
           <div className="flex flex-wrap gap-1.5">
             {result.possible_concerns.map((concern, idx) => (
               <span key={idx} className="bg-teal-50 text-teal-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-teal-100">
-                {concern}
+                {getConcernText(concern)}
               </span>
             ))}
           </div>
@@ -352,7 +334,7 @@ function TriageResultCard({
           <div className="flex items-center gap-2 text-red-800 font-extrabold text-xs uppercase tracking-wider">
             <AlertTriangle className="w-4.5 h-4.5 text-red-650 shrink-0 animate-bounce" />
             <span>
-              {language === "hi" ? "आपातकालीन त्वरित कार्रवाई" : language === "gu" ? "કટોકટીની ઝડપી કાર્યવાહી" : "Emergency Quick Action"}
+              {t.emergencyQuickAction || "Emergency Quick Action"}
             </span>
           </div>
 
@@ -364,7 +346,7 @@ function TriageResultCard({
               >
                 <Phone className="w-4 h-4" />
                 <span>
-                  {language === "hi" ? `कॉल: ${emergencyName}` : language === "gu" ? `કૉલ: ${emergencyName}` : `Call ${emergencyName}`}
+                  {(t.callEmergencyName || "Call {name}").replace("{name}", emergencyName)}
                 </span>
               </a>
               <a
@@ -373,7 +355,7 @@ function TriageResultCard({
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>
-                  {language === "hi" ? "एसएमएस भेजें" : language === "gu" ? "SMS મોકલો" : "Send SMS"}
+                  {t.sendSms || "Send SMS"}
                 </span>
               </a>
             </div>
@@ -384,7 +366,7 @@ function TriageResultCard({
             >
               <Phone className="w-4 h-4 animate-pulse" />
               <span>
-                {language === "hi" ? "एम्बुलेंस को कॉल करें (108)" : language === "gu" ? "એમ્બ્યુલન્સ કૉલ કરો (108)" : "Call 108 Ambulance"}
+                {t.callAmbulance || "Call 108 Ambulance"}
               </span>
             </a>
           )}
@@ -394,8 +376,8 @@ function TriageResultCard({
       <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 flex gap-2 text-slate-500 leading-normal">
         <AlertTriangle className="w-4.5 h-4.5 text-slate-400 shrink-0 mt-0.5" />
         <div className="space-y-0.5">
-          <h5 className="text-[9px] font-extrabold uppercase tracking-wider text-slate-650">{tLabels.disclaimerTitle}</h5>
-          <p className="text-[10px] font-medium leading-relaxed">{tLabels.disclaimerText}</p>
+          <h5 className="text-[9px] font-extrabold uppercase tracking-wider text-slate-650">{t.cardDisclaimerTitle || "Medical Disclaimer"}</h5>
+          <p className="text-[10px] font-medium leading-relaxed">{t.cardDisclaimerText || "Disclaimer text"}</p>
         </div>
       </div>
 
@@ -407,7 +389,7 @@ function TriageResultCard({
               className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-650 text-white font-extrabold text-xs py-3 rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
             >
               <Video className="w-4 h-4" />
-              <span>{tLabels.connect}</span>
+              <span>{t.cardConnect || "Connect to a Doctor"}</span>
             </button>
           )}
           {onReset && (
@@ -420,7 +402,7 @@ function TriageResultCard({
               }`}
             >
               <RefreshCw className="w-3.5 h-3.5 animate-spin-hover" />
-              <span>{tLabels.checkAgain}</span>
+              <span>{t.cardCheckAgain || "Check New Symptoms"}</span>
             </button>
           )}
         </div>
@@ -428,11 +410,14 @@ function TriageResultCard({
         <button
           type="button"
           onClick={async () => {
-            const shareText = `Saathi AI Symptom Triage Report:
+            const localizedReason = t[result.reason as keyof typeof t] || result.reason;
+            const localizedAdvice = t[result.advice as keyof typeof t] || result.advice;
+            const localizedConcerns = result.possible_concerns.map(getConcernText).join(", ");
+            const shareText = `Saathi AI Triage Report:
 - Status: ${result.triage}
-- Concerns: ${result.possible_concerns.join(", ")}
-- Explanation: ${result.reason}
-- Advice: ${result.advice}
+- Concerns: ${localizedConcerns}
+- Explanation: ${localizedReason}
+- Advice: ${localizedAdvice}
 
 Shared via Saathi.`;
             await shareHealthReport({
@@ -445,7 +430,7 @@ Shared via Saathi.`;
         >
           <Share2 className="w-4 h-4 text-blue-650" />
           <span>
-            {language === "hi" ? "ट्राइएज रिपोर्ट साझा करें" : language === "gu" ? "ટ્રાયેજ રિપોર્ટ શેર કરો" : "Share Triage Report"}
+            {t.shareReport || "Share Triage Report"}
           </span>
         </button>
       </div>
@@ -468,8 +453,27 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
   setActiveCall,
   userProfile
 }) => {
-  const { language } = useLanguage();
-  const l = talkLabels[language as "en" | "hi" | "gu"] || talkLabels.en;
+  const { language, t } = useLanguage();
+  const l = {
+    header: t.talkHeader || "AI Voice Symptom Assessment",
+    desc: t.talkDesc || "Speak in your language for immediate triage.",
+    tapRecord: t.talkTapRecord || "Tap to Record Symptoms",
+    recording: t.talkRecording || "Recording...",
+    processing: t.talkProcessing || "Processing...",
+    triaging: t.talkTriaging || "Triaging...",
+    editingTitle: t.talkEditingTitle || "Edit Transcript",
+    editingDesc: t.talkEditingDesc || "Please edit the transcript if needed.",
+    btnAnalyze: t.talkBtnAnalyze || "Analyze",
+    btnRecordAgain: t.talkBtnRecordAgain || "Record Again",
+    textPlaceholder: t.talkTextPlaceholder || "Or type manually...",
+    btnSubmitText: t.talkBtnSubmitText || "Submit",
+    recordingError: t.talkRecordingError || "Error",
+    microphoneNeeded: t.talkMicrophoneNeeded || "Microphone required.",
+    stop: t.talkStop || "Stop",
+    cancel: t.talkCancel || "Cancel",
+    secRemaining: t.talkSecRemaining || "seconds",
+    speakLangNotice: t.talkSpeakLangNotice || "Please speak clearly."
+  };
 
   const [isTriaging, setIsTriaging] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -557,11 +561,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     } catch (err) {
       console.error("Microphone access error:", err);
       setTalkError(
-        language === "hi" 
-          ? "माइक्रोफोन एक्सेस करने में असमर्थ। कृपया सेटिंग में अनुमति जांचें।" 
-          : language === "gu" 
-          ? "માઇક્રોફોન એક્સેસ કરવામાં અસમર્થ. કૃપા કરીને સેટિંગ્સમાં પરવાનગી તપાસો." 
-          : "Unable to access microphone. Please check permissions."
+        t.micAccessError || "Unable to access microphone. Please check permissions."
       );
     }
   };
@@ -627,16 +627,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       const isRateLimit = err instanceof Error && err.message === "RateLimitExceeded";
       setTalkError(
         isRateLimit
-          ? (language === "hi"
-              ? "सिस्टम व्यस्त है - कृपया मैन्युअल रूप से टाइप करें या कुछ समय बाद प्रयास करें।"
-              : language === "gu"
-              ? "સિસ્ટમ વ્યસ્ત છે - કૃપા કરીને મેન્યુઅલી ટાઇપ કરો અથવા થોડીવાર પછી પ્રયાસ કરો."
-              : "System busy - please type manually or try again in a few moments.")
-          : (language === "hi"
-              ? "ट्रांसक्रिप्शन विफल रहा। कृपया फिर से प्रयास करें या मैन्युअल रूप से टाइप करें।"
-              : language === "gu"
-              ? "ટ્રાન્સક્રિપ્શન નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયાસ કરો અથવા મેન્યુઅલી ટાઇપ કરો."
-              : "Transcription failed. Please try again or type manually.")
+          ? (t.systemBusyError || "System busy - please type manually or try again in a few moments.")
+          : (t.transcribeError || "Transcription failed. Please try again or type manually.")
       );
     } finally {
       setIsTranscribing(false);
@@ -778,17 +770,15 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
   const speakTriageResult = (res: any) => {
     if (isMuted || !isSpeechSupported()) return;
-    let textToSpeak = "";
-    if (language === "hi") {
-      const severity = res.triage === "RED" ? "लाल (तुरंत डॉक्टर से मिलें)" : res.triage === "YELLOW" ? "पीला (जल्द ही डॉक्टर से परामर्श लें)" : "हरा (सुरक्षित)";
-      textToSpeak = `जांच पूरी हो गई है। ट्राइएज स्तर ${severity} है। सलाह है: ${res.advice}। कारण: ${res.reason}`;
-    } else if (language === "gu") {
-      const severity = res.triage === "RED" ? "લાલ (તાત્કાલિક ડૉક્ટરને મળો)" : res.triage === "YELLOW" ? "પીળો (ટૂંક સમયમાં ડૉક્ટરની સલાહ લો)" : "લીલો (સુરક્ષિત)";
-      textToSpeak = `તપાસ પૂર્ણ થઈ ગઈ છે. ટ્રાયેજ સ્તર ${severity} છે. સલાહ છે: ${res.advice}। કારણ: ${res.reason}`;
-    } else {
-      const severity = res.triage === "RED" ? "Red, seek immediate medical attention" : res.triage === "YELLOW" ? "Yellow, consult a doctor soon" : "Green, you appear safe";
-      textToSpeak = `Triage complete. Your status is ${severity}. Recommended advice: ${res.advice}. Assessment reason: ${res.reason}`;
-    }
+    const severityKey = res.triage === "RED" ? "severityRed" : res.triage === "YELLOW" ? "severityYellow" : "severityGreen";
+    const severity = t[severityKey] || (res.triage === "RED" ? "Red, seek immediate medical attention" : res.triage === "YELLOW" ? "Yellow, consult a doctor soon" : "Green, you appear safe");
+    const localizedReason = t[res.reason as keyof typeof t] || res.reason;
+    const localizedAdvice = t[res.advice as keyof typeof t] || res.advice;
+    const textToSpeak = (t.speakTriageTemplate || "Triage complete. Your status is {severity}. Recommended advice: {advice}. Assessment reason: {reason}")
+      .replace("{severity}", severity)
+      .replace("{advice}", localizedAdvice)
+      .replace("{reason}", localizedReason);
+
     speakText(
       textToSpeak,
       language,
@@ -990,11 +980,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           <div className="space-y-1">
             <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">{l.triaging}</h3>
             <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
-              {language === "hi"
-                ? "साथी एआई लक्षणों का विश्लेषण कर रहा है और सुरक्षित कदम सुझा रहा है..."
-                : language === "gu"
-                ? "સાથી AI લક્ષણોનું વિશ્લેષણ કરી રહ્યું છે અને યોગ્ય સૂચનો મેળવી રહ્યું છે..."
-                : "Saathi AI is evaluating your symptoms and checking guidelines..."}
+              {t.triagingStatus || "Saathi AI is evaluating your symptoms and checking guidelines..."}
             </p>
           </div>
         </div>
@@ -1008,11 +994,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           <div className="space-y-1">
             <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">{l.processing}</h3>
             <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
-              {language === "hi"
-                ? "ग्रॉक व्हिस्पर एआई आपकी आवाज को पाठ में बदल रहा है..."
-                : language === "gu"
-                ? "ગ્રોક વ્હીસ્પર AI તમારા અવાજને લખાણમાં રૂપાંતરિત કરી રહ્યું છે..."
-                : "Groq Whisper AI is converting your voice into editable text..."}
+              {t.transcribingStatus || "Groq Whisper AI is converting your voice into editable text..."}
             </p>
           </div>
         </div>
@@ -1091,7 +1073,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder={language === "hi" ? "अपना उत्तर लिखें..." : language === "gu" ? "તમારો જવાબ લખો..." : "Type your answer..."}
+                  placeholder={t.placeholderTypeAnswer || "Type your answer..."}
                   className="flex-grow px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-teal-505 text-slate-755 h-[44px]"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && chatInput.trim()) {
@@ -1118,13 +1100,13 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                   className="bg-slate-50 hover:bg-slate-100 text-teal-600 border border-slate-200 font-extrabold text-[10px] py-2 px-3 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all shadow-sm min-h-[36px]"
                 >
                   <Mic className="w-3.5 h-3.5" />
-                  <span>{language === "hi" ? "बोलकर उत्तर दें" : language === "gu" ? "બોલીને જવાબ આપો" : "Speak your answer"}</span>
+                  <span>{t.btnSpeakAnswer || "Speak your answer"}</span>
                 </button>
                 <button
                   onClick={resetTriageFlow}
                   className="bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-extrabold text-[10px] py-2 px-3 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all shadow-sm min-h-[36px]"
                 >
-                  <span>{language === "hi" ? "रद्द करें" : language === "gu" ? "રદ કરો" : "Reset"}</span>
+                  <span>{l.cancel}</span>
                 </button>
               </div>
             </div>

@@ -82,7 +82,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           bg: "from-emerald-50 to-teal-50/50",
           border: "border-emerald-100",
           badge: "bg-emerald-100 text-emerald-800",
-          label: language === "hi" ? "उत्कृष्ट स्वास्थ्य" : language === "gu" ? "ઉત્તમ આરોગ્ય" : "Excellent Health"
+          label: t.excellentHealth
         }
       : wellness.color === "yellow"
       ? {
@@ -91,7 +91,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           bg: "from-amber-50/70 to-orange-50/40",
           border: "border-amber-100",
           badge: "bg-amber-100 text-amber-800",
-          label: language === "hi" ? "मध्यम स्वास्थ्य" : language === "gu" ? "મધ્યમ આરોગ્ય" : "Moderate Status"
+          label: t.moderateStatus
         }
       : {
           stroke: "stroke-rose-500",
@@ -99,7 +99,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           bg: "from-rose-50 to-red-50/30",
           border: "border-rose-100",
           badge: "bg-rose-100 text-rose-800",
-          label: language === "hi" ? "ध्यान देने की आवश्यकता" : language === "gu" ? "ધ્યાન આપવાની જરૂરિયાત" : "Action Advised"
+          label: t.actionAdvised
         };
 
   return (
@@ -114,10 +114,10 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               </div>
               <div>
                 <h2 className="text-base font-extrabold text-slate-800 leading-tight">
-                  {language === "hi" ? `नमस्ते, ${userProfile.name?.split(" ")[0]}!` : language === "gu" ? `નમસ્તે, ${userProfile.name?.split(" ")[0]}!` : `Namaste, ${userProfile.name?.split(" ")[0]}!`}
+                  {t.namasteUser.replace("{name}", userProfile.name?.split(" ")[0] || "")}
                 </h2>
                 <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                  {userProfile.age}{language === "hi" ? " वर्ष" : language === "gu" ? " वर्ष" : "y"} • {userProfile.gender === "Male" ? (language === "hi" ? "पुरुष" : language === "gu" ? "પુરુષ" : "Male") : userProfile.gender === "Female" ? (language === "hi" ? "महिला" : language === "gu" ? "સ્ત્રી" : "Female") : (language === "hi" ? "अन्य" : language === "gu" ? "અન્ય" : "Other")}
+                  {userProfile.age}{t.yearsOld} • {userProfile.gender === "Male" ? t.genderMale : userProfile.gender === "Female" ? t.genderFemale : t.genderOther}
                   {userProfile.bloodGroup && userProfile.bloodGroup !== "Unknown" ? ` • ${userProfile.bloodGroup}` : ""}
                 </p>
               </div>
@@ -147,7 +147,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
             <div className="flex items-center gap-1.5 text-[9px] text-slate-500 font-semibold bg-white/60 border border-slate-100 rounded-lg px-2.5 py-1.5 mt-1">
               <Phone className="w-3 h-3 text-teal-500 shrink-0" />
               <span>
-                {language === "hi" ? "आपातकालीन:" : language === "gu" ? "ઇમરજન્સી:" : "Emergency:"} {userProfile.emergencyContact.name}
+                {t.emergencyLabel} {userProfile.emergencyContact.name}
                 {userProfile.emergencyContact.phone ? ` (${userProfile.countryCode || "+91"} ${userProfile.emergencyContact.phone})` : ""}
               </span>
             </div>
@@ -157,13 +157,13 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-5 border border-teal-100 flex items-center justify-between shadow-sm">
           <div className="space-y-1 text-left">
             <span className="text-teal-600 font-semibold text-xs tracking-wider uppercase">
-              {language === "hi" ? "नमस्ते" : language === "gu" ? "નમસ્તે" : "WELCOME BACK"}
+              {t.welcomeBack}
             </span>
             <h2 className="text-xl font-bold text-slate-800">
-              {language === "hi" ? "स्वस्थ रहें, सुरक्षित रहें" : language === "gu" ? "સ્વસ્થ રહો, સુરક્ષિત રહો" : "Your Health Companion"}
+              {t.yourHealthCompanion}
             </h2>
             <p className="text-xs text-slate-600">
-              {language === "hi" ? "आज अपनी स्वास्थ्य जांच शुरू करें।" : language === "gu" ? "આજે તમારી સ્વાસ્થ્ય તપાસ શરૂ કરો." : "Take a quick symptom screening now."}
+              {t.takeQuickSymptom}
             </p>
           </div>
           <div className="bg-teal-600 text-white p-3 rounded-full shadow-inner animate-pulse-ring">
@@ -218,14 +218,10 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </div>
           <div>
             <h4 className="text-xs font-black text-slate-800 leading-tight">
-              {language === "hi" ? "वेलनेस स्कोर कार्ड" : language === "gu" ? "વેલનેસ સ્કોર કાર્ડ" : "Overall Wellness Score"}
+              {t.overallWellnessScore}
             </h4>
             <p className="text-[10px] font-medium text-slate-500 mt-0.5 leading-snug">
-              {language === "hi"
-                ? `मुख्य कारक: ${wellness.biggestFactor}`
-                : language === "gu"
-                ? `મુખ્ય પરિબળ: ${wellness.biggestFactor}`
-                : `Key factor: ${wellness.biggestFactor}`}
+              {t.keyFactor.replace("{factor}", t[`factor${wellness.biggestFactorKey.charAt(0).toUpperCase()}${wellness.biggestFactorKey.slice(1)}` as keyof typeof t] || wellness.biggestFactor)}
             </p>
           </div>
           {/* Actionable improvement link */}
@@ -233,7 +229,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
             onClick={() => setActiveTab(improveTip.tab)}
             className={`flex items-center gap-1 text-[10px] font-extrabold ${colorClasses.text} hover:underline transition-all active:scale-95`}
           >
-            <span>{improveTip.text}</span>
+            <span>{t[`tip${wellness.biggestFactorKey.charAt(0).toUpperCase()}${wellness.biggestFactorKey.slice(1)}` as keyof typeof t]}</span>
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>
@@ -242,7 +238,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* Grid of feature cards */}
       <div className="text-left">
         <h3 className="text-sm font-semibold text-slate-700 mb-3 px-1 uppercase tracking-wider">
-          {language === "hi" ? "प्रमुख सुविधाएं" : language === "gu" ? "મુખ્ય વિશેષતાઓ" : "Key Screenings & Services"}
+          {t.keyScreeningsServices}
         </h3>
         <div className="grid grid-cols-1 gap-3.5">
           {/* Card 1: Disease Screening */}

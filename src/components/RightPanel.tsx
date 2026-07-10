@@ -14,7 +14,7 @@ interface RightPanelProps {
 
 export const RightPanel: React.FC<RightPanelProps> = React.memo(
   ({ userProfile, recordsList, vitalsHistory, setActiveTab }) => {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
 
     // Extract latest screening risk
     const latestScreening = recordsList.find(
@@ -66,35 +66,20 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
             stroke: "stroke-emerald-500",
             text: "text-emerald-600",
             badge: "bg-emerald-100 text-emerald-800",
-            label:
-              language === "hi"
-                ? "उत्कृष्ट"
-                : language === "gu"
-                ? "ઉત્તમ"
-                : "Excellent",
+            label: t.statusExcellent,
           }
         : wellness.color === "yellow"
         ? {
             stroke: "stroke-amber-500",
             text: "text-amber-600",
             badge: "bg-amber-100 text-amber-800",
-            label:
-              language === "hi"
-                ? "मध्यम"
-                : language === "gu"
-                ? "મધ્યમ"
-                : "Moderate",
+            label: t.statusModerate,
           }
         : {
             stroke: "stroke-rose-500",
             text: "text-rose-600",
             badge: "bg-rose-100 text-rose-800",
-            label:
-              language === "hi"
-                ? "ध्यान दें"
-                : language === "gu"
-                ? "ધ્યાન આપો"
-                : "Action Needed",
+            label: t.statusActionNeeded,
           };
 
     if (!hasData) {
@@ -105,18 +90,10 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
               <Sparkles className="w-10 h-10 text-teal-300" />
             </div>
             <h3 className="text-sm font-bold text-slate-600">
-              {language === "hi"
-                ? "अपनी पहली जांच पूरी करें"
-                : language === "gu"
-                ? "તમારી પ્રથમ તપાસ પૂર્ણ કરો"
-                : "Complete your first screening"}
+              {t.completeFirstScreening}
             </h3>
             <p className="text-xs text-slate-400 max-w-[200px]">
-              {language === "hi"
-                ? "यहाँ आपका स्वास्थ्य सारांश दिखाई देगा।"
-                : language === "gu"
-                ? "અહીં તમારું આરોગ્ય સારાંશ દેખાશે."
-                : "Your health summary will appear here."}
+              {t.firstScreeningDesc}
             </p>
           </div>
         </aside>
@@ -128,11 +105,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
         <div className="p-5 space-y-5">
           {/* Header */}
           <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">
-            {language === "hi"
-              ? "त्वरित सारांश"
-              : language === "gu"
-              ? "ત્વરિત સારાંશ"
-              : "Quick Summary"}
+            {t.quickSummary}
           </h2>
 
           {/* Health Score Ring */}
@@ -176,11 +149,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
                   {colorClasses.label}
                 </span>
                 <p className="text-xs font-bold text-slate-700">
-                  {language === "hi"
-                    ? "वेलनेस स्कोर"
-                    : language === "gu"
-                    ? "વેલનેસ સ્કોર"
-                    : "Wellness Score"}
+                  {t.wellnessScore}
                 </p>
               </div>
             </div>
@@ -190,11 +159,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
           {latestScreeningRisk && (
             <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">
-                {language === "hi"
-                  ? "नवीनतम ट्राइएज"
-                  : language === "gu"
-                  ? "તાજેતરની ટ્રાયેજ"
-                  : "Latest Triage"}
+                {t.latestTriage}
               </p>
               <div className="flex items-center gap-2">
                 <span
@@ -208,22 +173,10 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
                 />
                 <span className="text-sm font-bold text-slate-700">
                   {latestScreeningRisk === "High"
-                    ? language === "hi"
-                      ? "उच्च जोखिम"
-                      : language === "gu"
-                      ? "ઉચ્ચ જોખમ"
-                      : "High Risk"
+                    ? t.highRisk
                     : latestScreeningRisk === "Moderate"
-                    ? language === "hi"
-                      ? "मध्यम जोखिम"
-                      : language === "gu"
-                      ? "મધ્યમ જોખમ"
-                      : "Moderate Risk"
-                    : language === "hi"
-                    ? "कम जोखिम"
-                    : language === "gu"
-                    ? "ઓછું જોખમ"
-                    : "Low Risk"}
+                    ? t.moderateRisk
+                    : t.lowRisk}
                 </span>
               </div>
             </div>
@@ -239,7 +192,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
                     {latestVitals.heartRate}
                   </p>
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">
-                    {language === "hi" ? "बीपीएम" : "BPM"}
+                    {t.bpm}
                   </p>
                 </div>
               )}
@@ -265,11 +218,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
             <div className="flex items-center gap-2">
               <Mic className="w-4 h-4" />
               <span>
-                {language === "hi"
-                  ? "मदद चाहिए?"
-                  : language === "gu"
-                  ? "મદદ જોઈએ?"
-                  : "Need help?"}
+                {t.needHelp}
               </span>
             </div>
             <ChevronRight className="w-4 h-4" />
@@ -278,17 +227,13 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
           {/* Improve tip */}
           <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">
-              {language === "hi"
-                ? "सुधार सुझाव"
-                : language === "gu"
-                ? "સુધાર ટિપ"
-                : "Improvement Tip"}
+              {t.improvementTip}
             </p>
             <button
               onClick={() => setActiveTab(improveTip.tab)}
               className={`flex items-center gap-1 text-xs font-bold ${colorClasses.text} hover:underline`}
             >
-              <span>{improveTip.text}</span>
+              <span>{t[`tip${wellness.biggestFactorKey.charAt(0).toUpperCase()}${wellness.biggestFactorKey.slice(1)}` as keyof typeof t]}</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>

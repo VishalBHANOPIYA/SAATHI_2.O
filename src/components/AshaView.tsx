@@ -66,7 +66,44 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
   setAshaModeActive,
   setActiveTab
 }) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
+  const l = {
+    portalHeader: t.ashaPortalHeader || "ASHA Worker Portal",
+    portalDesc: t.ashaPortalDesc || "Manage patient screenings, track community risk thresholds, and check referral flags.",
+    patientDirectory: t.ashaPatientDirectory || "Patient Directory",
+    healthAnalytics: t.ashaHealthAnalytics || "Health Analytics",
+    communityDashboard: t.ashaCommunityDashboard || "Community Health Dashboard",
+    urgentFollowup: t.ashaUrgentFollowup || "Urgent Follow-up Required",
+    urgentFollowupDesc: t.ashaUrgentFollowupDesc || "The following patients have triggered red screening flags and require immediate doctor consultations.",
+    searchPlaceholder: t.ashaSearchPlaceholder || "Search by name or village...",
+    exitMode: t.ashaExitMode || "Exit Mode",
+    noPatientData: t.ashaNoPatientData || "No patient data available",
+    addPatientGuide: t.ashaAddPatientGuide || "Add a patient and start screening to view the dashboard.",
+    lowRisk: t.ashaLowRisk || "Low Risk",
+    mediumRisk: t.ashaMediumRisk || "Medium Risk",
+    highRisk: t.ashaHighRisk || "High Risk",
+    screened: t.ashaScreened || "Screened",
+    consultNow: t.ashaConsultNow || "Consult Now",
+    history: t.ashaHistory || "History",
+    addPatient: t.ashaAddPatient || "Add Patient",
+    activePatient: t.ashaActivePatient || "Active Patient",
+    unscreened: t.ashaUnscreened || "Unscreened",
+    clearSelection: t.ashaClearSelection || "Clear Selection",
+    startScreening: t.ashaStartScreening || "Start Screening",
+    addNewPatient: t.ashaAddNewPatient || "Add New Patient",
+    patientName: t.ashaPatientName || "Patient Name",
+    ageYears: t.ashaAgeYears || "Age (Years)",
+    gender: t.ashaGender || "Gender",
+    village: t.ashaVillage || "Village / Habitation",
+    createProfile: t.ashaCreateProfile || "Create Patient Profile",
+    recordsFile: t.ashaRecordsFile || "Patient Records File",
+    screeningHistory: t.ashaScreeningHistory || "Screening History",
+    noScreenings: t.ashaNoScreenings || "No screenings recorded yet. Select this patient and run screening, vitals, or voice triage.",
+    selectForNew: t.ashaSelectForNew || "Select Patient for New Screening",
+    placeholderName: t.ashaPlaceholderName || "e.g. Ramesh Singh",
+    placeholderAge: t.ashaPlaceholderAge || "e.g. 34",
+    placeholderVillage: t.ashaPlaceholderVillage || "e.g. Rampur village"
+  };
 
   const [ashaSearchQuery, setAshaSearchQuery] = useState("");
   const [ashaChartType, setAshaChartType] = useState<"donut" | "bar">("donut");
@@ -149,14 +186,10 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               Health Worker Portal
             </span>
             <h2 className="text-xl font-black tracking-tight mt-1">
-              {language === "hi" ? "आशा कार्यकर्ता पोर्टल" : language === "gu" ? "આશા કાર્યકર્તા પોર્ટલ" : "ASHA Worker Portal"}
+              {l.portalHeader}
             </h2>
             <p className="text-xs text-teal-100 max-w-xs leading-normal">
-              {language === "hi" 
-                ? "मरीजों की स्क्रीनिंग प्रबंधित करें, जोखिम स्तर ट्रैक करें और रेफरल देखें।" 
-                : language === "gu" 
-                ? "દર્દીઓની સ્ક્રિનિંગ મેનેજ કરો, જોખમનું સ્તર ટ્રેક કરો અને રેફરલ જુઓ." 
-                : "Manage patient screenings, track community risk thresholds, and check referral flags."}
+              {l.portalDesc}
             </p>
           </div>
           <button
@@ -167,7 +200,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
             }}
             className="bg-white/10 hover:bg-white/20 text-white border border-white/20 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all"
           >
-            Exit Mode
+            {l.exitMode}
           </button>
         </div>
       </div>
@@ -183,7 +216,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>{language === "hi" ? "मरीज़ निर्देशिका" : language === "gu" ? "દર્દી નિર્દેશિકા" : "Patient Directory"}</span>
+          <span>{l.patientDirectory}</span>
         </button>
         <button
           onClick={() => setAshaSubTab("analytics")}
@@ -195,7 +228,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
           id="analytics-tab-btn"
         >
           <TrendingUp className="w-3.5 h-3.5" />
-          <span>{language === "hi" ? "स्वास्थ्य विश्लेषण" : language === "gu" ? "આરોગ્ય વિશ્લેષણ" : "Health Analytics"}</span>
+          <span>{l.healthAnalytics}</span>
         </button>
       </div>
 
@@ -205,7 +238,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-                {language === "hi" ? "समुदाय स्वास्थ्य डैशबोर्ड" : language === "gu" ? "સમુદાય આરોગ્ય ડેશબોર્ડ" : "Community Health Dashboard"}
+                {l.communityDashboard}
               </h3>
               
               {/* Chart type toggle tabs */}
@@ -232,8 +265,8 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
             <div className="relative flex justify-center items-center bg-slate-50/50 rounded-2xl p-4 border border-slate-100 shadow-inner">
               {totalPatients === 0 ? (
                 <div className="text-center py-8 text-slate-400">
-                  <p className="text-xs font-bold">No patient data available</p>
-                  <p className="text-[10px]">Add a patient and start screening to view the dashboard.</p>
+                  <p className="text-xs font-bold">{l.noPatientData}</p>
+                  <p className="text-[10px]">{l.addPatientGuide}</p>
                 </div>
               ) : (
                 <div className="w-full flex flex-col items-center">
@@ -243,9 +276,9 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                         <PieChart>
                           <Pie
                             data={[
-                              { name: "Low Risk", value: greenCount, color: "#10b981" },
-                              { name: "Medium Risk", value: yellowCount, color: "#f59e0b" },
-                              { name: "High Risk", value: redCount, color: "#ef4444" }
+                              { name: l.lowRisk, value: greenCount, color: "#10b981" },
+                              { name: l.mediumRisk, value: yellowCount, color: "#f59e0b" },
+                              { name: l.highRisk, value: redCount, color: "#ef4444" }
                             ].filter(d => d.value > 0)}
                             cx="50%"
                             cy="50%"
@@ -255,9 +288,9 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                             dataKey="value"
                           >
                             {[
-                              { name: "Low Risk", value: greenCount, color: "#10b981" },
-                              { name: "Medium Risk", value: yellowCount, color: "#f59e0b" },
-                              { name: "High Risk", value: redCount, color: "#ef4444" }
+                              { name: l.lowRisk, value: greenCount, color: "#10b981" },
+                              { name: l.mediumRisk, value: yellowCount, color: "#f59e0b" },
+                              { name: l.highRisk, value: redCount, color: "#ef4444" }
                             ].filter(d => d.value > 0).map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
@@ -268,7 +301,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">Screened</span>
+                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">{l.screened}</span>
                         <span className="text-lg font-black text-slate-800">{patientsList.filter(p => p.lastRiskBand).length}</span>
                       </div>
                     </div>
@@ -277,9 +310,9 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={[
-                            { name: "Low Risk", value: greenCount, color: "#10b981" },
-                            { name: "Medium Risk", value: yellowCount, color: "#f59e0b" },
-                            { name: "High Risk", value: redCount, color: "#ef4444" }
+                            { name: l.lowRisk, value: greenCount, color: "#10b981" },
+                            { name: l.mediumRisk, value: yellowCount, color: "#f59e0b" },
+                            { name: l.highRisk, value: redCount, color: "#ef4444" }
                           ]}
                           margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
                         >
@@ -291,9 +324,9 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                           />
                           <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                             {[
-                              { name: "Low Risk", value: greenCount, color: "#10b981" },
-                              { name: "Medium Risk", value: yellowCount, color: "#f59e0b" },
-                              { name: "High Risk", value: redCount, color: "#ef4444" }
+                              { name: l.lowRisk, value: greenCount, color: "#10b981" },
+                              { name: l.mediumRisk, value: yellowCount, color: "#f59e0b" },
+                              { name: l.highRisk, value: redCount, color: "#ef4444" }
                             ].map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
@@ -309,15 +342,15 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
             {/* Legend grid */}
             <div className="grid grid-cols-3 gap-2.5 pt-1">
               <div className="bg-emerald-50 rounded-2xl p-2.5 border border-emerald-100/50 text-center space-y-0.5 border-emerald-100">
-                <span className="text-[9px] font-extrabold text-emerald-600 block uppercase tracking-wide">Low Risk</span>
+                <span className="text-[9px] font-extrabold text-emerald-600 block uppercase tracking-wide">{l.lowRisk}</span>
                 <span className="text-base font-black text-emerald-700">{greenCount}</span>
               </div>
               <div className="bg-amber-50 rounded-2xl p-2.5 border border-amber-100/50 text-center space-y-0.5 border-amber-100">
-                <span className="text-[9px] font-extrabold text-amber-600 block uppercase tracking-wide">Medium Risk</span>
+                <span className="text-[9px] font-extrabold text-amber-600 block uppercase tracking-wide">{l.mediumRisk}</span>
                 <span className="text-base font-black text-amber-700">{yellowCount}</span>
               </div>
               <div className="bg-rose-50 rounded-2xl p-2.5 border border-rose-100/50 text-center space-y-0.5 border-rose-100">
-                <span className="text-[9px] font-extrabold text-rose-600 block uppercase tracking-wide">High Risk</span>
+                <span className="text-[9px] font-extrabold text-rose-600 block uppercase tracking-wide">{l.highRisk}</span>
                 <span className="text-base font-black text-rose-700">{redCount}</span>
               </div>
             </div>
@@ -329,15 +362,11 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               <div className="flex items-center gap-2 text-rose-600">
                 <AlertTriangle className="w-5 h-5 animate-pulse" />
                 <h4 className="text-xs font-black uppercase tracking-wider">
-                  {language === "hi" ? "उच्च जोखिम वाले मरीज (तुरंत फॉलो-अप)" : language === "gu" ? "ઉચ્ચ જોખમ ધરાવતા દર્દીઓ (ત્વરિત ફોલો-અપ)" : "Urgent Follow-up Required"}
+                  {l.urgentFollowup}
                 </h4>
               </div>
               <p className="text-[10px] text-slate-500 leading-normal">
-                {language === "hi" 
-                  ? "निम्नलिखित मरीजों को गंभीर रिस्क फ्लैग मिला है। कृपया इनसे संपर्क करें या टेलीमेडिसिन सलाह शुरू करें।" 
-                  : language === "gu" 
-                  ? "નીચેના દર્દીઓને ગંભીર જોખમ ફ્લેગ મળ્યો છે. કૃપા કરીને તેમનો સંપર્ક કરો અથવા ટેલિમેડિસિન પરામર્શ શરૂ કરો." 
-                  : "The following patients have triggered red screening flags and require immediate doctor consultations."}
+                {l.urgentFollowupDesc}
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
                 {redPatients.map(p => (
@@ -358,13 +387,13 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                         }}
                         className="bg-rose-600 hover:bg-rose-700 text-white text-[9px] font-bold px-2.5 py-1.5 rounded-xl shadow-sm h-[28px]"
                       >
-                        Consult Now
+                        {l.consultNow}
                       </button>
                       <button
                         onClick={() => setSelectedPatientForProfile(p)}
-                        className="border border-slate-200 text-slate-650 text-[9px] font-bold px-2.5 py-1.5 rounded-xl hover:bg-slate-50 border-slate-250 h-[28px]"
+                        className="border border-slate-200 text-slate-655 text-[9px] font-bold px-2.5 py-1.5 rounded-xl hover:bg-slate-50 border-slate-250 h-[28px]"
                       >
-                        History
+                        {l.history}
                       </button>
                     </div>
                   </div>
@@ -377,14 +406,14 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-                {language === "hi" ? "मरीज़ निर्देशिका" : language === "gu" ? "દર્દી નિર્દેશિકા" : "Patient Directory"}
+                {l.patientDirectory}
               </h3>
               <button
                 onClick={() => setShowAddPatientModal(true)}
                 className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-extrabold text-[10px] py-2 px-3 rounded-xl shadow-md hover:from-teal-700 hover:to-emerald-700 transition-all flex items-center gap-1 min-h-[32px]"
               >
                 <UserPlus className="w-3.5 h-3.5" />
-                <span>Add Patient</span>
+                <span>{l.addPatient}</span>
               </button>
             </div>
 
@@ -393,7 +422,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
               <input
                 type="text"
-                placeholder={language === "hi" ? "मरीज़ का नाम या गाँव खोजें..." : language === "gu" ? "દર્દીનું નામ અથવા ગામ શોધો..." : "Search by name or village..."}
+                placeholder={l.searchPlaceholder}
                 value={ashaSearchQuery}
                 onChange={(e) => setAshaSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 border border-slate-100 rounded-2xl bg-slate-50 focus:outline-none focus:border-teal-500 font-medium text-xs text-slate-800 h-[44px] border-slate-200"
@@ -427,7 +456,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                             <span className="font-extrabold text-sm text-slate-800">{p.name}</span>
                             {isActive && (
                               <span className="bg-teal-600 text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded animate-pulse">
-                                Active Patient
+                                {l.activePatient}
                               </span>
                             )}
                           </div>
@@ -451,7 +480,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                           </span>
                         ) : (
                           <span className="bg-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
-                            Unscreened
+                            {l.unscreened}
                           </span>
                         )}
                       </div>
@@ -459,8 +488,8 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                       {/* Meta Info */}
                       {p.lastScreeningDate && (
                         <div className="text-[9px] text-slate-500 font-bold flex justify-between bg-slate-50 p-2 rounded-xl border border-slate-100 border-slate-200">
-                          <span>Last check: {p.lastScreeningDate}</span>
-                          <span>Attached records: {p.records?.length || 0}</span>
+                          <span>{l.lastCheck.replace("{date}", p.lastScreeningDate)}</span>
+                          <span>{l.attachedRecords.replace("{count}", String(p.records?.length || 0))}</span>
                         </div>
                       )}
 
@@ -481,14 +510,14 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                               : "bg-teal-600 text-white hover:bg-teal-700"
                           }`}
                         >
-                          {isActive ? "Clear Selection" : "Start Screening"}
+                          {isActive ? l.clearSelection : l.startScreening}
                         </button>
 
                         <div className="flex gap-1">
                           <button
                             onClick={() => setSelectedPatientForProfile(p)}
                             className="p-2 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-655 transition-colors border-slate-200 text-slate-600"
-                            title="View Patient Records"
+                            title={l.history}
                           >
                             <FileText className="w-3.5 h-3.5" />
                           </button>
@@ -518,7 +547,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full space-y-4 animate-scaleUp text-left">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-                Add New Patient
+                {l.addNewPatient}
               </h3>
               <button
                 onClick={() => setShowAddPatientModal(false)}
@@ -530,11 +559,11 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
             <form onSubmit={handleAddNewPatient} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Patient Name</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.patientName}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Ramesh Singh"
+                  placeholder={l.placeholderName}
                   value={newPatientData.name}
                   onChange={(e) => setNewPatientData({ ...newPatientData, name: e.target.value })}
                   className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium h-[36px]"
@@ -543,18 +572,18 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Age (Years)</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.ageYears}</label>
                   <input
                     type="number"
                     required
-                    placeholder="e.g. 34"
+                    placeholder={l.placeholderAge}
                     value={newPatientData.age}
                     onChange={(e) => setNewPatientData({ ...newPatientData, age: e.target.value })}
                     className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium h-[36px]"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Gender</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.gender}</label>
                   <select
                     value={newPatientData.gender}
                     onChange={(e) => setNewPatientData({ ...newPatientData, gender: e.target.value })}
@@ -568,11 +597,11 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Village / Habitation</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.village}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Rampur village"
+                  placeholder={l.placeholderVillage}
                   value={newPatientData.village}
                   onChange={(e) => setNewPatientData({ ...newPatientData, village: e.target.value })}
                   className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium h-[36px]"
@@ -584,7 +613,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                   type="submit"
                   className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-extrabold text-xs py-3.5 rounded-xl shadow-md transition-all active:scale-95 min-h-[44px]"
                 >
-                  Create Patient Profile
+                  {l.createProfile}
                 </button>
               </div>
             </form>
@@ -599,7 +628,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div className="space-y-0.5 text-left font-sans">
                 <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-                  Patient Records File
+                  {l.recordsFile}
                 </h3>
                 <p className="text-[11px] font-bold text-slate-500">
                   {selectedPatientForProfile.name} ({selectedPatientForProfile.age}y / {selectedPatientForProfile.gender})
@@ -619,12 +648,12 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
             {/* Records List */}
             <div className="space-y-3 text-left">
               <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                Screening History
+                {l.screeningHistory}
               </h4>
               
               {selectedPatientForProfile.records?.length === 0 ? (
                 <div className="text-center py-6 border border-dashed border-slate-150 rounded-2xl text-slate-400 text-xs border-slate-200">
-                  No screenings recorded yet. Select this patient and run screening, vitals, or voice triage.
+                  {l.noScreenings}
                 </div>
               ) : (
                 <div className="space-y-2.5">
@@ -652,7 +681,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                 }}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-sm min-h-[44px]"
               >
-                Select Patient for New Screening
+                {l.selectForNew}
               </button>
             </div>
           </div>
