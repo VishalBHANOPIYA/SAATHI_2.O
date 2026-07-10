@@ -484,6 +484,100 @@ export default function MainApp() {
     };
   }, []);
 
+  // Automatically detect user's country code on first load (Fix: Auto-detect Country Code)
+  useEffect(() => {
+    const detectCountry = async () => {
+      // 1. Try localStorage first
+      const cachedCode = safeGetItem("saathi_country_code");
+      if (cachedCode) {
+        setSelectedCountryCode(cachedCode);
+        return;
+      }
+
+      // Helper function to set country code and save to localStorage
+      const selectCountryByShortCode = (shortCode: string): boolean => {
+        const matched = countryCodes.find(c => c.short === shortCode.toUpperCase());
+        if (matched) {
+          setSelectedCountryCode(matched.code);
+          safeSetItem("saathi_country_code", matched.code);
+          return true;
+        }
+        return false;
+      };
+
+      // Helper function to try IP geolocation
+      const detectCountryByIP = async () => {
+        try {
+          const response = await fetch("https://ipapi.co/json/");
+          if (response.ok) {
+            const data = await response.json();
+            const countryCode = data.country_code;
+            if (countryCode && selectCountryByShortCode(countryCode)) {
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn("ipapi.co failed, trying fallback...", e);
+        }
+
+        try {
+          const response = await fetch("https://ip-api.com/json/");
+          if (response.ok) {
+            const data = await response.json();
+            const countryCode = data.countryCode;
+            if (countryCode && selectCountryByShortCode(countryCode)) {
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn("ip-api.com failed, trying next fallback...", e);
+        }
+
+        // Default to India (+91) if all else fails
+        setSelectedCountryCode("+91");
+      };
+
+      // 2. Try Geolocation API
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=3&addressdetails=1`,
+                {
+                  headers: {
+                    "Accept-Language": "en"
+                  }
+                }
+              );
+              if (response.ok) {
+                const data = await response.json();
+                const countryCode = data.address?.country_code;
+                if (countryCode && selectCountryByShortCode(countryCode)) {
+                  return;
+                }
+              }
+              await detectCountryByIP();
+            } catch (error) {
+              console.warn("OSM Nominatim reverse geocoding failed, trying IP detection:", error);
+              await detectCountryByIP();
+            }
+          },
+          async (error) => {
+            console.log("Geolocation permission denied or error, using IP fallback:", error);
+            await detectCountryByIP();
+          },
+          { timeout: 10000, maximumAge: 600000 }
+        );
+      } else {
+        await detectCountryByIP();
+      }
+    };
+
+    detectCountry();
+  }, []);
+
   // --- PATIENT ATTACHMENT CALLBACK ---
   const attachRecordToActivePatient = useCallback((record: any, riskBand?: "GREEN" | "YELLOW" | "RED") => {
     if (typeof window === "undefined") return;
@@ -1335,6 +1429,7 @@ export default function MainApp() {
                                   aria-selected={selectedCountryCode === c.code}
                                   onClick={(e) => {
                                     setSelectedCountryCode(c.code);
+                                    safeSetItem("saathi_country_code", c.code);
                                     setShowCountryDropdown(false);
                                     setCountrySearch("");
                                     const trigger = e.currentTarget.closest('.relative')?.firstElementChild as HTMLElement;
@@ -1710,6 +1805,7 @@ export default function MainApp() {
                               aria-selected={selectedCountryCode === c.code}
                               onClick={(e) => {
                                 setSelectedCountryCode(c.code);
+                                safeSetItem("saathi_country_code", c.code);
                                 setShowCountryDropdown(false);
                                 setCountrySearch("");
                                 const trigger = e.currentTarget.closest('.relative')?.firstElementChild as HTMLElement;
