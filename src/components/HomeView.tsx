@@ -43,6 +43,12 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
 }) => {
   const { language, setLanguage, t } = useLanguage();
 
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+
+  React.useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
+
   // Extract latest screening risk
   const latestScreening = recordsList.find(r => r.doctor === "Saathi Camera AI Screening");
   let latestScreeningRisk: "Low" | "Moderate" | "High" | null = null;
@@ -109,10 +115,10 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   const displayUserName = userProfile?.name?.split(" ")[0] || "Vishal";
 
   const calendarDays = React.useMemo(() => {
-    const today = new Date();
+    const today = currentDate || new Date();
     const days = [];
     for (let i = -3; i <= 3; i++) {
-      const d = new Date();
+      const d = new Date(today);
       d.setDate(today.getDate() + i);
       days.push({
         dayNum: String(d.getDate()).padStart(2, "0"),
@@ -121,11 +127,12 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       });
     }
     return days;
-  }, [language]);
+  }, [currentDate, language]);
 
   const formattedToday = React.useMemo(() => {
-    return `${language === "hi" ? "आज" : language === "gu" ? "આજે" : "Today"}, ${new Date().toLocaleDateString(language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US", { day: "numeric", month: "short" })}`;
-  }, [language]);
+    const today = currentDate || new Date();
+    return `${language === "hi" ? "आज" : language === "gu" ? "આજે" : "Today"}, ${today.toLocaleDateString(language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US", { day: "numeric", month: "short" })}`;
+  }, [currentDate, language]);
 
   // Time-based Greeting
   const getGreeting = () => {
@@ -324,37 +331,37 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* 4. VITALS SUMMARY GRID */}
       <div className="grid grid-cols-2 gap-4">
         {/* Oxygen Card */}
-        <div className="bg-white border border-gray-150 rounded-3xl p-4.5 flex flex-col justify-between min-h-[120px] shadow-sm">
-          <div className="flex justify-between items-start">
-            <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-750 font-black text-xs flex items-center justify-center shadow-sm">
+        <div className="bg-white border border-gray-150 rounded-3xl p-3.5 sm:p-4.5 flex flex-col justify-between min-h-[110px] sm:min-h-[120px] shadow-sm">
+          <div className="flex justify-between items-center">
+            <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-750 font-black text-[10px] flex items-center justify-center shadow-sm shrink-0">
               O2
             </div>
-            <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
+            <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full truncate max-w-[60px] text-center">
               {t.homeOptimal}
             </span>
           </div>
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.homeOxygenLevel}</span>
-            <h4 className="text-xl font-black text-slate-800 leading-none">
+          <div className="space-y-1 mt-2">
+            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">{t.homeOxygenLevel}</span>
+            <h4 className="text-lg sm:text-xl font-black text-slate-800 leading-none">
               {currentOxygen}%
             </h4>
           </div>
         </div>
 
         {/* Heart Rate Card */}
-        <div className="bg-white border border-gray-150 rounded-3xl p-4.5 flex flex-col justify-between min-h-[120px] shadow-sm">
-          <div className="flex justify-between items-start">
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm">
+        <div className="bg-white border border-gray-150 rounded-3xl p-3.5 sm:p-4.5 flex flex-col justify-between min-h-[110px] sm:min-h-[120px] shadow-sm">
+          <div className="flex justify-between items-center">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm shrink-0">
               <Heart className="w-4 h-4 fill-rose-500/20 text-rose-500 animate-pulse" />
             </div>
-            <span className="bg-rose-50 text-rose-600 border border-rose-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
+            <span className="bg-rose-50 text-rose-600 border border-rose-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full truncate max-w-[60px] text-center">
               {language === "hi" ? "स्थिर" : language === "gu" ? "સ્થિર" : "Steady"}
             </span>
           </div>
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.homeHeartRate}</span>
-            <h4 className="text-xl font-black text-slate-800 leading-none">
-              {currentHeartRate} <span className="text-xs text-slate-400 font-semibold">{t.vitalsBPM}</span>
+          <div className="space-y-1 mt-2">
+            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">{t.homeHeartRate}</span>
+            <h4 className="text-lg sm:text-xl font-black text-slate-800 leading-none">
+              {currentHeartRate} <span className="text-[9px] sm:text-xs text-slate-400 font-semibold">{t.vitalsBPM}</span>
             </h4>
           </div>
         </div>
