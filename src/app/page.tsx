@@ -955,7 +955,7 @@ export default function MainApp() {
   // --- ONBOARDING UI ---
   const renderOnboarding = () => {
     return (
-      <div className="absolute inset-0 bg-[#F7F9FC] text-[#111827] z-50 flex flex-col font-sans p-6 sm:p-8 md:p-12 justify-between select-none animate-fadeIn items-center overflow-y-auto">
+      <div className="absolute inset-0 bg-[#F7F9FC] text-[#111827] z-50 flex flex-col font-sans p-4 sm:p-8 md:p-12 justify-between select-none animate-fadeIn items-center overflow-y-auto">
         {/* Decorative background blurs */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-x-1/4 translate-y-1/4" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl pointer-events-none translate-x-1/4 -translate-y-1/4" />
@@ -977,7 +977,7 @@ export default function MainApp() {
 
         {/* STEP 0: Welcome & Language selection */}
         {onboardStep === 0 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-scaleUp text-center w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
+          <div className="w-full my-auto flex flex-col justify-center space-y-6 z-10 animate-scaleUp text-center max-w-lg card-premium p-5 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="space-y-3 animate-fadeIn">
               <div className="w-20 h-20 bg-violet-600 rounded-full flex items-center justify-center mx-auto shadow-md">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
@@ -1106,7 +1106,7 @@ export default function MainApp() {
 
         {/* Slide 1 */}
         {onboardStep === 1 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
+          <div className="w-full my-auto flex flex-col justify-between space-y-4 z-10 animate-slide-in text-left max-w-lg card-premium p-5 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full">
                 {t.onboardFeature1Title}
@@ -1119,7 +1119,7 @@ export default function MainApp() {
               </button>
             </div>
             
-            <div className="flex-1 flex flex-col justify-center space-y-6">
+            <div className="flex-1 flex flex-col justify-center space-y-4">
               {/* Tappable Live Camera Demo Box */}
               <div
                 className="w-full aspect-video bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center relative overflow-hidden group shrink-0 cursor-pointer active:scale-[0.98] transition-transform"
@@ -1236,7 +1236,7 @@ export default function MainApp() {
 
         {/* Slide 2 */}
         {onboardStep === 2 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
+          <div className="w-full my-auto flex flex-col justify-between space-y-4 z-10 animate-slide-in text-left max-w-lg card-premium p-5 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full">
                 {t.onboardFeature2Title}
@@ -1249,7 +1249,7 @@ export default function MainApp() {
               </button>
             </div>
             
-            <div className="flex-1 flex flex-col justify-center space-y-6">
+            <div className="flex-1 flex flex-col justify-center space-y-4">
               <div className="w-full aspect-video bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/5 to-primary/5" />
                 <div className="flex flex-col items-center gap-3 relative z-10">
@@ -1286,7 +1286,7 @@ export default function MainApp() {
 
         {/* Slide 3 */}
         {onboardStep === 3 && (
-          <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-slide-in text-left w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
+          <div className="w-full my-auto flex flex-col justify-between space-y-4 z-10 animate-slide-in text-left max-w-lg card-premium p-5 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="flex justify-between items-center shrink-0">
               <span className="text-[10px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full">
                 {t.onboardFeature3Title}
@@ -1299,7 +1299,7 @@ export default function MainApp() {
               </button>
             </div>
             
-            <div className="flex-1 flex flex-col justify-center space-y-6">
+            <div className="flex-1 flex flex-col justify-center space-y-4">
               <div className="w-full aspect-video bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center relative overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 to-primary/5" />
                 <div className="flex flex-col items-center gap-4 relative z-10 text-center px-4">
@@ -1365,16 +1365,17 @@ export default function MainApp() {
         {/* STEP 4: Profile intake form */}
         {onboardStep === 4 && (
           <div className="flex-1 flex flex-col justify-between z-10 text-left h-full overflow-hidden w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
+            <div className="flex justify-between items-center bg-violet-600 text-white rounded-t-[24px] -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 px-6 py-4 mb-4 shrink-0">
+              <h3 className="text-md font-extrabold tracking-tight flex items-center gap-2">
+                <span className="w-6 h-6 bg-white/20 border border-white/30 rounded-lg flex items-center justify-center text-white text-xs font-bold">4</span>
+                {t.profileFormTitle}
+              </h3>
+              <span className="text-[9px] font-extrabold uppercase bg-white/20 px-2.5 py-1 rounded-full border border-white/30 shrink-0">
+                {profileSubStep === "A" ? t.partA : t.partB}
+              </span>
+            </div>
+
             <div className="space-y-4 overflow-y-auto no-scrollbar pb-4 flex-1 pr-1">
-              <div className="flex justify-between items-center bg-violet-600 text-white rounded-t-[24px] -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 px-6 py-4 mb-4">
-                <h3 className="text-md font-extrabold tracking-tight flex items-center gap-2">
-                  <span className="w-6 h-6 bg-white/20 border border-white/30 rounded-lg flex items-center justify-center text-white text-xs font-bold">4</span>
-                  {t.profileFormTitle}
-                </h3>
-                <span className="text-[9px] font-extrabold uppercase bg-white/20 px-2.5 py-1 rounded-full border border-white/30 shrink-0">
-                  {profileSubStep === "A" ? t.partA : t.partB}
-                </span>
-              </div>
 
               {profileSubStep === "A" ? (
                 /* SUB-STEP A */
