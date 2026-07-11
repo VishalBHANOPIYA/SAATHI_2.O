@@ -12,7 +12,12 @@ const config: Config = {
         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       },
       screens: {
-        'xl': '1200px',
+        'xs': '320px',   // small phones (iPhone SE)
+        'sm': '390px',   // standard phones (iPhone 14)
+        'md': '768px',   // tablets portrait
+        'lg': '1024px',  // tablets landscape / laptop
+        'xl': '1280px',  // desktop
+        '2xl': '1536px', // large desktop / 4K
       },
       colors: {
         primary: {

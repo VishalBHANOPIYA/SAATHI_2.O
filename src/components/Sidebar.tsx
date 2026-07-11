@@ -46,16 +46,16 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
     return (
       <aside className="hidden md:flex flex-col w-[260px] lg:w-[280px] bg-[#1E1B4B] shrink-0 h-[100dvh] sticky top-0 z-40 text-left border-r border-white/10">
         {/* Logo + Tagline */}
-        <div className="px-5 pt-6 pb-5 border-b border-white/10">
+        <div className="px-4 py-5 border-b border-white/10 overflow-hidden">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg shrink-0">
               <Heart className="w-5 h-5 text-white fill-white/20 animate-pulse" />
             </div>
-            <div>
-              <span className="font-extrabold text-xl tracking-tight text-white block leading-tight">
+            <div className="min-w-0">
+              <span className="font-extrabold text-xl tracking-tight text-white block leading-tight truncate">
                 Saathi
               </span>
-              <p className="text-[9px] text-purple-300 font-extrabold uppercase tracking-widest mt-0.5">
+              <p className="text-[9px] text-purple-300 font-extrabold uppercase tracking-widest mt-0.5 truncate">
                 AI Health Companion
               </p>
             </div>
@@ -70,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 relative ${
+                className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-2xl transition-all duration-300 relative ${
                   isActive
                     ? "bg-purple-600 text-white font-black shadow-md scale-[1.02] pl-6 before:absolute before:left-1.5 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-purple-400 before:rounded-full"
                     : "text-purple-200 hover:text-white hover:bg-white/5 font-semibold"
@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
         </nav>
 
         {/* Bottom section: profile + settings */}
-        <div className="px-3 py-4 border-t border-white/10 space-y-2">
+        <div className="sticky bottom-0 bg-[#1E1B4B] z-10 px-3 py-4 border-t border-white/10 space-y-2">
           {userProfile && (
             <button
               onClick={onOpenProfile}
@@ -100,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
                 <p className="text-[13px] font-black text-white truncate">
                   {userProfile.name}
                 </p>
-                <p className="text-[11px] text-purple-300 font-semibold">
+                <p className="text-[11px] text-purple-300 font-semibold truncate">
                   {userProfile.age}y • {userProfile.gender}
                 </p>
               </div>

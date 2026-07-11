@@ -28,6 +28,7 @@ import {
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
+import { useChartHeight } from "@/hooks/useChartHeight";
 import { resampleSignal, estimateVitalsForWindow, detrend, computeChromSignal } from "../utils/vitalsRppg";
 
 const scannerTranslations = {
@@ -207,6 +208,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
   userProfile = null
 }) => {
   const { language, t } = useLanguage();
+  const chartHeight = useChartHeight();
   const sTrans = scannerTranslations[language as keyof typeof scannerTranslations] || scannerTranslations.en;
   const profileAge = userProfile?.age ? Number(userProfile.age) : null;
 
@@ -753,7 +755,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           </p>
         </div>
 
-        <div className="relative w-full max-w-[360px] aspect-[4/3] bg-slate-950 rounded-2xl overflow-hidden shadow-lg border-2 border-violet-500/80">
+        <div className="relative w-full md:max-w-md lg:max-w-lg mx-auto aspect-[4/3] bg-slate-950 rounded-2xl overflow-hidden shadow-lg border-2 border-violet-500/80">
           <video
             ref={videoRef}
             playsInline
@@ -819,7 +821,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         </div>
 
         {scanState === "scanning" && (
-          <div className="w-full max-w-[360px] h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div className="w-full md:max-w-md lg:max-w-lg h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-violet-500 transition-all duration-1000 ease-linear"
               style={{ width: `${((30 - secondsLeft) / 30) * 100}%` }}
@@ -1176,8 +1178,8 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             <span className="text-[10px] text-slate-400">Past {vitalsHistory.length} Days</span>
           </div>
 
-          <div className="h-48 w-full text-[10px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full text-[10px]">
+            <ResponsiveContainer width="100%" height={chartHeight}>
               <AreaChart data={vitalsHistory} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSys" x1="0" y1="0" x2="0" y2="1">
@@ -1207,8 +1209,8 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
                 Heart Rate & SpO2 Trend
               </span>
             </div>
-            <div className="h-44 w-full text-[10px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full text-[10px]">
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <AreaChart data={vitalsHistory} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorHR" x1="0" y1="0" x2="0" y2="1">
@@ -1239,23 +1241,23 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1">
             {language === "hi" ? "हालिया लॉग इतिहास" : language === "gu" ? "તાજેતરનો લોગ ઇતિહાસ" : "Recent Log History"}
           </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+          <div className="overflow-x-auto w-full no-scrollbar">
+            <table className="w-full text-xs table-fixed min-w-[320px]">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 text-left">
-                  <th className="py-2 font-semibold">Date</th>
-                  <th className="py-2 font-semibold">BP (S/D)</th>
-                  <th className="py-2 font-semibold">HR (BPM)</th>
-                  <th className="py-2 font-semibold">SpO2</th>
+                  <th className="py-2 font-semibold w-1/4 truncate">Date</th>
+                  <th className="py-2 font-semibold w-1/4 truncate">BP (S/D)</th>
+                  <th className="py-2 font-semibold w-1/4 truncate">HR (BPM)</th>
+                  <th className="py-2 font-semibold w-1/4 truncate">SpO2</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 text-slate-700 font-medium">
                 {[...vitalsHistory].reverse().map((vital, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/50">
-                    <td className="py-2 text-slate-505">{vital.date}</td>
-                    <td className="py-2">{vital.systolic}/{vital.diastolic} <span className="text-[10px] text-slate-400 font-bold">mmHg</span></td>
-                    <td className="py-2 text-pink-605 font-bold">{vital.heartRate} bpm</td>
-                    <td className="py-2 text-emerald-605 font-bold">{vital.oxygen}%</td>
+                    <td className="py-2 text-slate-550 truncate" title={vital.date}>{vital.date}</td>
+                    <td className="py-2 truncate">{vital.systolic}/{vital.diastolic} <span className="text-[10px] text-slate-400 font-bold">mmHg</span></td>
+                    <td className="py-2 text-pink-605 font-bold truncate">{vital.heartRate} bpm</td>
+                    <td className="py-2 text-emerald-605 font-bold truncate">{vital.oxygen}%</td>
                   </tr>
                 ))}
               </tbody>

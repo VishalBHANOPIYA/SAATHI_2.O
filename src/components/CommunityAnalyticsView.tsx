@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { Lock, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useChartHeight } from "@/hooks/useChartHeight";
 import {
   BarChart,
   Bar,
@@ -24,6 +25,7 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
   patientsList
 }) => {
   const { t } = useLanguage();
+  const chartHeight = useChartHeight();
 
   const l = {
     anonymizedHeader: t.ashaAnonymizedHeader || "🔒 Aggregated & Anonymized Data Panel",
@@ -213,8 +215,8 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
           <p className="text-[9px] text-slate-400 mt-0.5 font-bold">{l.aggregatedConditions}</p>
         </div>
 
-        <div className="h-64 w-full text-[9px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="w-full text-[9px]">
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart data={riskTypesByArea} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0/40" />
               <XAxis dataKey="village" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
@@ -241,8 +243,8 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
           <p className="text-[9px] text-slate-400 mt-0.5 font-bold">{l.trackingDays}</p>
         </div>
 
-        <div className="h-64 w-full text-[9px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="w-full text-[9px]">
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <AreaChart data={casesOverTime} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorHighRisk" x1="0" y1="0" x2="0" y2="1">

@@ -274,6 +274,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasContainerRef = useRef<HTMLDivElement | null>(null);
   const capturedFramesRef = useRef<HTMLCanvasElement[]>([]);
   const isStaticUploadRef = useRef(false);
 
@@ -1058,18 +1059,33 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
   };
 
   useEffect(() => {
-    if (screenStep === "roi" && screenImage && screenCanvasRef.current) {
+    if (screenStep === "roi" && screenCanvasRef.current && canvasContainerRef.current) {
       const canvas = screenCanvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        const img = new Image();
-        img.src = screenImage;
-        img.onload = () => {
-          canvas.width = 320;
-          canvas.height = 320;
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        };
-      }
+      const container = canvasContainerRef.current;
+      const resizeObserver = new ResizeObserver(entries => {
+        if (!entries || entries.length === 0) return;
+        const { width } = entries[0].contentRect;
+        
+        // Ensure width is valid before updating canvas size
+        if (width > 0) {
+          const displayWidth = Math.min(320, width);
+          canvas.width = displayWidth;
+          canvas.height = displayWidth;
+          
+          if (screenImage) {
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              const img = new Image();
+              img.src = screenImage;
+              img.onload = () => {
+                ctx.drawImage(img, 0, 0, displayWidth, displayWidth);
+              };
+            }
+          }
+        }
+      });
+      resizeObserver.observe(container);
+      return () => resizeObserver.disconnect();
     }
   }, [screenStep, screenImage]);
 
@@ -1212,8 +1228,8 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
 
           {/* 2. CAMERA CAPTURE STEP */}
           {screenStep === "capture" && (
-            <div className="bg-[#1E1B4B] border border-slate-800 rounded-3xl overflow-hidden shadow-lg relative flex flex-col items-center p-5 space-y-4">
-              <div className="relative w-full aspect-square max-w-[320px] rounded-2xl overflow-hidden bg-black border-2 border-slate-800 shadow-inner">
+            <div className="bg-[#1E1B4B] border border-slate-800 rounded-3xl overflow-hidden shadow-lg relative flex flex-col items-center p-5 space-y-4 w-full">
+              <div className="relative w-full aspect-[4/3] md:max-w-md lg:max-w-lg mx-auto rounded-2xl overflow-hidden bg-black border-2 border-slate-800 shadow-inner">
                 <video
                   ref={screenVideoRef}
                   className={`w-full h-full object-cover transform ${facingMode === "user" ? "-scale-x-100" : ""}`}
@@ -1225,10 +1241,11 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
                 <button
                   type="button"
                   onClick={toggleCameraFacing}
-                  className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2.5 rounded-full shadow-lg border border-white/10 transition-all active:scale-95 z-30 flex items-center justify-center"
+                  className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white w-10 h-10 rounded-full shadow-lg border border-white/10 transition-all active:scale-[0.97] z-30 flex items-center justify-center"
+                  style={{ minWidth: "40px", minHeight: "40px" }}
                   title="Flip Camera"
                 >
-                  <SwitchCamera className="w-4 h-4 text-white" />
+                  <SwitchCamera className="w-5 h-5 text-white" />
                 </button>
 
                 {/* Guide box overlay */}
@@ -1250,20 +1267,20 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
                 </p>
               </div>
 
-              <div className="flex gap-3 w-full max-w-[320px]">
+              <div className="flex gap-3 w-full md:max-w-md lg:max-w-lg">
                 <button
                   onClick={() => {
                     stopScreenCameraStream();
                     setScreenStep("select");
                   }}
-                  className="flex-1 bg-slate-800 text-slate-300 font-black text-xs py-3 rounded-full hover:bg-slate-700 active:scale-[0.98] transition-all min-h-[44px]"
+                  className="flex-1 bg-slate-800 text-slate-300 font-black text-xs py-3 rounded-full hover:bg-slate-700 active:scale-[0.97] transition-all min-h-[44px]"
                 >
                   {sTrans.cancel}
                 </button>
                 <button
                   onClick={captureScreenPhoto}
                   disabled={isCapturingMulti}
-                  className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-750 hover:to-purple-750 text-white font-black text-xs py-3 rounded-full shadow-soft active:scale-[0.98] transition-all min-h-[44px] flex items-center justify-center border-4 border-violet-100/30"
+                  className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-750 hover:to-purple-750 text-white font-black text-xs py-3 rounded-full shadow-soft active:scale-[0.97] transition-all min-h-[44px] flex items-center justify-center border-4 border-violet-100/30"
                 >
                   {isCapturingMulti ? "Capturing..." : sTrans.captureBtn}
                 </button>
@@ -1284,12 +1301,11 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
                 </p>
               </div>
 
-              <div className="flex justify-center">
+              <div ref={canvasContainerRef} className="flex justify-center w-full max-w-[320px] mx-auto">
                 <canvas
                   ref={screenCanvasRef}
                   onClick={handleCanvasClick}
-                  className="max-w-full rounded-2xl border border-slate-200 cursor-crosshair shadow-soft aspect-square bg-slate-50/50"
-                  style={{ width: "320px", height: "320px" }}
+                  className="w-full rounded-2xl border border-slate-200 cursor-crosshair shadow-soft aspect-square bg-slate-50/50"
                 />
               </div>
 

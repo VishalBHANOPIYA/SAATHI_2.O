@@ -87,7 +87,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
 
     if (!hasData) {
       return (
-        <aside className="hidden xl:flex flex-col w-[300px] bg-white/40 backdrop-blur-xl h-[100dvh] sticky top-0 shrink-0 border-l border-white/60">
+        <aside className="hidden lg:flex flex-col w-[300px] 2xl:w-[320px] bg-white/40 backdrop-blur-xl h-[100dvh] sticky top-0 shrink-0 border-l border-white/60 overflow-y-auto no-scrollbar">
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
             <div className="w-20 h-20 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-3xl flex items-center justify-center shadow-soft animate-float">
               <Sparkles className="w-10 h-10 text-violet-600 animate-pulse" />
@@ -104,7 +104,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
     }
 
     return (
-      <aside className="hidden xl:flex flex-col w-[300px] bg-white/40 backdrop-blur-xl h-[100dvh] sticky top-0 shrink-0 overflow-y-auto no-scrollbar border-l border-white/60">
+      <aside className="hidden lg:flex flex-col w-[300px] 2xl:w-[320px] bg-white/40 backdrop-blur-xl h-[100dvh] sticky top-0 shrink-0 overflow-y-auto no-scrollbar border-l border-white/60">
         <div className="p-5 space-y-4">
           {/* Header */}
           <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">

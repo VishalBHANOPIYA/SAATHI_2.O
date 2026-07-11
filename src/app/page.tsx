@@ -2150,7 +2150,7 @@ export default function MainApp() {
         </div>
       )}
 
-    <div className="flex w-full min-h-[100dvh] overflow-x-hidden">
+    <div className="flex w-full min-h-[100dvh] overflow-x-hidden bg-[#F9FAFB] justify-center mx-auto">
       {/* SIDEBAR (md+) — hidden during onboarding */}
       {!showOnboarding && (
         <Sidebar
@@ -2163,41 +2163,26 @@ export default function MainApp() {
       )}
 
       {/* MAIN CONTENT COLUMN */}
-      <main className="flex-1 flex flex-col h-[100dvh] bg-white relative overflow-hidden">
-
-      {/* PERSISTENT DISCLAIMER BANNER */}
-      <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-start gap-1.5 shrink-0 z-35 shadow-sm text-left">
-        <AlertTriangle className="w-4 h-4 text-amber-605 shrink-0 mt-0.5" />
-        <p className="leading-tight font-semibold">
-          {t.disclaimer}
-        </p>
-      </div>
-
-      {/* OFFLINE BANNER */}
-      {isOffline && (
-        <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 text-[10px] text-red-805 flex items-center gap-2 shrink-0 z-30 animate-fadeIn text-left">
-          <WifiOff className="w-4 h-4 text-red-605 shrink-0" />
-          <span className="font-extrabold tracking-wide">
-            {t.offlineBanner}
-          </span>
-        </div>
-      )}
+      <main className="flex-1 flex flex-col h-[100dvh] bg-white relative overflow-hidden w-full lg:max-w-2xl 2xl:max-w-3xl">
 
       {/* MOBILE HEADER — hidden on md+ (sidebar replaces it) */}
-      <header className="md:hidden bg-gradient-to-r from-violet-600 to-purple-650 text-white px-4 py-3 shrink-0 shadow-md flex justify-between items-center z-20 text-left">
+      <header 
+        className="md:hidden fixed top-0 left-0 right-0 w-full bg-white border-b border-slate-100 px-4 py-3 shrink-0 shadow-sm flex justify-between items-center z-50 text-left"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div>
           <div className="flex items-center gap-1.5">
-            <Heart className="w-5 h-5 fill-white text-violet-600 animate-pulse" />
-            <h1 className="text-lg font-bold tracking-tight">{t.appTitle}</h1>
+            <Heart className="w-5 h-5 fill-purple-650 text-purple-600 animate-pulse" />
+            <h1 className="text-lg font-black tracking-tight text-slate-800">{t.appTitle}</h1>
           </div>
-          <p className="text-[10px] text-violet-105 font-light mt-0.5">{t.tagline}</p>
+          <p className="text-[10px] text-purple-400 font-semibold mt-0.5">{t.tagline}</p>
         </div>
 
         <div className="flex items-center gap-2">
           {isInstallable && (
             <button
               onClick={handleInstallClick}
-              className="bg-white text-violet-700 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0 min-h-[44px] min-w-[44px] justify-center"
+              className="bg-purple-50 text-purple-750 border border-purple-100 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-purple-100/50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0 min-h-[44px] min-w-[44px] justify-center"
             >
               <Download className="w-3 h-3" />
               {t.install}
@@ -2214,7 +2199,7 @@ export default function MainApp() {
           {userProfile && (
             <button
               onClick={openProfileFromSidebar}
-              className="w-7 h-7 rounded-full bg-white/20 border border-white/30 text-white font-black text-[11px] flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 shrink-0 min-h-[44px] min-w-[44px]"
+              className="w-7 h-7 rounded-full bg-purple-100 border border-purple-200 text-purple-800 font-black text-[11px] flex items-center justify-center hover:bg-purple-200/50 transition-all active:scale-95 shrink-0 min-h-[44px] min-w-[44px]"
               title={t.editProfile}
               id="profile-avatar-btn"
             >
@@ -2224,7 +2209,7 @@ export default function MainApp() {
 
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="p-1.5 rounded-full bg-violet-750/50 border border-violet-500/25 text-violet-100 hover:text-white hover:bg-violet-700/70 transition-all active:scale-95 shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px]"
+            className="p-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-650 hover:text-slate-800 hover:bg-slate-100 transition-all active:scale-95 shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px]"
             title="Settings"
             id="settings-btn"
           >
@@ -2240,8 +2225,27 @@ export default function MainApp() {
       </div>
 
       {/* CONTENT AREA */}
-      <div className="flex-grow overflow-y-auto no-scrollbar bg-slate-50 pb-20 md:pb-6 relative">
-        <div className="w-full md:px-6 lg:px-10 md:max-w-3xl md:mx-auto">
+      <div className="flex-grow overflow-y-auto no-scrollbar bg-slate-50 pt-[calc(64px+env(safe-area-inset-top))] md:pt-0 pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0 relative text-left">
+        
+        {/* PERSISTENT DISCLAIMER BANNER */}
+        <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-start gap-1.5 shrink-0 z-30 shadow-sm text-left">
+          <AlertTriangle className="w-4 h-4 text-amber-605 shrink-0 mt-0.5" />
+          <p className="leading-tight font-semibold">
+            {t.disclaimer}
+          </p>
+        </div>
+
+        {/* OFFLINE BANNER */}
+        {isOffline && (
+          <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 text-[10px] text-red-805 flex items-center gap-2 shrink-0 z-30 animate-fadeIn text-left">
+            <WifiOff className="w-4 h-4 text-red-605 shrink-0" />
+            <span className="font-extrabold tracking-wide">
+              {t.offlineBanner}
+            </span>
+          </div>
+        )}
+
+        <div className="w-full">
         {ashaModeActive && activePatientId && (
           (() => {
             const activePatient = patientsList.find(p => p.id === activePatientId);

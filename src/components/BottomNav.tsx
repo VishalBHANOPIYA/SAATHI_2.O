@@ -25,18 +25,24 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
   ];
 
   return (
-    <nav className="md:hidden absolute bottom-0 left-0 right-0 z-30 shrink-0 bg-white border-t border-gray-100 py-1 px-1 flex justify-between items-center shadow-lg">
+    <nav 
+      className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 px-1 flex justify-between items-center shadow-lg"
+      style={{
+        paddingBottom: "max(env(safe-area-inset-bottom), 8px)",
+        height: "calc(56px + max(env(safe-area-inset-bottom), 8px))"
+      }}
+    >
       {items.map(({ key, icon: Icon, label }) => {
         const isActive = activeTab === key;
         return (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className="flex flex-col items-center justify-center flex-1 py-1 transition-all duration-300 relative min-h-[48px]"
+            className="flex flex-col items-center justify-center flex-1 min-w-[44px] min-h-[44px] transition-all duration-300 relative"
           >
             <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-purple-600 animate-scaleUp" : "text-gray-400"}`} />
             <span
-              className={`text-[9px] font-bold mt-1 tracking-tight transition-colors duration-300 ${
+              className={`hidden sm:block text-[9px] font-bold mt-0.5 tracking-tight transition-colors duration-300 ${
                 isActive ? "text-purple-600 font-extrabold" : "text-gray-450"
               }`}
             >

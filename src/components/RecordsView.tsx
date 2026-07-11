@@ -29,6 +29,7 @@ import {
   Tooltip
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
+import { useChartHeight } from "@/hooks/useChartHeight";
 import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
 import { checkRateLimit } from "@/utils/rateLimit";
 
@@ -90,6 +91,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
   onUpdateProfile = () => {}
 }) => {
   const { language, t } = useLanguage();
+  const chartHeight = useChartHeight();
 
   const [abhaNumber, setAbhaNumber] = useState("");
   const [abhaError, setAbhaError] = useState<string | null>(null);
@@ -668,8 +670,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     }
 
     return (
-      <div className="h-44 w-full pt-2">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="w-full pt-2">
+        <ResponsiveContainer width="100%" height={chartHeight}>
           <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
             <defs>
               <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
@@ -1026,8 +1028,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
       {/* DETAILS OVERLAY MODAL */}
       {selectedRecordForDetails && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white/95 backdrop-blur-md rounded-3xl w-full max-w-sm p-6 space-y-4 border border-white/50 shadow-glass-lg animate-scaleUp">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+          <div className="bg-white/95 backdrop-blur-md rounded-t-3xl md:rounded-3xl w-full max-w-full md:max-w-sm p-6 space-y-4 border-t md:border border-white/50 shadow-glass-lg animate-slideUp md:animate-scaleUp pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-start">
               <div className="space-y-0.5">
                 <span className="text-[9px] uppercase tracking-wider font-extrabold text-violet-650 bg-violet-50 border border-violet-100 px-2 py-0.5 rounded-full">
@@ -1072,8 +1074,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
       {/* EXPORT OVERLAY MODAL */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white/95 backdrop-blur-md rounded-3xl w-full max-w-sm p-6 space-y-4 border border-white/50 shadow-glass-lg animate-scaleUp flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+          <div className="bg-white/95 backdrop-blur-md rounded-t-3xl md:rounded-3xl w-full max-w-full md:max-w-sm p-6 space-y-4 border-t md:border border-white/50 shadow-glass-lg animate-slideUp md:animate-scaleUp flex flex-col max-h-[85vh] pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-start shrink-0">
               <div className="space-y-0.5">
                 <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-650 bg-blue-50 border border-blue-105 px-2 py-0.5 rounded-full">

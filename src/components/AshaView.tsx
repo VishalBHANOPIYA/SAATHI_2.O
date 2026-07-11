@@ -29,6 +29,7 @@ import {
 import { useLanguage } from "@/context/LanguageContext";
 import { safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
 import { CommunityAnalyticsView } from "./CommunityAnalyticsView";
+import { useChartHeight } from "@/hooks/useChartHeight";
 
 export interface PatientRecord {
   title: string;
@@ -67,6 +68,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
   setActiveTab
 }) => {
   const { language, t } = useLanguage();
+  const chartHeight = useChartHeight();
   const l = {
     portalHeader: t.ashaPortalHeader || "ASHA Worker Portal",
     portalDesc: t.ashaPortalDesc || "Manage patient screenings, track community risk thresholds, and check referral flags.",
@@ -274,8 +276,8 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               ) : (
                 <div className="w-full flex flex-col items-center">
                   {ashaChartType === "donut" ? (
-                    <div className="relative w-full max-w-[200px] h-40">
-                      <ResponsiveContainer width="100%" height="100%">
+                    <div className="relative w-full max-w-[200px]">
+                      <ResponsiveContainer width="100%" height={chartHeight}>
                         <PieChart>
                           <Pie
                             data={[
@@ -309,8 +311,8 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-40 text-[9px]">
-                      <ResponsiveContainer width="100%" height="100%">
+                    <div className="w-full text-[9px]">
+                      <ResponsiveContainer width="100%" height={chartHeight}>
                         <BarChart
                           data={[
                             { name: l.lowRisk, value: greenCount, color: "#10b981" },
@@ -371,7 +373,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               <p className="text-[10px] text-slate-500 leading-normal font-semibold">
                 {l.urgentFollowupDesc}
               </p>
-              <div className="space-y-2.5 max-h-48 overflow-y-auto no-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto no-scrollbar">
                 {redPatients.map(p => (
                   <div key={p.id} className="bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-rose-500/10 shadow-soft flex items-center justify-between gap-3">
                     <div className="space-y-0.5 text-left">
@@ -433,7 +435,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
             </div>
 
             {/* Patients directory list */}
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredPatients.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 space-y-1">
                   <Users className="w-10 h-10 mx-auto text-slate-300" />
@@ -547,8 +549,8 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
       {/* Modal: Add Patient */}
       {showAddPatientModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 border border-slate-150 shadow-xl max-w-sm w-full space-y-4 animate-scaleUp text-left">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+          <div className="bg-white rounded-t-3xl md:rounded-3xl p-6 border-t md:border border-slate-150 shadow-xl max-w-full md:max-w-sm w-full space-y-4 animate-slideUp md:animate-scaleUp text-left pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="text-sm font-black text-slate-855 uppercase tracking-wide">
                 {l.addNewPatient}
@@ -627,8 +629,8 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
       {/* Modal: Patient Screening Records Profile */}
       {selectedPatientForProfile && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 border border-slate-150 shadow-xl max-w-md w-full space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-scaleUp text-left">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+          <div className="bg-white rounded-t-3xl md:rounded-3xl p-6 border-t md:border border-slate-150 shadow-xl max-w-full md:max-w-md w-full space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-slideUp md:animate-scaleUp text-left pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div className="space-y-1 text-left font-sans">
                 <h3 className="text-sm font-black text-slate-855 uppercase tracking-wider">
