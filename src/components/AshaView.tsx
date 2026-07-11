@@ -57,6 +57,7 @@ interface AshaViewProps {
   setActivePatientId: (id: string | null) => void;
   setAshaModeActive: (active: boolean) => void;
   setActiveTab: (tab: string) => void;
+  language?: string;
 }
 
 export const AshaView: React.FC<AshaViewProps> = React.memo(({
@@ -65,7 +66,8 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
   activePatientId,
   setActivePatientId,
   setAshaModeActive,
-  setActiveTab
+  setActiveTab,
+  language: languageProp
 }) => {
   const { language, t } = useLanguage();
   const chartHeight = useChartHeight();

@@ -31,6 +31,7 @@ interface HomeViewProps {
   onEditProfile: () => void;
   recordsList: any[];
   vitalsHistory: any[];
+  language?: string;
 }
 
 export const HomeView: React.FC<HomeViewProps> = React.memo(({
@@ -39,7 +40,8 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   userProfile,
   onEditProfile,
   recordsList = [],
-  vitalsHistory = []
+  vitalsHistory = [],
+  language: languageProp
 }) => {
   const { language, setLanguage, t } = useLanguage();
 
@@ -115,7 +117,8 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   const displayUserName = userProfile?.name?.split(" ")[0] || "Vishal";
 
   const calendarDays = React.useMemo(() => {
-    const today = currentDate || new Date();
+    if (!currentDate) return [];
+    const today = currentDate;
     const days = [];
     for (let i = -3; i <= 3; i++) {
       const d = new Date(today);
@@ -130,13 +133,15 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   }, [currentDate, language]);
 
   const formattedToday = React.useMemo(() => {
-    const today = currentDate || new Date();
+    if (!currentDate) return "";
+    const today = currentDate;
     return `${language === "hi" ? "आज" : language === "gu" ? "આજે" : "Today"}, ${today.toLocaleDateString(language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US", { day: "numeric", month: "short" })}`;
   }, [currentDate, language]);
 
   // Time-based Greeting
   const getGreeting = () => {
-    const hour = new Date().getHours();
+    if (!currentDate) return language === "hi" ? "नमस्ते" : language === "gu" ? "નમસ્તે" : "Hello";
+    const hour = currentDate.getHours();
     if (language === "hi") {
       if (hour < 12) return "शुभ प्रभात";
       if (hour < 17) return "शुभ दोपहर";
@@ -217,20 +222,24 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       </div>
 
       {/* 2. CALENDAR DAY PICKER ROW */}
-      <div className="bg-white border border-gray-150 rounded-2xl p-2 shadow-sm">
-        <div className="flex justify-between items-center text-center text-xs font-bold text-slate-400 px-1">
-          {calendarDays.map((day, idx) => (
-            day.isToday ? (
-              <span key={idx} className="bg-gradient-to-r from-violet-600 to-purple-650 text-white shadow-md rounded-xl px-3 sm:px-4 py-2 text-[10px] font-black tracking-wider uppercase">
-                {formattedToday}
-              </span>
-            ) : (
-              <span key={idx} className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">
-                {day.dayNum}
-              </span>
-            )
-          ))}
-        </div>
+      <div className="bg-white border border-gray-150 rounded-2xl p-2 shadow-sm min-h-[46px] flex items-center justify-center">
+        {currentDate ? (
+          <div className="flex justify-between items-center text-center text-xs font-bold text-slate-400 px-1 w-full animate-fadeIn">
+            {calendarDays.map((day, idx) => (
+              day.isToday ? (
+                <span key={idx} className="bg-gradient-to-r from-violet-600 to-purple-650 text-white shadow-md rounded-xl px-3 sm:px-4 py-2 text-[10px] font-black tracking-wider uppercase">
+                  {formattedToday}
+                </span>
+              ) : (
+                <span key={idx} className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">
+                  {day.dayNum}
+                </span>
+              )
+            ))}
+          </div>
+        ) : (
+          <div className="h-6 w-40 bg-slate-100 animate-pulse rounded-lg"></div>
+        )}
       </div>
 
       {/* 3. HERO DASHBOARD ROW (Health Score & Active Screening) */}
@@ -331,7 +340,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* 4. VITALS SUMMARY GRID */}
       <div className="grid grid-cols-2 gap-4">
         {/* Oxygen Card */}
-        <div className="bg-white border border-gray-150 rounded-3xl p-3.5 sm:p-4.5 flex flex-col justify-between min-h-[110px] sm:min-h-[120px] shadow-sm">
+        <div className="bg-white border border-gray-150 rounded-3xl p-4 flex flex-col justify-between h-[120px] relative overflow-hidden shadow-sm">
           <div className="flex justify-between items-center">
             <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-750 font-black text-[10px] flex items-center justify-center shadow-sm shrink-0">
               O2
@@ -340,16 +349,16 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               {t.homeOptimal}
             </span>
           </div>
-          <div className="space-y-1 mt-2">
+          <div className="space-y-0.5 mt-auto">
             <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">{t.homeOxygenLevel}</span>
-            <h4 className="text-lg sm:text-xl font-black text-slate-800 leading-none">
+            <h4 className="text-xl sm:text-2xl font-black text-slate-800 leading-none">
               {currentOxygen}%
             </h4>
           </div>
         </div>
 
         {/* Heart Rate Card */}
-        <div className="bg-white border border-gray-150 rounded-3xl p-3.5 sm:p-4.5 flex flex-col justify-between min-h-[110px] sm:min-h-[120px] shadow-sm">
+        <div className="bg-white border border-gray-150 rounded-3xl p-4 flex flex-col justify-between h-[120px] relative overflow-hidden shadow-sm">
           <div className="flex justify-between items-center">
             <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm shrink-0">
               <Heart className="w-4 h-4 fill-rose-500/20 text-rose-500 animate-pulse" />
@@ -358,9 +367,9 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               {language === "hi" ? "स्थिर" : language === "gu" ? "સ્થિર" : "Steady"}
             </span>
           </div>
-          <div className="space-y-1 mt-2">
+          <div className="space-y-0.5 mt-auto">
             <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">{t.homeHeartRate}</span>
-            <h4 className="text-lg sm:text-xl font-black text-slate-800 leading-none">
+            <h4 className="text-xl sm:text-2xl font-black text-slate-800 leading-none">
               {currentHeartRate} <span className="text-[9px] sm:text-xs text-slate-400 font-semibold">{t.vitalsBPM}</span>
             </h4>
           </div>

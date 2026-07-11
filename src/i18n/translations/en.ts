@@ -302,5 +302,12 @@ export const en = {
   homeSleepRestful: "Restful",
   homeSleepLastNight: "Last Night",
   homeSleepDeep: "Deep Sleep",
-  homeSleepLight: "Light Sleep"
+  homeSleepLight: "Light Sleep",
+  otherLanguage: "Other Language",
+  onboardOrSelectOtherLanguage: "Or select other language",
+  translatingTo: "Translating to {lang}...",
+  caregiverAlerts: "Caregiver Alerts",
+  caregiverAlertsDesc: "Trigger automatic alerts to configured primary caregivers on high-risk vital readings.",
+  demoModeSandbox: "Demo Mode (Sandbox)",
+  demoModeDesc: "Seed realistic demonstration patient records, vitals history, and medicine schedules."
 };

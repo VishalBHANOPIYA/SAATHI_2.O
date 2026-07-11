@@ -42,6 +42,7 @@ interface RecordsViewProps {
   userProfile?: any;
   onEditProfile?: () => void;
   onUpdateProfile?: (profile: any) => void;
+  language?: string;
 }
 
 const conditionLabels = {
@@ -88,7 +89,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
   screenResults = null,
   userProfile = null,
   onEditProfile = () => {},
-  onUpdateProfile = () => {}
+  onUpdateProfile = () => {},
+  language: languageProp
 }) => {
   const { language, t } = useLanguage();
   const chartHeight = useChartHeight();
@@ -453,7 +455,9 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.setFontSize(11);
     doc.text(tPdf.screenings, 15, 154);
 
-    const latestScreening = recordsList.find(r => r.category === "AI Screen" || r.category === "Lab Test");
+    const latestScreening = [...recordsList]
+      .filter(r => r.category === "AI Screen" || r.category === "Lab Test")
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] || null;
     doc.setTextColor(71, 85, 105);
     doc.setFontSize(10);
     if (latestScreening) {

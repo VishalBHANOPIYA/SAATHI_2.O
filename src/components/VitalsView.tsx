@@ -83,6 +83,7 @@ interface VitalsViewProps {
   setRecordsList: React.Dispatch<React.SetStateAction<any[]>>;
   attachRecordToActivePatient: (record: any, riskBand?: "GREEN" | "YELLOW" | "RED") => void;
   userProfile?: any;
+  language?: string;
 }
 
 const getNormalRanges = (age: number | null) => {
@@ -205,7 +206,8 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
   recordsList,
   setRecordsList,
   attachRecordToActivePatient,
-  userProfile = null
+  userProfile = null,
+  language: languageProp
 }) => {
   const { language, t } = useLanguage();
   const chartHeight = useChartHeight();

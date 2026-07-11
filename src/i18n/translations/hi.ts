@@ -302,5 +302,12 @@ export const hi = {
   homeSleepRestful: "आरामदायक",
   homeSleepLastNight: "कल रात",
   homeSleepDeep: "गहरी नींद",
-  homeSleepLight: "हल्की नींद"
+  homeSleepLight: "हल्की नींद",
+  otherLanguage: "अन्य भाषा",
+  onboardOrSelectOtherLanguage: "या अन्य भाषा चुनें",
+  translatingTo: "{lang} में अनुवाद किया जा रहा है...",
+  caregiverAlerts: "देखभालकर्ता अलर्ट",
+  caregiverAlertsDesc: "उच्च जोखिम वाले महत्वपूर्ण रीडिंग पर कॉन्फ़िगर किए गए प्राथमिक देखभालकर्ताओं को स्वचालित अलर्ट ट्रिगर करें।",
+  demoModeSandbox: "डेमो मोड (सैंडबॉक्स)",
+  demoModeDesc: "यथार्थवादी प्रदर्शन रोगी रिकॉर्ड, महत्वपूर्ण इतिहास और दवा कार्यक्रम लोड करें।"
 };

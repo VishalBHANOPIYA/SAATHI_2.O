@@ -444,6 +444,7 @@ interface TalkViewProps {
   attachRecordToActivePatient: (record: any, riskBand?: "GREEN" | "YELLOW" | "RED") => void;
   setActiveCall: React.Dispatch<React.SetStateAction<boolean>>;
   userProfile?: any;
+  language?: string;
 }
 
 export const TalkView: React.FC<TalkViewProps> = React.memo(({
@@ -451,7 +452,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
   setRecordsList,
   attachRecordToActivePatient,
   setActiveCall,
-  userProfile
+  userProfile,
+  language: languageProp
 }) => {
   const { language, t } = useLanguage();
   const l = {
@@ -1042,17 +1044,17 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             <span className="w-1 h-3 bg-red-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
           </div>
 
-          <div className="flex gap-2 w-full max-w-xs pt-2">
+          <div className="flex flex-col gap-2 w-full max-w-xs pt-2">
             <button
               onClick={stopRecording}
-              className="flex-grow bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-2 min-h-[44px]"
+              className="w-full bg-gradient-to-r from-red-600 to-rose-650 hover:from-red-700 hover:to-rose-750 hover:shadow-premium text-white font-extrabold text-sm py-4 rounded-2xl shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-2 min-h-[52px]"
             >
-              <div className="w-2.5 h-2.5 bg-white rounded-[2px] shrink-0" />
-              <span>{l.stop}</span>
+              <div className="w-3 h-3 bg-white rounded-sm shrink-0" />
+              <span>{l.stop || "Stop Recording"}</span>
             </button>
             <button
               onClick={cancelRecording}
-              className="px-5 border border-slate-200 text-textsecondary font-extrabold text-xs rounded-2xl hover:bg-slate-50 transition-colors shadow-soft min-h-[44px] active:scale-[0.98]"
+              className="w-full py-3 border border-slate-200 text-textsecondary font-extrabold text-xs rounded-2xl hover:bg-slate-50 transition-colors shadow-soft min-h-[44px] active:scale-[0.98]"
             >
               {l.cancel}
             </button>

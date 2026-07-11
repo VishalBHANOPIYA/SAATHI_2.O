@@ -22,7 +22,7 @@ export function getLanguageName(code: string): string {
     or: "Oriya",
     vi: "Vietnamese",
     he: "Hebrew",
-    fa: "Farsi",
+    fa: "Persian",
     ja: "Japanese",
     ko: "Korean",
     it: "Italian",
@@ -30,6 +30,7 @@ export function getLanguageName(code: string): string {
     nl: "Dutch",
     pl: "Polish",
     th: "Thai",
+    id: "Indonesian",
   };
   return names[code] || code;
 }

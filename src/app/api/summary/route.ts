@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { groq } from "@/lib/groq";
+import { getLanguageName } from "@/utils/languageHelper";
 
 export async function POST(req: Request) {
   try {
     const { symptoms, triage, screeningResults, language, profile } = await req.json();
+
+    const langName = getLanguageName(language || "en");
 
     const apiKey = process.env.GROQ_API_KEY;
     const isMock = !apiKey || apiKey === "your_key_here" || apiKey.trim() === "";
@@ -54,6 +57,8 @@ export async function POST(req: Request) {
     const systemPrompt = `You are a professional medical coordinator. Your task is to review the patient's demographics, self-reported symptoms, objective screening results (if any), and triage status, and generate a highly structured, concise, clinical-style summary for an attending doctor.
     
 Write in a professional, objective medical tone. Do not use conversational text or greetings.
+
+IMPORTANT: Write the ENTIRE summary in ${langName} language. Do not use English unless ${langName} is English.
 
 The output MUST be a valid JSON object matching the following schema:
 {

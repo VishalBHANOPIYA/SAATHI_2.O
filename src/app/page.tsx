@@ -1729,8 +1729,8 @@ export default function MainApp() {
     if (!showProfileModal) return null;
 
     return (
-      <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[60] flex items-center justify-center p-4 animate-fadeIn text-left">
-        <div className="bg-white/95 rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-soft max-w-sm md:max-w-lg w-full max-h-[85vh] md:max-h-[90vh] overflow-y-auto space-y-5 animate-scaleUp no-scrollbar backdrop-blur-md">
+      <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[60] flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn text-left">
+        <div className="bg-white/95 rounded-t-[32px] md:rounded-[32px] p-6 sm:p-8 border-t md:border border-slate-100 shadow-soft w-full max-w-full md:max-w-lg max-h-[85vh] md:max-h-[90vh] overflow-y-auto space-y-5 animate-slideUp md:animate-scaleUp no-scrollbar backdrop-blur-md pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-8">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -2279,6 +2279,7 @@ export default function MainApp() {
               setActivePatientId={setActivePatientId}
               setAshaModeActive={setAshaModeActive}
               setActiveTab={handleTabChange}
+              language={language}
             />
           ) : (
             <HomeView
@@ -2287,6 +2288,7 @@ export default function MainApp() {
               userProfile={userProfile}
               recordsList={recordsList}
               vitalsHistory={vitalsHistory}
+              language={language}
               onEditProfile={() => {
                 if (userProfile) {
                   setProfileForm({
@@ -2322,6 +2324,7 @@ export default function MainApp() {
             setPatientsList={setPatientsList}
             activeTab={activeTab}
             userProfile={userProfile}
+            language={language}
           />
         )}
 
@@ -2333,6 +2336,7 @@ export default function MainApp() {
             setRecordsList={setRecordsList}
             attachRecordToActivePatient={attachRecordToActivePatient}
             userProfile={userProfile}
+            language={language}
           />
         )}
 
@@ -2343,6 +2347,7 @@ export default function MainApp() {
             attachRecordToActivePatient={attachRecordToActivePatient}
             setActiveCall={setActiveCall}
             userProfile={userProfile}
+            language={language}
           />
         )}
 
@@ -2355,6 +2360,7 @@ export default function MainApp() {
             screenResults={screenResults}
             userProfile={userProfile}
             onUpdateProfile={handleUpdateProfile}
+            language={language}
             onEditProfile={() => {
               if (userProfile) {
                 setProfileForm({
@@ -2404,6 +2410,7 @@ export default function MainApp() {
             drugInteractionNote={drugInteractionNote}
             setDrugInteractionNote={setDrugInteractionNote}
             userProfile={userProfile}
+            language={language}
           />
         )}
         </div>
@@ -2412,7 +2419,7 @@ export default function MainApp() {
       {/* Add responsive padding for content area on wider screens */}
 
       {/* BOTTOM NAVIGATION switcher */}
-      <BottomNav activeTab={activeTab} setActiveTab={handleTabChange} />
+      <BottomNav activeTab={activeTab} setActiveTab={handleTabChange} language={language} />
 
       {/* TELEMEDICINE WEB-RTC LOOPBACK OVERLAY */}
       <TelemedicineOverlay
@@ -2422,6 +2429,7 @@ export default function MainApp() {
         screenResults={screenResults}
         symptomsText={transcriptText || ""}
         userProfile={userProfile}
+        language={language}
       />
 
       {/* MEDICINE REMINDER MODAL POPUP */}
@@ -2454,8 +2462,8 @@ export default function MainApp() {
 
       {/* GLOBAL SETTINGS MODAL */}
       {showSettingsModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fadeIn text-left">
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full space-y-5 animate-scaleUp">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn text-left">
+          <div className="bg-white rounded-t-3xl md:rounded-3xl p-6 border-t md:border border-slate-100 shadow-xl w-full max-w-full md:max-w-sm space-y-5 animate-slideUp md:animate-scaleUp pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2 text-slate-800">
                 <Settings className="w-5 h-5 text-violet-605 animate-spin-slow" />
@@ -2497,14 +2505,16 @@ export default function MainApp() {
                       setActiveTab("home");
                     }
                   }}
-                  className={`w-11 h-6 rounded-full transition-all relative flex items-center p-0.5 border ${
+                  className={`w-11 h-6 rounded-full transition-colors duration-300 relative flex items-center p-1 border ${
                     ashaModeActive 
-                      ? "bg-emerald-500 border-emerald-400 justify-end" 
-                      : "bg-slate-200 border-slate-300 justify-start"
+                      ? "bg-violet-600 border-violet-500" 
+                      : "bg-slate-200 border-slate-300"
                   }`}
                   id="asha-toggle-switch"
                 >
-                  <div className="w-4 h-4 bg-white rounded-full shadow-md transition-all" />
+                  <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transition-transform duration-300 transform ${
+                    ashaModeActive ? "translate-x-5" : "translate-x-0"
+                  }`} />
                 </button>
               </div>
 
@@ -2521,7 +2531,7 @@ export default function MainApp() {
                     }}
                     className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "en" 
-                        ? "bg-violet-605 border-violet-605 text-white shadow-md shadow-violet-500/20" 
+                        ? "bg-violet-600 border-violet-600 text-white shadow-md shadow-violet-500/20" 
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
@@ -2534,7 +2544,7 @@ export default function MainApp() {
                     }}
                     className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "hi" 
-                        ? "bg-violet-605 border-violet-605 text-white shadow-md shadow-violet-500/20" 
+                        ? "bg-violet-600 border-violet-600 text-white shadow-md shadow-violet-500/20" 
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
@@ -2547,7 +2557,7 @@ export default function MainApp() {
                     }}
                     className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "gu" 
-                        ? "bg-violet-605 border-violet-605 text-white shadow-md shadow-violet-500/20" 
+                        ? "bg-violet-600 border-violet-600 text-white shadow-md shadow-violet-500/20" 
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
@@ -2645,13 +2655,15 @@ export default function MainApp() {
                 </div>
                 <button
                   onClick={() => setCaregiverAlert(!caregiverAlert)}
-                  className={`w-11 h-6 rounded-full transition-all relative flex items-center p-0.5 border ${
+                  className={`w-11 h-6 rounded-full transition-colors duration-300 relative flex items-center p-1 border ${
                     caregiverAlert 
-                      ? "bg-violet-600 border-violet-500 justify-end" 
-                      : "bg-slate-200 border-slate-300 justify-start"
+                      ? "bg-violet-600 border-violet-500" 
+                      : "bg-slate-200 border-slate-300"
                   }`}
                 >
-                  <div className="w-4 h-4 bg-white rounded-full shadow-md transition-all" />
+                  <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transition-transform duration-300 transform ${
+                    caregiverAlert ? "translate-x-5" : "translate-x-0"
+                  }`} />
                 </button>
               </div>
 
@@ -2670,14 +2682,16 @@ export default function MainApp() {
                 </div>
                 <button
                   onClick={toggleDemoMode}
-                  className={`w-11 h-6 rounded-full transition-all relative flex items-center p-0.5 border ${
+                  className={`w-11 h-6 rounded-full transition-colors duration-300 relative flex items-center p-1 border ${
                     demoModeActive 
-                      ? "bg-amber-500 border-amber-400 justify-end" 
-                      : "bg-slate-200 border-slate-300 justify-start"
+                      ? "bg-violet-600 border-violet-500" 
+                      : "bg-slate-200 border-slate-300"
                   }`}
                   id="demo-mode-toggle-switch"
                 >
-                  <div className="w-4 h-4 bg-white rounded-full shadow-md transition-all" />
+                  <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transition-transform duration-300 transform ${
+                    demoModeActive ? "translate-x-5" : "translate-x-0"
+                  }`} />
                 </button>
               </div>
 

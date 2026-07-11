@@ -24,6 +24,7 @@ interface MedicinesViewProps {
   drugInteractionNote: string | null;
   setDrugInteractionNote: (note: string | null) => void;
   userProfile?: any;
+  language?: string;
 }
 
 export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
@@ -35,7 +36,8 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
   setCaregiverAlert,
   drugInteractionNote,
   setDrugInteractionNote,
-  userProfile
+  userProfile,
+  language: languageProp
 }) => {
   const { language, t } = useLanguage();
 

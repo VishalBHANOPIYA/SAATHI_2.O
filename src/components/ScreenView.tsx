@@ -162,9 +162,19 @@ function rgbToLab(R: number, G: number, B: number) {
 const ScreenSpeechPlayer: React.FC<{
   text: string;
   language: string;
-}> = ({ text, language }) => {
+  matchedNuskhe?: any[];
+  triageLevel?: string;
+}> = ({ text, language, matchedNuskhe, triageLevel }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const clearPendingSpeech = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
 
   useEffect(() => {
     const supported = isSpeechSupported();
@@ -178,15 +188,45 @@ const ScreenSpeechPlayer: React.FC<{
         () => setIsSpeaking(false),
         () => setIsSpeaking(false)
       );
+
+      if (matchedNuskhe && matchedNuskhe.length > 0 && triageLevel !== 'RED') {
+        const nuskheIntro = language === 'hi'
+          ? 'और ये रहे नानी-दादी के नुस्खे।'
+          : language === 'gu'
+          ? 'અને આ રહ્યા નાની-દાદીના નુસ્ખા।'
+          : 'And here are some traditional home remedies from Nani-Dadi.';
+
+        const nuskheText = matchedNuskhe
+          .slice(0, 3)
+          .map(n => language === 'hi'
+            ? n.language.hi
+            : language === 'gu'
+            ? n.language.gu
+            : n.remedy)
+          .join('. ');
+
+        clearPendingSpeech();
+        timeoutRef.current = setTimeout(() => {
+          speakText(
+            nuskheIntro + ' ' + nuskheText,
+            language,
+            () => setIsSpeaking(true),
+            () => setIsSpeaking(false),
+            () => setIsSpeaking(false)
+          );
+        }, 1500);
+      }
     }
     return () => {
+      clearPendingSpeech();
       stopSpeaking();
     };
-  }, [text, language]);
+  }, [text, language, matchedNuskhe, triageLevel]);
 
   const toggleSpeech = () => {
     if (!voiceSupported) return;
     if (isSpeaking) {
+      clearPendingSpeech();
       stopSpeaking();
       setIsSpeaking(false);
     } else {
@@ -197,6 +237,34 @@ const ScreenSpeechPlayer: React.FC<{
         () => setIsSpeaking(false),
         () => setIsSpeaking(false)
       );
+
+      if (matchedNuskhe && matchedNuskhe.length > 0 && triageLevel !== 'RED') {
+        const nuskheIntro = language === 'hi'
+          ? 'और ये रहे नानी-दादी के नुस्खे।'
+          : language === 'gu'
+          ? 'અને આ રહ્યા નાની-દાદીના નુસ્ખા।'
+          : 'And here are some traditional home remedies from Nani-Dadi.';
+
+        const nuskheText = matchedNuskhe
+          .slice(0, 3)
+          .map(n => language === 'hi'
+            ? n.language.hi
+            : language === 'gu'
+            ? n.language.gu
+            : n.remedy)
+          .join('. ');
+
+        clearPendingSpeech();
+        timeoutRef.current = setTimeout(() => {
+          speakText(
+            nuskheIntro + ' ' + nuskheText,
+            language,
+            () => setIsSpeaking(true),
+            () => setIsSpeaking(false),
+            () => setIsSpeaking(false)
+          );
+        }, 1500);
+      }
     }
   };
 
@@ -237,6 +305,7 @@ interface ScreenViewProps {
   setPatientsList: React.Dispatch<React.SetStateAction<any[]>>;
   activeTab: string;
   userProfile?: any;
+  language?: string;
 }
 
 export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
@@ -247,7 +316,8 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   patientsList,
   setPatientsList,
   activeTab,
-  userProfile
+  userProfile,
+  language: languageProp
 }) => {
   const { language, t } = useLanguage();
   const sTrans = screenTranslations[language as keyof typeof screenTranslations] || screenTranslations.en;
@@ -1622,7 +1692,7 @@ Shared via Saathi.`;
                   <span className="text-xs font-black text-slate-400 uppercase tracking-wide">
                     {language === "hi" ? "स्क्रीनिंग रिपोर्ट" : language === "gu" ? "સ્ક્રીનીંગ રીપોર્ટ" : "Screening Report"}
                   </span>
-                  <ScreenSpeechPlayer text={speechText || ""} language={language} />
+                  <ScreenSpeechPlayer text={screeningResult || ""} language={language} matchedNuskhe={matchedNuskhe} triageLevel={triageLevel} />
                 </div>
                 <span className="bg-violet-100 text-violet-850 text-[10px] px-2.5 py-0.5 rounded-full font-black">
                   AI Screened
@@ -1666,9 +1736,47 @@ Shared via Saathi.`;
                         </p>
                       </div>
                     </div>
-                    <span className="bg-amber-100 border border-amber-200 text-amber-800 text-[9px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
-                      Traditional Care
-                    </span>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          stopSpeaking();
+                          if (matchedNuskhe && matchedNuskhe.length > 0 && triageLevel !== 'RED') {
+                            const nuskheIntro = language === 'hi'
+                              ? 'और ये रहे नानी-दादी के नुस्खे।'
+                              : language === 'gu'
+                              ? 'અને આ રહ્યા નાની-દાદીના નુસ્ખા।'
+                              : 'And here are some traditional home remedies from Nani-Dadi.';
+
+                            const nuskheText = matchedNuskhe
+                              .slice(0, 3)
+                              .map(n => language === 'hi'
+                                ? n.language.hi
+                                : language === 'gu'
+                                ? n.language.gu
+                                : n.remedy)
+                              .join('. ');
+
+                            speakText(nuskheIntro + ' ' + nuskheText, language);
+                          }
+                        }}
+                        title="Replay Remedies"
+                        className="w-7 h-7 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 flex items-center justify-center transition-all shadow-sm active:scale-95 text-xs shrink-0"
+                      >
+                        🔊
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => stopSpeaking()}
+                        title="Stop Voice"
+                        className="w-7 h-7 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 flex items-center justify-center transition-all shadow-sm active:scale-95 text-xs shrink-0"
+                      >
+                        ⏹️
+                      </button>
+                      <span className="bg-amber-100 border border-amber-200 text-amber-800 text-[9px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
+                        Traditional Care
+                      </span>
+                    </div>
                   </div>
 
                   {/* Yellow caution warning */}

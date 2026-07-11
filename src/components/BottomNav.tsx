@@ -7,11 +7,13 @@ import { useLanguage } from "@/context/LanguageContext";
 interface BottomNavProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  language?: string;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = React.memo(({
   activeTab,
-  setActiveTab
+  setActiveTab,
+  language
 }) => {
   const { t } = useLanguage();
 

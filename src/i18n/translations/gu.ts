@@ -69,7 +69,7 @@ export const gu = {
   homeLastScreening: "નવી સ્ક્રિનિંગ",
   homeNoScreenings: "કોઈ સ્ક્રીનીંગ રેકોર્ડ નથી",
   homeNoScreeningsDesc: "નવી સ્ક્રિનિંગ",
-  homePerformNewScan: "નવી સ્કેન કરો",
+  homePerformNewScan: "નવી સ્ક્રિનિંગ",
   homeOptimal: "ઉત્કૃષ્ટ",
   homeOxygenLevel: "ઓક્સિજન સ્તર",
   homeHeartRate: "હૃદય દર",
@@ -302,5 +302,12 @@ export const gu = {
   homeSleepRestful: "આરામદાયક",
   homeSleepLastNight: "ગઈ રાત્રે",
   homeSleepDeep: "ઊંડી ઊંઘ",
-  homeSleepLight: "હળવી ઊંઘ"
+  homeSleepLight: "હળવી ઊંઘ",
+  otherLanguage: "અન્ય ભાષા",
+  onboardOrSelectOtherLanguage: "અથવા અન્ય ભાષા પસંદ કરો",
+  translatingTo: "{lang} માં અનુવાદ થઈ રહ્યું છે...",
+  caregiverAlerts: "સંભાળ રાખનાર ચેતવણીઓ",
+  caregiverAlertsDesc: "ઉચ્ચ જોખમ ધરાવતા મહત્વપૂર્ણ રીડિંગ્સ પર ગોઠવેલા પ્રાથમિક સંભાળ રાખનારાઓને સ્વચાલિત ચેતવણીઓ ટ્રિગર કરો.",
+  demoModeSandbox: "ડેમો મોડ (સેન્ડબોક્સ)",
+  demoModeDesc: "વાસ્તવિક નિદર્શન દર્દીના રેકોર્ડ્સ, મહત્વપૂર્ણ ઇતિહાસ અને દવાના સમયપત્રક લોડ કરો।"
 };
