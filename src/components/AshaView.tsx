@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Users,
@@ -6,10 +8,11 @@ import {
   MapPin,
   FileText,
   Trash2,
-  Lock,
   UserPlus,
   Search,
-  X
+  X,
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -19,15 +22,12 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  AreaChart,
-  Area,
+  Cell,
   PieChart,
-  Pie,
-  Cell
+  Pie
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
-import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
+import { safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
 import { CommunityAnalyticsView } from "./CommunityAnalyticsView";
 
 export interface PatientRecord {
@@ -175,22 +175,23 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
     }
   };
 
-
-
   return (
-    <div className="p-4 space-y-6 animate-fadeIn text-left">
+    <div className="p-4 space-y-6 animate-fadeIn text-left overflow-y-auto flex-1 h-full pb-24">
       {/* Portal Header */}
-      <div className="bg-gradient-to-r from-teal-700 to-emerald-700 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-        <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <span className="bg-emerald-500/30 text-emerald-300 font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-400/20">
-              Health Worker Portal
-            </span>
-            <h2 className="text-xl font-black tracking-tight mt-1">
+      <div className="bg-gradient-to-r from-violet-600 to-purple-650 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden border border-violet-500/10 animate-float">
+        <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 w-24 h-24 bg-white/5 rounded-full blur-lg pointer-events-none" />
+        
+        <div className="flex justify-between items-start gap-4">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-white/10">
+              <Sparkles className="w-3 h-3 text-white" />
+              <span>Health Worker Portal</span>
+            </div>
+            <h2 className="text-xl font-black tracking-tight leading-snug">
               {l.portalHeader}
             </h2>
-            <p className="text-xs text-teal-100 max-w-xs leading-normal">
+            <p className="text-xs text-violet-100 max-w-sm leading-relaxed font-medium">
               {l.portalDesc}
             </p>
           </div>
@@ -200,7 +201,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               safeSetItem("saathi_asha_mode_active", "false");
               selectActivePatientForASHA(null);
             }}
-            className="bg-white/10 hover:bg-white/20 text-white border border-white/20 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all"
+            className="bg-white text-violet-700 hover:bg-slate-50 border border-white/25 text-[10px] font-black px-4 py-2 rounded-xl transition-all shadow-md shrink-0 active:scale-95"
           >
             {l.exitMode}
           </button>
@@ -208,28 +209,28 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
       </div>
 
       {/* Sub-Tab Selector */}
-      <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/50 font-sans border-slate-200">
+      <div className="flex bg-slate-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60 font-sans shadow-soft">
         <button
           onClick={() => setAshaSubTab("patients")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-extrabold rounded-xl transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-black rounded-xl transition-all ${
             ashaSubTab === "patients"
-              ? "bg-white text-teal-800 shadow-sm"
+              ? "bg-white text-violet-850 shadow-sm"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          <Users className="w-3.5 h-3.5" />
+          <Users className="w-4 h-4 text-violet-600" />
           <span>{l.patientDirectory}</span>
         </button>
         <button
           onClick={() => setAshaSubTab("analytics")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-extrabold rounded-xl transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-black rounded-xl transition-all ${
             ashaSubTab === "analytics"
-              ? "bg-white text-teal-800 shadow-sm"
+              ? "bg-white text-violet-850 shadow-sm"
               : "text-slate-500 hover:text-slate-700"
           }`}
           id="analytics-tab-btn"
         >
-          <TrendingUp className="w-3.5 h-3.5" />
+          <TrendingUp className="w-4 h-4 text-purple-600" />
           <span>{l.healthAnalytics}</span>
         </button>
       </div>
@@ -237,14 +238,14 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
       {ashaSubTab === "patients" ? (
         <>
           {/* Dashboard Analytics Card */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+          <div className="glass-card p-5 space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
                 {l.communityDashboard}
               </h3>
               
               {/* Chart type toggle tabs */}
-              <div className="flex bg-slate-100 p-0.5 rounded-full border border-slate-200/50 shrink-0 border-slate-200">
+              <div className="flex bg-slate-100 p-0.5 rounded-full border border-slate-200/50 shrink-0">
                 <button
                   onClick={() => setAshaChartType("donut")}
                   className={`text-[9px] font-extrabold px-3 py-1 rounded-full transition-all ${
@@ -264,11 +265,11 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
               </div>
             </div>
 
-            <div className="relative flex justify-center items-center bg-slate-50/50 rounded-2xl p-4 border border-slate-100 shadow-inner">
+            <div className="relative flex justify-center items-center bg-slate-50/40 rounded-2xl p-4 border border-slate-100 shadow-inner">
               {totalPatients === 0 ? (
-                <div className="text-center py-8 text-slate-400">
-                  <p className="text-xs font-bold">{l.noPatientData}</p>
-                  <p className="text-[10px]">{l.addPatientGuide}</p>
+                <div className="text-center py-8 text-slate-400 space-y-1">
+                  <p className="text-xs font-black">{l.noPatientData}</p>
+                  <p className="text-[10px] font-semibold">{l.addPatientGuide}</p>
                 </div>
               ) : (
                 <div className="w-full flex flex-col items-center">
@@ -298,17 +299,17 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                             ))}
                           </Pie>
                           <Tooltip
-                            contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
+                            contentStyle={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 16, fontSize: 10, fontWeight: 700 }}
                           />
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">{l.screened}</span>
-                        <span className="text-lg font-black text-slate-800">{patientsList.filter(p => p.lastRiskBand).length}</span>
+                        <span className="text-[8px] text-slate-400 font-extrabold uppercase tracking-wider">{l.screened}</span>
+                        <span className="text-xl font-black text-slate-800">{patientsList.filter(p => p.lastRiskBand).length}</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-40">
+                    <div className="w-full h-40 text-[9px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={[
@@ -318,11 +319,11 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                           ]}
                           margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0/40" />
                           <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
                           <YAxis allowDecimals={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
                           <Tooltip
-                            contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
+                            contentStyle={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 16, fontSize: 10, fontWeight: 700 }}
                           />
                           <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                             {[
@@ -343,16 +344,16 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
             {/* Legend grid */}
             <div className="grid grid-cols-3 gap-2.5 pt-1">
-              <div className="bg-emerald-50 rounded-2xl p-2.5 border border-emerald-100/50 text-center space-y-0.5 border-emerald-100">
-                <span className="text-[9px] font-extrabold text-emerald-600 block uppercase tracking-wide">{l.lowRisk}</span>
+              <div className="bg-emerald-500/[0.04] rounded-2xl p-2.5 border border-emerald-500/10 text-center space-y-0.5">
+                <span className="text-[9px] font-extrabold text-emerald-600 block uppercase tracking-wider">{l.lowRisk}</span>
                 <span className="text-base font-black text-emerald-700">{greenCount}</span>
               </div>
-              <div className="bg-amber-50 rounded-2xl p-2.5 border border-amber-100/50 text-center space-y-0.5 border-amber-100">
-                <span className="text-[9px] font-extrabold text-amber-600 block uppercase tracking-wide">{l.mediumRisk}</span>
+              <div className="bg-amber-500/[0.04] rounded-2xl p-2.5 border border-amber-500/10 text-center space-y-0.5">
+                <span className="text-[9px] font-extrabold text-amber-600 block uppercase tracking-wider">{l.mediumRisk}</span>
                 <span className="text-base font-black text-amber-700">{yellowCount}</span>
               </div>
-              <div className="bg-rose-50 rounded-2xl p-2.5 border border-rose-100/50 text-center space-y-0.5 border-rose-100">
-                <span className="text-[9px] font-extrabold text-rose-600 block uppercase tracking-wide">{l.highRisk}</span>
+              <div className="bg-rose-500/[0.04] rounded-2xl p-2.5 border border-rose-500/10 text-center space-y-0.5">
+                <span className="text-[9px] font-extrabold text-rose-600 block uppercase tracking-wider">{l.highRisk}</span>
                 <span className="text-base font-black text-rose-700">{redCount}</span>
               </div>
             </div>
@@ -360,40 +361,40 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
           {/* High Risk Follow Up List */}
           {redCount > 0 && (
-            <div className="bg-rose-50 border border-rose-100 rounded-3xl p-5 space-y-3">
+            <div className="bg-rose-500/[0.03] border border-rose-500/10 rounded-3xl p-5 space-y-3 shadow-soft">
               <div className="flex items-center gap-2 text-rose-600">
                 <AlertTriangle className="w-5 h-5 animate-pulse" />
                 <h4 className="text-xs font-black uppercase tracking-wider">
                   {l.urgentFollowup}
                 </h4>
               </div>
-              <p className="text-[10px] text-slate-500 leading-normal">
+              <p className="text-[10px] text-slate-500 leading-normal font-semibold">
                 {l.urgentFollowupDesc}
               </p>
-              <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
+              <div className="space-y-2.5 max-h-48 overflow-y-auto no-scrollbar">
                 {redPatients.map(p => (
-                  <div key={p.id} className="bg-white p-3 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
+                  <div key={p.id} className="bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-rose-500/10 shadow-soft flex items-center justify-between gap-3">
                     <div className="space-y-0.5 text-left">
-                      <span className="font-extrabold text-xs text-slate-800">{p.name}</span>
+                      <span className="font-black text-xs text-slate-800 block">{p.name}</span>
                       <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-bold">
                         <span>{p.age} y / {p.gender}</span>
                         <span>&bull;</span>
                         <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{p.village}</span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5 shrink-0">
                       <button
                         onClick={() => {
                           selectActivePatientForASHA(p.id);
                           setActiveTab("talk");
                         }}
-                        className="bg-rose-600 hover:bg-rose-700 text-white text-[9px] font-bold px-2.5 py-1.5 rounded-xl shadow-sm h-[28px]"
+                        className="bg-rose-600 hover:bg-rose-750 text-white text-[9px] font-black px-3 py-1.5 rounded-xl shadow-sm h-[28px] transition-all active:scale-95"
                       >
                         {l.consultNow}
                       </button>
                       <button
                         onClick={() => setSelectedPatientForProfile(p)}
-                        className="border border-slate-200 text-slate-655 text-[9px] font-bold px-2.5 py-1.5 rounded-xl hover:bg-slate-50 border-slate-250 h-[28px]"
+                        className="border border-slate-205 text-slate-655 text-[9px] font-black px-3 py-1.5 rounded-xl hover:bg-slate-55 transition-all h-[28px] active:scale-95"
                       >
                         {l.history}
                       </button>
@@ -405,14 +406,14 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
           )}
 
           {/* Patient Directory */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
-            <div className="flex justify-between items-center">
+          <div className="glass-card p-5 space-y-4">
+            <div className="flex justify-between items-center gap-2">
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
                 {l.patientDirectory}
               </h3>
               <button
                 onClick={() => setShowAddPatientModal(true)}
-                className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-extrabold text-[10px] py-2 px-3 rounded-xl shadow-md hover:from-teal-700 hover:to-emerald-700 transition-all flex items-center gap-1 min-h-[32px]"
+                className="bg-gradient-to-r from-violet-600 to-purple-650 text-white font-extrabold text-[10px] py-2 px-3 rounded-full shadow-md hover:from-violet-750 hover:to-purple-750 transition-all flex items-center gap-1 min-h-[32px] active:scale-95"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 <span>{l.addPatient}</span>
@@ -427,7 +428,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                 placeholder={l.searchPlaceholder}
                 value={ashaSearchQuery}
                 onChange={(e) => setAshaSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 border border-slate-100 rounded-2xl bg-slate-50 focus:outline-none focus:border-teal-500 font-medium text-xs text-slate-800 h-[44px] border-slate-200"
+                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 bg-slate-50/40 rounded-full focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 focus:bg-white font-semibold text-xs text-slate-800 h-[44px] transition-all"
               />
             </div>
 
@@ -435,9 +436,9 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
             <div className="space-y-3">
               {filteredPatients.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 space-y-1">
-                  <Users className="w-10 h-10 mx-auto text-slate-200" />
-                  <p className="text-xs font-bold">No patients found</p>
-                  <p className="text-[10px]">Add a patient or refine your search query.</p>
+                  <Users className="w-10 h-10 mx-auto text-slate-300" />
+                  <p className="text-xs font-black">No patients found</p>
+                  <p className="text-[10px] font-semibold">Add a patient or refine your search query.</p>
                 </div>
               ) : (
                 filteredPatients.map(p => {
@@ -445,19 +446,19 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                   return (
                     <div
                       key={p.id}
-                      className={`p-4 rounded-2xl border transition-all space-y-3 text-left ${
+                      className={`p-4 rounded-2xl border transition-all space-y-3.5 text-left ${
                         isActive 
-                          ? "border-teal-400 bg-teal-50/30 ring-1 ring-teal-400/50 shadow-md" 
-                          : "border-slate-100 bg-white hover:border-teal-100 hover:shadow-sm"
+                          ? "border-violet-400 bg-violet-500/[0.03] ring-1 ring-violet-400/30 shadow-md" 
+                          : "border-slate-100 bg-white/60 hover:border-violet-100 hover:shadow-sm"
                       }`}
                     >
                       {/* Patient Core Info */}
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-2">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-sm text-slate-800">{p.name}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-black text-sm text-slate-855">{p.name}</span>
                             {isActive && (
-                              <span className="bg-teal-600 text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded animate-pulse">
+                              <span className="bg-violet-600 text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full animate-pulse shadow-sm">
                                 {l.activePatient}
                               </span>
                             )}
@@ -465,13 +466,13 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                           <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
                             <span>{p.age} yrs / {p.gender}</span>
                             <span>&bull;</span>
-                            <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{p.village}</span>
+                            <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5 text-slate-350" />{p.village}</span>
                           </div>
                         </div>
                         
                         {/* Risk Badge */}
                         {p.lastRiskBand ? (
-                          <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                          <span className={`text-[8px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm shrink-0 ${
                             p.lastRiskBand === "RED" 
                               ? "bg-rose-100 text-rose-700" 
                               : p.lastRiskBand === "YELLOW" 
@@ -481,7 +482,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                             {p.lastRiskBand} Risk
                           </span>
                         ) : (
-                          <span className="bg-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                          <span className="bg-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shrink-0">
                             {l.unscreened}
                           </span>
                         )}
@@ -489,14 +490,14 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
                       {/* Meta Info */}
                       {p.lastScreeningDate && (
-                        <div className="text-[9px] text-slate-500 font-bold flex justify-between bg-slate-50 p-2 rounded-xl border border-slate-100 border-slate-200">
+                        <div className="text-[9px] text-slate-500 font-bold flex justify-between bg-slate-50/50 p-2.5 rounded-xl border border-slate-200/50">
                           <span>{l.lastCheck.replace("{date}", p.lastScreeningDate)}</span>
                           <span>{l.attachedRecords.replace("{count}", String(p.records?.length || 0))}</span>
                         </div>
                       )}
 
                       {/* Action Panel */}
-                      <div className="flex justify-between items-center gap-2 pt-1.5 border-t border-slate-100/60">
+                      <div className="flex justify-between items-center gap-2 pt-2.5 border-t border-slate-100/60">
                         <button
                           onClick={() => {
                             if (isActive) {
@@ -506,29 +507,30 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                               setActiveTab("screen");
                             }
                           }}
-                          className={`text-[9px] font-extrabold py-2 px-3 rounded-xl transition-all shadow-sm min-h-[32px] ${
+                          className={`text-[9px] font-black py-2 px-3.5 rounded-full transition-all shadow-sm min-h-[32px] active:scale-95 flex items-center gap-1 ${
                             isActive 
                               ? "bg-slate-800 text-white hover:bg-slate-900" 
-                              : "bg-teal-600 text-white hover:bg-teal-700"
+                              : "bg-gradient-to-r from-violet-600 to-purple-650 text-white hover:from-violet-700 hover:to-purple-700 shadow-md"
                           }`}
                         >
-                          {isActive ? l.clearSelection : l.startScreening}
+                          <span>{isActive ? l.clearSelection : l.startScreening}</span>
+                          {!isActive && <ArrowRight className="w-3 h-3 text-white/90" />}
                         </button>
 
-                        <div className="flex gap-1">
+                        <div className="flex gap-1.5">
                           <button
                             onClick={() => setSelectedPatientForProfile(p)}
-                            className="p-2 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-655 transition-colors border-slate-200 text-slate-600"
+                            className="p-2 border border-slate-205 rounded-xl hover:bg-slate-55 text-slate-600 transition-all active:scale-90"
                             title={l.history}
                           >
-                            <FileText className="w-3.5 h-3.5" />
+                            <FileText className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeletePatient(p.id)}
-                            className="p-2 border border-slate-100 hover:border-rose-100 hover:bg-rose-50 rounded-xl text-slate-450 hover:text-rose-600 transition-colors border-slate-200 text-slate-400"
+                            className="p-2 border border-slate-205 hover:border-rose-200 hover:bg-rose-50 rounded-xl text-slate-400 hover:text-rose-600 transition-all active:scale-90"
                             title="Delete Patient Profile"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -546,50 +548,50 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
       {/* Modal: Add Patient */}
       {showAddPatientModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full space-y-4 animate-scaleUp text-left">
+          <div className="bg-white rounded-3xl p-6 border border-slate-150 shadow-xl max-w-sm w-full space-y-4 animate-scaleUp text-left">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">
+              <h3 className="text-sm font-black text-slate-855 uppercase tracking-wide">
                 {l.addNewPatient}
               </h3>
               <button
                 onClick={() => setShowAddPatientModal(false)}
-                className="p-1 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-650 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4.5 h-4.5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddNewPatient} className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.patientName}</label>
+            <form onSubmit={handleAddNewPatient} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider">{l.patientName}</label>
                 <input
                   type="text"
                   required
                   placeholder={l.placeholderName}
                   value={newPatientData.name}
                   onChange={(e) => setNewPatientData({ ...newPatientData, name: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium h-[36px]"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 text-slate-800 font-semibold bg-slate-50/40 focus:bg-white h-[40px] transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.ageYears}</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider">{l.ageYears}</label>
                   <input
                     type="number"
                     required
                     placeholder={l.placeholderAge}
                     value={newPatientData.age}
                     onChange={(e) => setNewPatientData({ ...newPatientData, age: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium h-[36px]"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 text-slate-800 font-semibold bg-slate-50/40 focus:bg-white h-[40px] transition-all"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.gender}</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider">{l.gender}</label>
                   <select
                     value={newPatientData.gender}
                     onChange={(e) => setNewPatientData({ ...newPatientData, gender: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium bg-white h-[36px]"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 text-slate-800 font-semibold bg-white h-[40px] transition-all"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -598,22 +600,22 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{l.village}</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider">{l.village}</label>
                 <input
                   type="text"
                   required
                   placeholder={l.placeholderVillage}
                   value={newPatientData.village}
                   onChange={(e) => setNewPatientData({ ...newPatientData, village: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-teal-500 text-slate-800 font-medium h-[36px]"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 text-slate-800 font-semibold bg-slate-50/40 focus:bg-white h-[40px] transition-all"
                 />
               </div>
 
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-extrabold text-xs py-3.5 rounded-xl shadow-md transition-all active:scale-95 min-h-[44px]"
+                  className="w-full bg-gradient-to-r from-violet-600 to-purple-650 text-white font-extrabold text-xs py-3.5 rounded-full shadow-md hover:from-violet-700 hover:to-purple-700 transition-all active:scale-95 min-h-[44px]"
                 >
                   {l.createProfile}
                 </button>
@@ -626,46 +628,46 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
       {/* Modal: Patient Screening Records Profile */}
       {selectedPatientForProfile && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-md w-full space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-scaleUp text-left">
+          <div className="bg-white rounded-3xl p-6 border border-slate-150 shadow-xl max-w-md w-full space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-scaleUp text-left">
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
-              <div className="space-y-0.5 text-left font-sans">
-                <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">
+              <div className="space-y-1 text-left font-sans">
+                <h3 className="text-sm font-black text-slate-855 uppercase tracking-wider">
                   {l.recordsFile}
                 </h3>
-                <p className="text-[11px] font-bold text-slate-500">
+                <p className="text-xs font-black text-slate-700">
                   {selectedPatientForProfile.name} ({selectedPatientForProfile.age}y / {selectedPatientForProfile.gender})
                 </p>
-                <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-0.5">
-                  <MapPin className="w-3 h-3 text-slate-350" /> {selectedPatientForProfile.village}
+                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-350" /> {selectedPatientForProfile.village}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedPatientForProfile(null)}
-                className="p-1 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-650 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4.5 h-4.5" />
               </button>
             </div>
 
             {/* Records List */}
             <div className="space-y-3 text-left">
-              <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
                 {l.screeningHistory}
               </h4>
               
               {selectedPatientForProfile.records?.length === 0 ? (
-                <div className="text-center py-6 border border-dashed border-slate-150 rounded-2xl text-slate-400 text-xs border-slate-200">
+                <div className="text-center py-8 border border-dashed border-slate-205 rounded-2xl text-slate-400 text-xs font-semibold">
                   {l.noScreenings}
                 </div>
               ) : (
-                <div className="space-y-2.5">
+                <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                   {selectedPatientForProfile.records.map((rec, index) => (
-                    <div key={index} className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs space-y-1 border-slate-200 text-left">
-                      <div className="flex justify-between items-center font-extrabold text-slate-700">
+                    <div key={index} className="p-3.5 bg-slate-50/70 rounded-2xl border border-slate-200/60 text-xs space-y-1.5 text-left shadow-soft">
+                      <div className="flex justify-between items-center font-black text-slate-700 gap-2">
                         <span className="text-[11px]">{rec.title}</span>
-                        <span className="text-[9px] text-slate-400 font-semibold">{rec.date}</span>
+                        <span className="text-[9px] text-slate-450 font-semibold shrink-0">{rec.date}</span>
                       </div>
-                      <div className="text-[9px] text-slate-500 font-medium leading-relaxed bg-white/60 p-2 rounded-lg border border-slate-100 border-slate-200">
+                      <div className="text-[10px] text-slate-500 font-semibold leading-relaxed bg-white/70 p-2.5 rounded-xl border border-slate-200/50">
                         {rec.notes || "No details provided"}
                       </div>
                     </div>
@@ -681,7 +683,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                   setSelectedPatientForProfile(null);
                   setActiveTab("screen");
                 }}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-sm min-h-[44px]"
+                className="w-full bg-gradient-to-r from-violet-600 to-purple-650 text-white font-extrabold text-xs py-3.5 rounded-full hover:from-violet-700 hover:to-purple-700 transition-all shadow-md active:scale-95 min-h-[44px]"
               >
                 {l.selectForNew}
               </button>

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Home, Stethoscope, Heart, Mic, FileText, Pill } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -13,67 +15,39 @@ export const BottomNav: React.FC<BottomNavProps> = React.memo(({
 }) => {
   const { t } = useLanguage();
 
+  const items = [
+    { key: "home", icon: Home, label: t.home },
+    { key: "screen", icon: Stethoscope, label: t.screen },
+    { key: "vitals", icon: Heart, label: t.vitals },
+    { key: "talk", icon: Mic, label: t.talk },
+    { key: "records", icon: FileText, label: t.records },
+    { key: "medicines", icon: Pill, label: t.medicinesHeader },
+  ];
+
   return (
-    <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-2.5 px-3 flex justify-between items-center z-30 shadow-lg shrink-0">
-      <button
-        onClick={() => setActiveTab("home")}
-        className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "home" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
-        }`}
-      >
-        <Home className="w-5 h-5" />
-        <span className="text-[9px] font-semibold">{t.home}</span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("screen")}
-        className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "screen" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
-        }`}
-      >
-        <Stethoscope className="w-5 h-5" />
-        <span className="text-[9px] font-semibold">{t.screen}</span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("vitals")}
-        className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "vitals" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
-        }`}
-      >
-        <Heart className="w-5 h-5" />
-        <span className="text-[9px] font-semibold">{t.vitals}</span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("talk")}
-        className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "talk" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
-        }`}
-      >
-        <Mic className="w-5 h-5" />
-        <span className="text-[9px] font-semibold">{t.talk}</span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("records")}
-        className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "records" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
-        }`}
-      >
-        <FileText className="w-5 h-5" />
-        <span className="text-[9px] font-semibold">{t.records}</span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("medicines")}
-        className={`flex flex-col items-center gap-1 flex-1 transition-colors ${
-          activeTab === "medicines" ? "text-primary font-bold" : "text-slate-400 hover:text-slate-650"
-        }`}
-      >
-        <Pill className="w-5 h-5" />
-        <span className="text-[9px] font-semibold">{t.medicinesHeader}</span>
-      </button>
+    <nav className="md:hidden absolute bottom-0 left-0 right-0 z-30 shrink-0 bg-white border-t border-gray-100 py-1 px-1 flex justify-between items-center shadow-lg">
+      {items.map(({ key, icon: Icon, label }) => {
+        const isActive = activeTab === key;
+        return (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className="flex flex-col items-center justify-center flex-1 py-1 transition-all duration-300 relative min-h-[48px]"
+          >
+            <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-purple-600 animate-scaleUp" : "text-gray-400"}`} />
+            <span
+              className={`text-[9px] font-bold mt-1 tracking-tight transition-colors duration-300 ${
+                isActive ? "text-purple-600 font-extrabold" : "text-gray-450"
+              }`}
+            >
+              {label}
+            </span>
+            {isActive && (
+              <div className="w-1 h-1 bg-purple-600 rounded-full mt-0.5" />
+            )}
+          </button>
+        );
+      })}
     </nav>
   );
 });

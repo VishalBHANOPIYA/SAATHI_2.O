@@ -9,7 +9,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#0f766e",
+  themeColor: "#5B21B6",
 };
 
 export const metadata: Metadata = {
@@ -48,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased bg-white md:bg-slate-50 min-h-screen overflow-x-hidden`} style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+      <body className={`antialiased bg-gray-50 min-h-screen overflow-x-hidden`} style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
         <LanguageProvider>
           {children}
         </LanguageProvider>

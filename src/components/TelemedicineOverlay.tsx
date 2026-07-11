@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { X, Star, Phone, Loader2, Mic, Video, PhoneOff } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -332,12 +334,12 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
   if (!activeCall) return null;
 
   return (
-    <div className="absolute inset-0 bg-slate-900/98 z-50 flex flex-col p-4 text-white overflow-y-auto no-scrollbar animate-fadeIn text-left">
+    <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-2xl z-50 flex flex-col p-6 text-white overflow-y-auto no-scrollbar animate-fadeIn text-left">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3 mt-4 shrink-0">
-        <div className="flex items-center gap-2 font-sans">
-          <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-          <h3 className="text-sm font-black tracking-wide uppercase text-teal-405">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 mt-2 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+          <h3 className="text-sm font-black tracking-wide uppercase text-violet-400">
             {l.telemedTitle}
           </h3>
         </div>
@@ -348,82 +350,82 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
             setSelectedDoctor(null);
             setDoctorSummary(null);
           }}
-          className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 transition-colors text-slate-300"
+          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-all flex items-center justify-center text-white"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Steps Breadcrumbs */}
-      <div className="flex justify-center gap-4 text-[10px] font-bold uppercase tracking-wider py-3 border-b border-slate-800/40 shrink-0 text-slate-400">
-        <span className={telemedStep === "doctors" ? "text-teal-400 font-extrabold" : ""}>{l.telemedStepDoctors}</span>
+      <div className="flex justify-center gap-4 text-[10px] font-black uppercase tracking-wider py-4 border-b border-white/5 shrink-0 text-slate-400">
+        <span className={telemedStep === "doctors" ? "text-violet-400" : ""}>{l.telemedStepDoctors}</span>
         <span>&bull;</span>
-        <span className={telemedStep === "summary" ? "text-teal-400 font-extrabold" : ""}>{l.telemedStepSummary}</span>
+        <span className={telemedStep === "summary" ? "text-violet-400" : ""}>{l.telemedStepSummary}</span>
         <span>&bull;</span>
-        <span className={telemedStep === "call" ? "text-teal-400 font-extrabold" : ""}>{l.telemedStepCall}</span>
+        <span className={telemedStep === "call" ? "text-violet-400" : ""}>{l.telemedStepCall}</span>
       </div>
 
       {/* Content panel */}
-      <div className="flex-1 py-4 flex flex-col justify-between">
+      <div className="flex-grow py-4 flex flex-col justify-between">
         {/* Step 1: Doctors List */}
         {telemedStep === "doctors" && (
           <div className="space-y-4 flex-1">
             <div className="space-y-1">
-              <h4 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider">{l.telemedNearbyFacilities}</h4>
-              <p className="text-[10px] text-slate-500">
+              <h4 className="text-xs font-black uppercase text-slate-300 tracking-wider">{l.telemedNearbyFacilities}</h4>
+              <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
                 {l.telemedNearbyDesc}
               </p>
             </div>
 
-            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1 no-scrollbar animate-fadeIn">
+            <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1 no-scrollbar animate-fadeIn">
               {getNearbyDoctors().map((doc) => {
                 const isHighlyRecommended = doc.recommendationScore > 5;
                 return (
                   <div
                     key={doc.id}
-                    className={`p-3.5 rounded-2xl border transition-all ${
+                    className={`p-4 rounded-2xl border transition-all duration-300 ${
                       isHighlyRecommended
-                        ? "bg-slate-800/80 border-amber-500/30 shadow-md ring-1 ring-amber-500/20"
-                        : "bg-slate-850/60 border-slate-800"
+                        ? "bg-white/10 border-amber-500/30 shadow-soft"
+                        : "bg-white/5 border-white/10"
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md ${
-                            doc.type === "PHC" ? "bg-teal-900/60 text-teal-400 border border-teal-850" : "bg-blue-900/60 text-blue-400 border border-blue-850"
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`text-[8.5px] font-black px-2 py-0.5 rounded-md ${
+                            doc.type === "PHC" ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
                           }`}>
                             {doc.type}
                           </span>
-                          <h5 className="text-xs font-bold text-slate-200">{doc.name}</h5>
+                          <h5 className="text-xs font-black text-white">{doc.name}</h5>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-1 font-semibold">{doc.specialty}</p>
-                        <div className="flex gap-3 text-[9px] text-slate-500 mt-2 font-bold uppercase">
+                        <p className="text-[10px] text-slate-300 mt-1.5 font-bold">{doc.specialty}</p>
+                        <div className="flex gap-3 text-[9px] text-slate-400 mt-2 font-black uppercase tracking-wider">
                           <span>{l.telemedDistance.replace("{distance}", doc.distance)}</span>
                           <span>&bull;</span>
-                          <span className="text-emerald-500 font-extrabold">{l.telemedAvailableNow}</span>
+                          <span className="text-emerald-400 font-black">{l.telemedAvailableNow}</span>
                         </div>
                       </div>
 
                       {isHighlyRecommended && (
-                        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 p-1.5 rounded-lg shrink-0">
-                          <Star className="w-4 h-4 fill-current" />
+                        <div className="bg-amber-500/20 border border-amber-500/30 text-amber-400 p-1.5 rounded-xl shrink-0">
+                          <Star className="w-3.5 h-3.5 fill-current" />
                         </div>
                       )}
                     </div>
 
                     {/* Recommendation match text */}
-                    <div className={`mt-2.5 pt-2 border-t text-[9px] font-bold ${
+                    <div className={`mt-3 pt-2.5 border-t text-[9px] font-bold ${
                       isHighlyRecommended
-                        ? "border-amber-500/10 text-amber-400 font-extrabold"
-                        : "border-slate-805/40 text-slate-500"
+                        ? "border-amber-500/20 text-amber-300 font-black"
+                        : "border-white/10 text-slate-400"
                     }`}>
                       {doc.recommendationMatch}
                     </div>
 
                     <button
                       onClick={() => handleGenerateSummary(doc)}
-                      className="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-[10px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-sm min-h-[36px]"
+                      className="w-full mt-3 bg-gradient-to-r from-violet-600 to-purple-650 hover:from-violet-700 hover:to-purple-700 text-white font-black text-[10px] py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 active:scale-95 shadow-soft min-h-[36px]"
                     >
                       <Phone className="w-3.5 h-3.5" />
                       <span>{l.telemedRequestConsultation}</span>
@@ -440,63 +442,63 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
           <div className="space-y-4 flex-1 flex flex-col justify-between animate-fadeIn">
             <div className="space-y-4 flex-1 overflow-y-auto no-scrollbar pr-1">
               <div className="space-y-1">
-                <h4 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider">{l.telemedClinicalIntakeSummary}</h4>
-                <p className="text-[10px] text-slate-500">
+                <h4 className="text-xs font-black uppercase text-slate-300 tracking-wider">{l.telemedClinicalIntakeSummary}</h4>
+                <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
                   {l.telemedGeneratingIntake}
                 </p>
               </div>
 
               {isSummaryLoading && (
-                <div className="bg-slate-850/40 border border-slate-800 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
-                  <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-                  <span className="text-xs font-bold text-slate-400">{l.telemedConsultingCoordinator}</span>
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
+                  <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+                  <span className="text-xs font-black text-slate-400">{l.telemedConsultingCoordinator}</span>
                 </div>
               )}
 
               {!isSummaryLoading && doctorSummary && (
                 <div className="space-y-3 text-left">
                   {/* Highlight summary fields */}
-                  <div className="bg-slate-850 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs leading-normal">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3 text-xs leading-normal">
                     <div>
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">{l.telemedChiefComplaint}</span>
-                      <p className="font-semibold text-slate-200 mt-0.5">{doctorSummary.chief_complaint}</p>
+                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{l.telemedChiefComplaint}</span>
+                      <p className="font-semibold text-slate-200 mt-1">{doctorSummary.chief_complaint}</p>
                     </div>
-                    <div className="border-t border-slate-800/60 pt-2">
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">{l.telemedCalculatedUrgency}</span>
-                      <p className="font-bold text-teal-400 mt-0.5">{doctorSummary.triage_level}</p>
+                    <div className="border-t border-white/10 pt-2.5">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{l.telemedCalculatedUrgency}</span>
+                      <p className="font-black text-violet-400 mt-1">{doctorSummary.triage_level}</p>
                     </div>
-                    <div className="border-t border-slate-800/60 pt-2">
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">{l.telemedScreeningSignals}</span>
-                      <p className="font-semibold text-slate-300 mt-0.5">{doctorSummary.screening_signals}</p>
+                    <div className="border-t border-white/10 pt-2.5">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{l.telemedScreeningSignals}</span>
+                      <p className="font-semibold text-slate-300 mt-1">{doctorSummary.screening_signals}</p>
                     </div>
-                    <div className="border-t border-slate-800/60 pt-2">
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">{l.telemedDiagnosticFocus}</span>
-                      <p className="font-semibold text-amber-400 mt-0.5">{doctorSummary.suggested_focus}</p>
+                    <div className="border-t border-white/10 pt-2.5">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{l.telemedDiagnosticFocus}</span>
+                      <p className="font-black text-amber-400 mt-1">{doctorSummary.suggested_focus}</p>
                     </div>
                   </div>
 
                   {/* Low bandwidth support toggle */}
-                  <div className="bg-slate-850/60 border border-slate-800 rounded-2xl p-3 flex items-center justify-between">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <span className="text-[10px] font-bold text-slate-200 block">{l.telemedLowBandwidth}</span>
-                      <span className="text-[9px] text-slate-400 block">{l.telemedDisableCamera}</span>
+                      <span className="text-[10px] font-black text-slate-200 block">{l.telemedLowBandwidth}</span>
+                      <span className="text-[9px] text-slate-400 font-bold block">{l.telemedDisableCamera}</span>
                     </div>
                     <input
                       type="checkbox"
                       checked={isCallAudioOnly}
                       onChange={(e) => setIsCallAudioOnly(e.target.checked)}
-                      className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 focus:ring-offset-slate-900 border-slate-800 bg-slate-900"
+                      className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 focus:ring-offset-slate-900 border-white/10 bg-slate-900"
                     />
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex gap-2 pt-2 border-t border-slate-800/50 shrink-0">
+            <div className="flex gap-2 pt-2.5 border-t border-white/10 shrink-0">
               <button
                 onClick={() => setTelemedStep("call")}
                 disabled={isSummaryLoading}
-                className="flex-grow bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs py-3.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="flex-grow bg-gradient-to-r from-violet-600 to-purple-650 hover:from-violet-700 hover:to-purple-700 text-white font-black text-xs py-3.5 rounded-xl shadow-soft transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <Video className="w-4 h-4" />
                 <span>{l.telemedSendConnect}</span>
@@ -507,7 +509,7 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
                   setSelectedDoctor(null);
                   setDoctorSummary(null);
                 }}
-                className="px-4 border border-slate-800 text-slate-400 hover:bg-slate-850 hover:text-white font-bold text-xs rounded-xl transition-colors min-h-[44px]"
+                className="px-4 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white font-black text-xs rounded-xl transition-colors min-h-[44px]"
               >
                 {l.telemedBack}
               </button>
@@ -517,24 +519,24 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
 
         {/* Step 3: Call Screen */}
         {telemedStep === "call" && (
-          <div className="flex-1 flex flex-col justify-between space-y-4 animate-scaleUp">
+          <div className="flex-grow flex flex-col justify-between space-y-4 animate-scaleUp">
             {/* Connection Status Banner */}
-            <div className="bg-slate-850/80 border border-slate-800 rounded-2xl p-3 flex items-center justify-between text-xs font-bold font-sans">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex items-center justify-between text-xs font-black">
               <span className="text-slate-400">{l.telemedPartner}</span>
-              <span className="text-teal-400">{selectedDoctor?.name || "Saathi Consultant"}</span>
+              <span className="text-violet-405 font-black">{selectedDoctor?.name || "Saathi Consultant"}</span>
             </div>
 
             {/* Webcam/Video Area */}
-            <div className="flex-grow relative bg-slate-950 rounded-3xl overflow-hidden border border-slate-850 shadow-inner flex flex-col items-center justify-center min-h-[300px]">
+            <div className="flex-grow relative bg-slate-950 rounded-3xl overflow-hidden border border-white/10 shadow-inner flex flex-col items-center justify-center min-h-[300px]">
               {isCallAudioOnly ? (
                 /* Audio Mode UI */
                 <div className="text-center space-y-4 p-6 animate-scaleUp">
-                  <div className="w-20 h-20 bg-teal-500/10 rounded-full flex items-center justify-center border border-teal-500/20 mx-auto">
-                    <Mic className="w-10 h-10 text-teal-400 animate-pulse" />
+                  <div className="w-20 h-20 bg-violet-500/10 rounded-full flex items-center justify-center border border-violet-500/20 mx-auto">
+                    <Mic className="w-10 h-10 text-violet-455 animate-pulse" />
                   </div>
                   <div className="space-y-1">
-                    <h5 className="text-sm font-bold text-slate-200">{l.telemedAudioOnlyFallback}</h5>
-                    <p className="text-[10px] text-slate-500 max-w-xs mx-auto leading-normal">
+                    <h5 className="text-sm font-black text-slate-200">{l.telemedAudioOnlyFallback}</h5>
+                    <p className="text-[10px] text-slate-400 font-semibold max-w-xs mx-auto leading-normal">
                       {l.telemedAudioOnlyDesc}
                     </p>
                   </div>
@@ -544,14 +546,14 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
                 <div className="w-full h-full relative">
                   {/* Remote Video Stream (Main screen) */}
                   <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-cover rounded-3xl"
+                     ref={remoteVideoRef}
+                     autoPlay
+                     playsInline
+                     className="w-full h-full object-cover rounded-3xl"
                   />
 
                   {/* Local Webcam overlay (Bottom right corner) */}
-                  <div className="absolute right-4 bottom-4 w-28 h-40 bg-slate-900 border-2 border-slate-800 rounded-2xl overflow-hidden shadow-lg z-20">
+                  <div className="absolute right-4 bottom-4 w-28 h-40 bg-slate-900 border-2 border-white/10 rounded-2xl overflow-hidden shadow-lg z-20">
                     <video
                       ref={localVideoRef}
                       autoPlay
@@ -559,13 +561,13 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
                       muted
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute bottom-1 left-2 text-[8px] bg-slate-950/80 px-1.5 py-0.5 rounded text-slate-400 font-extrabold uppercase">
+                    <div className="absolute bottom-1 left-2 text-[8px] bg-slate-950/80 px-1.5 py-0.5 rounded text-slate-400 font-black uppercase">
                       {l.telemedYouWebRtc}
                     </div>
                   </div>
 
                   {/* Status indicator overlay */}
-                  <div className="absolute top-4 left-4 bg-slate-950/80 px-2.5 py-1.5 rounded-full text-[9px] font-bold text-teal-405 flex items-center gap-1.5 shadow-sm border border-slate-800/40 z-20">
+                  <div className="absolute top-4 left-4 bg-slate-950/80 px-2.5 py-1.5 rounded-full text-[9px] font-black text-violet-400 flex items-center gap-1.5 shadow-sm border border-white/10 z-20">
                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                     <span>{webRTCStatus}</span>
                   </div>
@@ -575,8 +577,8 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
 
             {/* Call Controller Bottom Bar */}
             <div className="space-y-4 mb-4">
-              <div className="text-center font-mono">
-                <span className="text-xs font-bold tracking-widest bg-slate-850 border border-slate-800 px-3.5 py-1.5 rounded-full shadow-sm text-slate-200">
+              <div className="text-center">
+                <span className="text-xs font-black tracking-widest bg-white/10 border border-white/15 px-3.5 py-1.5 rounded-full shadow-soft text-slate-200">
                   {formatCallTimer(callTimer)}
                 </span>
               </div>
@@ -584,10 +586,10 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
               <div className="flex justify-center items-center gap-4">
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className={`p-4 rounded-full border shadow-md transition-all active:scale-95 flex items-center justify-center w-14 h-14 ${
+                  className={`p-4 rounded-full border shadow-soft transition-all active:scale-95 flex items-center justify-center w-14 h-14 ${
                     isMuted
                       ? "bg-amber-500 border-amber-600 text-white"
-                      : "bg-slate-850 border-slate-800 text-slate-300 hover:bg-slate-800"
+                      : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/20"
                   }`}
                 >
                   <Mic className="w-5 h-5" />
@@ -600,17 +602,17 @@ export const TelemedicineOverlay: React.FC<TelemedicineOverlayProps> = React.mem
                     setSelectedDoctor(null);
                     setDoctorSummary(null);
                   }}
-                  className="bg-red-600 hover:bg-red-700 text-white p-4 rounded-full shadow-lg transition-all active:scale-95 flex items-center justify-center w-16 h-16 border border-red-700"
+                  className="bg-red-650 hover:bg-red-750 text-white p-4 rounded-full shadow-soft transition-all active:scale-95 flex items-center justify-center w-16 h-16 border border-red-700"
                 >
-                  <PhoneOff className="w-7 h-7" />
+                  <PhoneOff className="w-7 h-7 animate-pulse" />
                 </button>
 
                 <button
                   onClick={() => setIsCallAudioOnly(!isCallAudioOnly)}
-                  className={`p-4 rounded-full border shadow-md transition-all active:scale-95 flex items-center justify-center w-14 h-14 ${
+                  className={`p-4 rounded-full border shadow-soft transition-all active:scale-95 flex items-center justify-center w-14 h-14 ${
                     isCallAudioOnly
-                      ? "bg-teal-600 border-teal-700 text-white"
-                      : "bg-slate-850 border-slate-800 text-slate-300 hover:bg-slate-800"
+                      ? "bg-violet-650 border-violet-700 text-white"
+                      : "bg-white/10 border-white/10 text-slate-300 hover:bg-white/20"
                   }`}
                 >
                   <Video className="w-5 h-5" />

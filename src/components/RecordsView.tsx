@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import {
@@ -24,8 +26,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend
+  Tooltip
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
 import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
@@ -204,7 +205,6 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
   };
 
   const downloadHealthCardPDF = () => {
-    // 1. Initialize jsPDF
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -285,7 +285,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       gu: {
         title: "સાથી સ્વાસ્થ્ય કાર્ડ",
         tagline: "તમારો એઆઈ હેલ્થ સાથી",
-        generated: "તૈયાર કરેલ",
+        generated: "ત્યાર કરેલ",
         profile: "દર્દી સ્વાસ્થ્ય પ્રોફાઇલ",
         name: "નામ",
         ageGender: "ઉંમર / લિંગ",
@@ -307,7 +307,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
         noScreenings: "હજુ સુધી કોઈ કેમેરા સ્ક્રીનીંગ અથવા લેબ રેકોર્ડ નથી.",
         medsSchedule: "દવાની અનુસૂચિ",
         medName: "દવાનું નામ",
-        medDosage: "માત્રા",
+        medDosage: "માત્રα",
         medFrequency: "આવર્તન",
         medTime: "સમય",
         noMeds: "હાલમાં કોઈ દવાઓ નિર્ધારિત નથી.",
@@ -318,16 +318,9 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       }
     }[activeLang];
 
-    // Color definitions
-    const primaryTeal = "#0f766e"; 
-    const secondarySlate = "#475569"; 
-    const borderSlate = "#e2e8f0"; 
-
-    // Header Background Header Block (Saathi Branding)
-    doc.setFillColor(15, 118, 110); 
+    doc.setFillColor(124, 58, 237); 
     doc.rect(0, 0, 210, 45, "F");
 
-    // Title & Logo
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
@@ -338,7 +331,6 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.text(tPdf.tagline, 15, 28);
     doc.text(`${tPdf.generated}: ${new Date().toLocaleDateString()}`, 15, 34);
 
-    // Profile Details
     const profile = userProfile || {
       name: "Vishal Bhanopiya",
       age: 28,
@@ -354,7 +346,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.setDrawColor(226, 232, 240); 
     doc.roundedRect(10, 50, 190, 48, 4, 4, "FD");
 
-    doc.setTextColor(15, 118, 110);
+    doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text(tPdf.profile, 15, 58);
@@ -381,7 +373,6 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.setFont("helvetica", "normal");
     doc.text(`${profile.phone || "N/A"}`, 45, 84);
 
-    // Right Column in Profile block
     doc.setFont("helvetica", "bold");
     doc.text(`${tPdf.allergies}:`, 110, 66);
     doc.setFont("helvetica", "normal");
@@ -420,9 +411,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     const medsVal = profile.medications || "None";
     doc.text(medsVal.length > 22 ? medsVal.substring(0, 22) + "..." : medsVal, 148, 78);
 
-    // Latest Vitals Block
     doc.roundedRect(10, 104, 190, 36, 4, 4, "FD");
-    doc.setTextColor(15, 118, 110);
+    doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text(tPdf.vitals, 15, 112);
@@ -455,9 +445,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       doc.text(tPdf.noVitals, 15, 124);
     }
 
-    // Latest Screening Block
     doc.roundedRect(10, 146, 190, 38, 4, 4, "FD");
-    doc.setTextColor(15, 118, 110);
+    doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text(tPdf.screenings, 15, 154);
@@ -486,9 +475,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       doc.text(tPdf.noScreenings, 15, 166);
     }
 
-    // Active Medications List Block
     doc.roundedRect(10, 190, 190, 52, 4, 4, "FD");
-    doc.setTextColor(15, 118, 110);
+    doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text(tPdf.medsSchedule, 15, 198);
@@ -523,7 +511,6 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       doc.text(tPdf.noMeds, 15, 208);
     }
 
-    // Clinical Disclaimer Section
     doc.setFillColor(254, 242, 242); 
     doc.setDrawColor(254, 205, 205); 
     doc.roundedRect(10, 248, 190, 32, 4, 4, "FD");
@@ -622,10 +609,10 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
   };
 
   const renderTrendChart = () => {
-    if (!isMounted) return <div className="h-40 bg-slate-50 animate-pulse rounded-xl" />;
+    if (!isMounted) return <div className="h-40 bg-slate-50/50 animate-pulse rounded-2xl" />;
 
     let chartData: any[] = [];
-    let strokeColor = "#0d9488";
+    let strokeColor = "#8b5cf6";
     let yKey = "value";
     let yName = "Value";
 
@@ -639,7 +626,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
           ];
       yKey = "value";
       yName = language === "hi" ? "धड़कन (bpm)" : language === "gu" ? "ધબકારા (bpm)" : "Pulse (bpm)";
-      strokeColor = "#0d9488";
+      strokeColor = "#8b5cf6";
     } else if (trendMetric === "bp") {
       chartData = vitalsHistory.length > 0 
         ? vitalsHistory.map(v => ({ date: v.date.split("-").slice(1).join("/"), systolic: v.systolic, diastolic: v.diastolic }))
@@ -659,7 +646,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
           ];
       yKey = "value";
       yName = language === "hi" ? "ऑक्सीजन (SpO2%)" : language === "gu" ? "ઓક્સિજન (SpO2%)" : "SpO2 (%)";
-      strokeColor = "#3b82f6";
+      strokeColor = "#8b5cf6";
     } else if (trendMetric === "anemia") {
       const scans = recordsList
         .filter(r => r.title.toLowerCase().includes("anemia") || r.notes?.toLowerCase().includes("anemia"))
@@ -686,21 +673,21 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
           <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
             <defs>
               <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={strokeColor} stopOpacity={0.3}/>
+                <stop offset="5%" stopColor={strokeColor} stopOpacity={0.25}/>
                 <stop offset="95%" stopColor={strokeColor} stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="date" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} domain={trendMetric === 'oxygen' ? [90, 100] : ['auto', 'auto']} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0/40" />
+            <XAxis dataKey="date" tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }} axisLine={false} tickLine={false} domain={trendMetric === 'oxygen' ? [90, 100] : ['auto', 'auto']} />
             <Tooltip 
-              contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
+              contentStyle={{ background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255, 255, 255, 0.5)', borderRadius: 16, fontSize: 10, fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)' }}
               labelStyle={{ fontWeight: 800, color: '#1e293b' }}
             />
             {trendMetric === "bp" ? (
               <>
-                <Area type="monotone" name="Systolic" dataKey="systolic" stroke="#ec4899" fill="rgba(236, 72, 153, 0.1)" strokeWidth={2.5} />
-                <Area type="monotone" name="Diastolic" dataKey="diastolic" stroke="#3b82f6" fill="rgba(59, 130, 246, 0.05)" strokeWidth={2.5} />
+                <Area type="monotone" name="Systolic" dataKey="systolic" stroke="#ec4899" fill="rgba(236, 72, 153, 0.06)" strokeWidth={2.5} />
+                <Area type="monotone" name="Diastolic" dataKey="diastolic" stroke="#8b5cf6" fill="rgba(139, 92, 246, 0.04)" strokeWidth={2.5} />
               </>
             ) : (
               <Area type="monotone" name={yName} dataKey={yKey} stroke={strokeColor} fill="url(#colorMetric)" strokeWidth={2.5} />
@@ -716,8 +703,10 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div className="space-y-1">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-teal-655 text-teal-605" />
+          <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center">
+              <FileText className="w-4.5 h-4.5 text-violet-600" />
+            </div>
             {t.recordsHeader}
           </h2>
           <p className="text-xs text-slate-500 leading-normal">{t.recordsDesc}</p>
@@ -725,45 +714,45 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <button
             onClick={downloadHealthCardPDF}
-            className="bg-teal-50 text-teal-605 p-2.5 rounded-xl border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm min-h-[40px] min-w-[40px]"
+            className="w-10 h-10 rounded-xl bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center text-slate-500 shadow-soft hover:bg-white hover:scale-105 active:scale-95 transition-all"
             title={language === "hi" ? "हेल्थ कार्ड डाउनलोड करें (PDF)" : language === "gu" ? "હેલ્થ કાર્ડ ડાઉનલોડ કરો (PDF)" : "Download Health Card (PDF)"}
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 text-violet-600" />
           </button>
           <button
             onClick={handleExportSummary}
-            className="bg-teal-50 text-teal-605 p-2.5 rounded-xl border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center shadow-sm min-h-[40px] min-w-[40px]"
+            className="w-10 h-10 rounded-xl bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center text-slate-500 shadow-soft hover:bg-white hover:scale-105 active:scale-95 transition-all"
             title="Export Summary"
           >
-            <Share2 className="w-4 h-4" />
+            <Share2 className="w-4 h-4 text-violet-600" />
           </button>
           <button
             onClick={() => setShowRecordForm(!showRecordForm)}
-            className="bg-teal-605 text-white p-2.5 rounded-xl hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm min-h-[40px] min-w-[40px]"
+            className="w-10 h-10 rounded-xl bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
           >
-            {showRecordForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {showRecordForm ? <X className="w-4.5 h-4.5" /> : <Plus className="w-4.5 h-4.5" />}
           </button>
         </div>
       </div>
 
       {/* PROFILE CARD */}
       {userProfile && (
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-3.5 relative">
-          <div className="flex justify-between items-start">
+        <div className="glass-card p-5 space-y-4 relative">
+          <div className="flex justify-between items-start flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-teal-550 text-teal-600 font-extrabold flex items-center justify-center border border-teal-100 text-lg shadow-inner bg-teal-50">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white font-black flex items-center justify-center text-base shadow-primary-glow">
                 {userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "U"}
               </div>
               <div className="space-y-0.5">
                 <h3 className="font-extrabold text-slate-800 text-base">{userProfile.name}</h3>
-                <p className="text-[11px] text-slate-500 font-semibold">
+                <p className="text-[11px] text-slate-400 font-semibold">
                   {userProfile.age} yrs / {userProfile.gender === "Male" ? (language === "hi" ? "पुरुष" : language === "gu" ? "પુરુષ" : "Male") : userProfile.gender === "Female" ? (language === "hi" ? "महिला" : language === "gu" ? "મહિલા" : "Female") : (language === "hi" ? "अन्य" : language === "gu" ? "અન્ય" : "Other")} | {language === "hi" ? "रक्त समूह" : language === "gu" ? "બ્લડ ગ્રુપ" : "Blood"}: {userProfile.bloodGroup || "N/A"}
                 </p>
               </div>
             </div>
             <button
               onClick={onEditProfile}
-              className="text-xs font-bold text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-xl border border-teal-100 transition-all active:scale-95 flex items-center gap-1 min-h-[36px]"
+              className="text-xs font-bold text-violet-650 hover:text-violet-800 bg-violet-50 hover:bg-violet-100/60 px-3.5 py-2 rounded-xl transition-all active:scale-95 flex items-center gap-1.5"
             >
               <Settings className="w-3.5 h-3.5" />
               <span>{language === "hi" ? "संपादित करें" : language === "gu" ? "ફેરફાર કરો" : "Edit"}</span>
@@ -771,13 +760,12 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
           </div>
 
           {userProfile.conditions && userProfile.conditions.length > 0 && (
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                 {language === "hi" ? "स्वास्थ्य स्थितियां" : language === "gu" ? "આરોગ્ય સ્થિતિઓ" : "Medical Conditions"}
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {userProfile.conditions.map((cond: string, idx: number) => {
-                  // Find localized label
                   let label = cond;
                   const keyMap: Record<string, string> = {
                     "Diabetes": "diabetes",
@@ -797,7 +785,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                   return (
                     <span
                       key={idx}
-                      className="text-[10px] font-bold px-2.5 py-1 bg-slate-50 border border-slate-200 text-slate-600 rounded-full shadow-sm"
+                      className="text-[10px] font-extrabold px-3 py-1 bg-white/50 border border-slate-200/50 text-slate-600 rounded-full"
                     >
                       {label}
                       {cond === "Other" && userProfile.otherCondition ? `: ${userProfile.otherCondition}` : ""}
@@ -811,46 +799,46 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       )}
 
       {/* ABHA HEALTH ID CARD (ABDM) */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-md relative overflow-hidden border border-blue-500/10">
-        <div className="absolute right-[-10px] top-[-10px] w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
-        <div className="flex justify-between items-start mb-3">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden border border-blue-500/10 animate-float">
+        <div className="absolute right-[-10px] top-[-10px] w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
+        <div className="flex justify-between items-start mb-4">
           <div>
-            <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-100">National Health Authority</span>
-            <h4 className="text-sm font-extrabold flex items-center gap-1">
+            <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-200 block">National Health Authority</span>
+            <h4 className="text-sm font-extrabold flex items-center gap-1.5 mt-0.5">
               {language === "hi" ? "ABHA स्वास्थ्य पहचान पत्र" : language === "gu" ? "ABHA સ્વાસ્થ્ય આઈડી" : "ABHA Health ID"}
             </h4>
           </div>
           {isAbhaLinked ? (
-            <span className="bg-emerald-500 text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm uppercase tracking-wide">
+            <span className="bg-emerald-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm uppercase tracking-wider border border-emerald-400/30">
               <CheckCircle className="w-2.5 h-2.5 fill-white text-emerald-500" />
               Linked
             </span>
           ) : (
-            <span className="bg-amber-500 text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide">
+            <span className="bg-amber-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">
               Unlinked
             </span>
           )}
         </div>
 
         {isAbhaLinked ? (
-          <div className="space-y-2">
-            <div className="bg-white/10 px-3 py-2 rounded-xl border border-white/10">
-              <div className="text-[10px] text-blue-100 font-semibold">Ayushman Bharat Health Account</div>
-              <div className="font-mono text-base font-extrabold tracking-widest mt-0.5">{abhaNumber}</div>
+          <div className="space-y-3">
+            <div className="bg-white/10 px-3.5 py-2.5 rounded-2xl border border-white/10 backdrop-blur-md">
+              <div className="text-[9px] text-blue-200 font-bold uppercase tracking-wider">Ayushman Bharat Health Account</div>
+              <div className="font-mono text-base font-extrabold tracking-widest mt-1">{abhaNumber}</div>
             </div>
             <div className="flex justify-between items-center text-[10px] pt-1">
               <span className="text-blue-100 font-bold">Holder: {userProfile?.name || "Vishal Bhanopiya"}</span>
               <button 
                 onClick={handleUnlinkAbha}
-                className="text-red-200 hover:text-red-105 underline font-extrabold transition-colors active:scale-95 text-red-100"
+                className="text-red-200 hover:text-red-100 underline font-extrabold transition-colors active:scale-95"
               >
                 Unlink ID
               </button>
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <p className="text-[10px] text-blue-100 leading-normal">
+          <div className="space-y-3.5">
+            <p className="text-[10px] text-blue-100 leading-relaxed font-semibold">
               {language === "hi" 
                 ? "डिजिटल स्वास्थ्य मिशन के अंतर्गत अपने 14-अंकों के ABHA कार्ड को जोड़ें।"
                 : language === "gu"
@@ -864,20 +852,20 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                   placeholder="e.g. 12-3456-7890-1234"
                   value={abhaNumber}
                   onChange={handleAbhaChange}
-                  className="flex-1 text-xs p-2.5 rounded-xl border border-white/20 bg-white/10 font-bold placeholder-white/40 text-white focus:outline-none focus:border-white focus:bg-white/15 tracking-wider h-[44px]"
+                  className="flex-1 text-xs p-3 rounded-xl border border-white/20 bg-white/10 font-bold placeholder-white/40 text-white focus:outline-none focus:border-white focus:bg-white/15 tracking-wider h-[44px]"
                 />
                 <button
                   onClick={handleLinkAbha}
-                  className="bg-white text-blue-700 font-extrabold text-xs px-5 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm min-h-[44px]"
+                  className="bg-white text-blue-700 font-extrabold text-xs px-5 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-md min-h-[44px]"
                 >
                   Link
                 </button>
               </div>
               {abhaError && (
-                <div className="text-[10px] text-red-300 font-bold px-1.5 pt-0.5">{abhaError}</div>
+                <div className="text-[10px] text-red-350 font-bold px-1">{abhaError}</div>
               )}
             </div>
-            <div className="text-[8px] text-blue-200/90 leading-tight border-t border-white/5 pt-2 flex items-start gap-1">
+            <div className="text-[8px] text-blue-200/90 leading-relaxed border-t border-white/5 pt-2 flex items-start gap-1">
               <Info className="w-2.5 h-2.5 shrink-0 mt-0.5" />
               <span><strong>ABDM Prototype:</strong> Real integrations require ABDM sandbox access keys. Card linking is simulated here.</span>
             </div>
@@ -887,30 +875,30 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
       {/* Upload Record Form */}
       {showRecordForm && (
-        <form onSubmit={handleAddRecord} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3 animate-scaleUp">
-          <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <UploadCloud className="w-4 h-4 text-teal-600" />
+        <form onSubmit={handleAddRecord} className="glass-card p-5 space-y-4 animate-scaleUp">
+          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <UploadCloud className="w-4 h-4 text-violet-600 animate-pulse" />
             {language === "hi" ? "दस्तावेज़ अपलोड करें" : language === "gu" ? "દસ્તાવેજ અપલોડ કરો" : "Upload Report / Prescription"}
           </h3>
-          <div className="space-y-2">
-            <div className="space-y-1">
-              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Document Title</label>
+          <div className="space-y-3.5">
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Document Title</label>
               <input
                 type="text"
                 placeholder="e.g. Blood Sugar Report"
                 value={newRecord.title}
                 onChange={e => setNewRecord(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500 h-[44px]"
+                className="w-full text-xs p-3 rounded-xl border border-slate-200/60 bg-slate-55/30 font-semibold focus:outline-none focus:border-violet-500 focus:bg-white h-[40px]"
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Category</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Category</label>
                 <select
                   value={newRecord.category}
                   onChange={e => setNewRecord(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500 h-[44px]"
+                  className="w-full text-xs px-2.5 py-2 rounded-xl border border-slate-200/60 bg-slate-55/30 font-semibold focus:outline-none focus:border-violet-500 focus:bg-white h-[40px] cursor-pointer"
                 >
                   <option value="Lab Test">Lab Test</option>
                   <option value="Prescription">Prescription</option>
@@ -918,31 +906,31 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                   <option value="Vaccine">Vaccine Card</option>
                 </select>
               </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Physician / Lab</label>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Physician / Lab</label>
                 <input
                   type="text"
                   placeholder="e.g. Dr. Ray"
                   value={newRecord.doctor}
                   onChange={e => setNewRecord(prev => ({ ...prev, doctor: e.target.value }))}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500 h-[44px]"
+                  className="w-full text-xs p-3 rounded-xl border border-slate-200/60 bg-slate-55/30 font-semibold focus:outline-none focus:border-violet-500 focus:bg-white h-[40px]"
                   required
                 />
               </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Notes / Summary</label>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Notes / Summary</label>
               <textarea
                 placeholder="Paste report summary, values, or prescriptions here..."
                 value={newRecord.notes}
                 onChange={e => setNewRecord(prev => ({ ...prev, notes: e.target.value }))}
-                className="w-full h-16 text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-medium focus:outline-none focus:border-teal-500 resize-none"
+                className="w-full h-20 text-xs p-3 rounded-xl border border-slate-200/60 bg-slate-55/30 font-medium focus:outline-none focus:border-violet-500 focus:bg-white resize-none"
               />
             </div>
           </div>
           <button
             type="submit"
-            className="w-full bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 transition-colors shadow-sm min-h-[44px]"
+            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 min-h-[44px]"
           >
             {t.uploadRecordBtn}
           </button>
@@ -950,16 +938,16 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       )}
 
       {/* TRENDS CHART DASHBOARD */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-teal-655 text-teal-600" />
+      <div className="glass-card p-5 space-y-4">
+        <div className="flex justify-between items-center gap-3">
+          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <TrendingUp className="w-4 h-4 text-violet-650 animate-pulse" />
             {language === "hi" ? "वाइटल्स एवं स्वास्थ्य रुझान" : language === "gu" ? "વાઇટલ્સ અને સ્વાસ્થ્ય વલણો" : "Vitals & Health Trends"}
           </h3>
           <select
             value={trendMetric}
             onChange={e => setTrendMetric(e.target.value as any)}
-            className="text-[10px] font-bold text-slate-655 bg-slate-50 px-2 py-1 rounded-lg border border-slate-250 focus:outline-none cursor-pointer focus:border-teal-500 border-slate-200 h-[32px]"
+            className="text-[10px] font-bold text-slate-500 bg-white/50 border border-slate-200/60 rounded-lg px-2 py-1.5 focus:outline-none cursor-pointer focus:border-violet-500 h-[32px]"
           >
             <option value="heartRate">Heart Rate</option>
             <option value="bp">Blood Pressure</option>
@@ -972,40 +960,40 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
       {/* VAULT SESSION LIST */}
       <div className="space-y-3">
-        <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider px-0.5">
+        <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider px-0.5">
           {language === "hi" ? "कालानुक्रमिक सत्र इतिहास" : language === "gu" ? "ક્રમબદ્ધ સત્ર ઇતિહાસ" : "Chronological Session History"}
         </h3>
         {recordsList.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 border border-slate-100 text-center text-slate-400 text-xs font-medium">
+          <div className="glass-card p-8 text-center text-slate-400 text-xs font-medium">
             No health records saved. Click &quot;+&quot; to add reports.
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {recordsList.map((item) => (
               <div
                 key={item.id}
                 onClick={() => setSelectedRecordForDetails(item)}
-                className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between gap-3 hover:border-teal-100 cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
+                className="glass-card p-4 flex items-start justify-between gap-3 hover:border-violet-350 cursor-pointer transition-all active:scale-[0.99] hover:shadow-glass"
               >
-                <div className="bg-teal-50 p-2.5 rounded-lg text-teal-600 shrink-0">
+                <div className="bg-violet-50 p-2.5 rounded-xl text-violet-600 shrink-0">
                   <FileText className="w-4.5 h-4.5" />
                 </div>
-                <div className="flex-grow space-y-0.5 min-w-0">
+                <div className="flex-grow space-y-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-extrabold text-slate-800 text-xs truncate leading-normal">{item.title}</span>
-                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                    <span className="font-extrabold text-slate-700 text-xs truncate">{item.title}</span>
+                    <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider border ${
                       item.category === "Prescription" 
-                        ? "bg-purple-50 text-purple-700 border border-purple-100" 
+                        ? "bg-purple-50 text-purple-650 border-purple-100" 
                         : item.category === "Imaging" 
-                          ? "bg-blue-50 text-blue-700 border border-blue-100" 
-                          : "bg-teal-50 text-teal-700 border border-teal-100"
+                          ? "bg-blue-50 text-blue-650 border-blue-100" 
+                          : "bg-violet-50 text-violet-650 border-violet-100"
                     }`}>
                       {item.category}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-450 font-bold flex items-center gap-2.5 text-slate-500">
-                    <span className="flex items-center gap-1 shrink-0">
-                      <Calendar className="w-3 h-3 text-slate-400" />
+                  <div className="text-[10px] text-slate-400 font-bold flex items-center gap-2.5 flex-wrap">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
                       {item.date}
                     </span>
                     <span className="truncate">Provider: {item.doctor}</span>
@@ -1016,10 +1004,10 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                     e.stopPropagation();
                     deleteRecord(item.id);
                   }}
-                  className="text-slate-350 hover:text-red-500 p-1.5 transition-colors self-center active:scale-90 text-slate-400"
+                  className="text-slate-350 hover:text-red-500 p-1.5 transition-all self-center active:scale-90 hover:scale-105"
                   title="Delete Record"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4.5 h-4.5" />
                 </button>
               </div>
             ))}
@@ -1028,34 +1016,34 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       </div>
 
       {/* Cloud Backup status */}
-      <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3.5 border border-teal-100/40 flex items-center justify-between text-[10px] text-teal-850">
-        <span className="font-bold flex items-center gap-1.5">
-          <Lock className="w-4 h-4 text-teal-655 text-teal-650" />
+      <div className="bg-gradient-to-r from-violet-500/[0.04] to-purple-500/[0.04] border border-violet-500/10 rounded-2xl p-4 flex items-center justify-between text-[10px] text-violet-850 gap-4 flex-wrap">
+        <span className="font-bold flex items-center gap-1.5 text-slate-650">
+          <Lock className="w-4 h-4 text-violet-600 animate-float" />
           End-to-End Encrypted Cloud Storage Active
         </span>
-        <span className="font-extrabold underline cursor-pointer hover:text-teal-700">Manage Vault</span>
+        <span className="font-extrabold text-violet-600 underline cursor-pointer hover:text-violet-700">Manage Vault</span>
       </div>
 
       {/* DETAILS OVERLAY MODAL */}
       {selectedRecordForDetails && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 border border-slate-100 shadow-2xl animate-scaleUp">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white/95 backdrop-blur-md rounded-3xl w-full max-w-sm p-6 space-y-4 border border-white/50 shadow-glass-lg animate-scaleUp">
             <div className="flex justify-between items-start">
               <div className="space-y-0.5">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-teal-650 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full">
+                <span className="text-[9px] uppercase tracking-wider font-extrabold text-violet-650 bg-violet-50 border border-violet-100 px-2 py-0.5 rounded-full">
                   {selectedRecordForDetails.category}
                 </span>
                 <h3 className="font-extrabold text-slate-800 text-sm mt-1">{selectedRecordForDetails.title}</h3>
               </div>
               <button 
                 onClick={() => setSelectedRecordForDetails(null)} 
-                className="bg-slate-50 text-slate-450 hover:bg-slate-100 hover:text-slate-700 p-1.5 rounded-full transition-all active:scale-90"
+                className="bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-700 p-1.5 rounded-xl transition-all active:scale-90"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-650 border-t border-slate-100 pt-3 text-slate-600">
+            <div className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-3">
               <div className="flex justify-between">
                 <span className="font-bold text-slate-400">Date Recorded:</span>
                 <span className="font-bold text-slate-800">{selectedRecordForDetails.date}</span>
@@ -1064,9 +1052,9 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                 <span className="font-bold text-slate-400">Provider / Lab:</span>
                 <span className="font-bold text-slate-800">{selectedRecordForDetails.doctor}</span>
               </div>
-              <div className="space-y-1 pt-1.5 border-t border-slate-100/80">
+              <div className="space-y-1.5 pt-2 border-t border-slate-100/80">
                 <span className="font-bold text-slate-400 block uppercase text-[9px] tracking-wider">Detailed breakdown / Notes</span>
-                <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-2xl text-[10px] font-medium leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap text-slate-700">
+                <div className="bg-slate-50 border border-slate-200/65 p-3 rounded-2xl text-[10px] font-medium leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap text-slate-750 font-sans">
                   {selectedRecordForDetails.notes || "No additional records notes entered."}
                 </div>
               </div>
@@ -1074,7 +1062,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
             <button
               onClick={() => setSelectedRecordForDetails(null)}
-              className="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs py-3 rounded-xl transition-all shadow-sm active:scale-95 min-h-[44px]"
+              className="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 min-h-[44px]"
             >
               Close Details
             </button>
@@ -1084,8 +1072,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
       {/* EXPORT OVERLAY MODAL */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 border border-slate-100 shadow-2xl animate-scaleUp flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white/95 backdrop-blur-md rounded-3xl w-full max-w-sm p-6 space-y-4 border border-white/50 shadow-glass-lg animate-scaleUp flex flex-col max-h-[85vh]">
             <div className="flex justify-between items-start shrink-0">
               <div className="space-y-0.5">
                 <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-650 bg-blue-50 border border-blue-105 px-2 py-0.5 rounded-full">
@@ -1095,7 +1083,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
               </div>
               <button 
                 onClick={() => setShowExportModal(false)} 
-                className="bg-slate-50 text-slate-450 hover:bg-slate-100 hover:text-slate-700 p-1.5 rounded-full transition-all active:scale-90"
+                className="bg-slate-100 text-slate-450 hover:bg-slate-200 p-1.5 rounded-xl transition-all active:scale-90"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1103,16 +1091,16 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
             {isExporting ? (
               <div className="flex-1 flex flex-col items-center justify-center py-12 space-y-3">
-                <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
-                <p className="text-[10px] font-extrabold text-slate-655 text-center max-w-[200px] uppercase tracking-wider animate-pulse text-slate-500">
+                <Loader2 className="w-8 h-8 text-violet-605 animate-spin" />
+                <p className="text-[10px] font-extrabold text-slate-500 text-center max-w-[200px] uppercase tracking-wider animate-pulse leading-normal">
                   Compiling clinical database summary via Groq Llama 3.3...
                 </p>
               </div>
             ) : (
               <>
-                <div className="flex-1 overflow-y-auto bg-slate-50 border border-slate-200/60 p-3.5 rounded-2xl text-[10px] font-medium leading-relaxed prose prose-slate max-h-72">
+                <div className="flex-1 overflow-y-auto bg-slate-50 border border-slate-200/65 p-3.5 rounded-2xl text-[10px] font-medium leading-relaxed prose prose-slate max-h-72">
                   {exportedSummary ? (
-                    <div className="space-y-2 whitespace-pre-wrap font-sans text-slate-700">
+                    <div className="space-y-2 whitespace-pre-wrap font-sans text-slate-705">
                       {exportedSummary}
                     </div>
                   ) : (
@@ -1145,7 +1133,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                         document.body.removeChild(element);
                       }
                     }}
-                    className="bg-teal-650 hover:bg-teal-700 text-white font-extrabold text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 min-h-[44px]"
+                    className="bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 min-h-[44px]"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Download TXT

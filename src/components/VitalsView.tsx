@@ -185,12 +185,12 @@ const VitalsSpeechPlayer: React.FC<{
     >
       {isSpeaking ? (
         <>
-          <VolumeX className="w-3.5 h-3.5 text-teal-605 animate-pulse" />
+          <VolumeX className="w-3.5 h-3.5 text-violet-605 animate-pulse" />
           <span>{language === "hi" ? "आवाज रोकें" : language === "gu" ? "અવાજ બંધ કરો" : "Stop Voice"}</span>
         </>
       ) : (
         <>
-          <Volume2 className="w-3.5 h-3.5 text-teal-605" />
+          <Volume2 className="w-3.5 h-3.5 text-violet-605" />
           <span>{language === "hi" ? "आवाज सुनें" : language === "gu" ? "અવાજ સાંભળો" : "Play Voice"}</span>
         </>
       )}
@@ -474,7 +474,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           }
         }
 
-        ctx.strokeStyle = "rgba(20, 184, 166, 0.95)";
+        ctx.strokeStyle = "rgba(139, 92, 246, 0.95)";
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.ellipse(w / 2, h / 2, w * 0.26, h * 0.36, 0, 0, 2 * Math.PI);
@@ -745,7 +745,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
       <div className="p-4 space-y-4 animate-fadeIn flex flex-col items-center">
         <div className="text-center space-y-1 w-full">
           <h2 className="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
-            <Loader2 className="w-5 h-5 text-teal-600 animate-spin" />
+            <Loader2 className="w-5 h-5 text-violet-600 animate-spin" />
             {scanState === "permissions" ? (language === "hi" ? "कैमरा अनुमति ले रहे हैं..." : language === "gu" ? "કેમેરા પરવાનગી મેળવી રહ્યા છીએ..." : "Requesting Camera...") : sTrans.scanning}
           </h2>
           <p className="text-xs text-slate-500 max-w-xs mx-auto">
@@ -753,7 +753,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           </p>
         </div>
 
-        <div className="relative w-full max-w-[360px] aspect-[4/3] bg-slate-950 rounded-2xl overflow-hidden shadow-lg border-2 border-teal-500/80">
+        <div className="relative w-full max-w-[360px] aspect-[4/3] bg-slate-950 rounded-2xl overflow-hidden shadow-lg border-2 border-violet-500/80">
           <video
             ref={videoRef}
             playsInline
@@ -821,7 +821,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         {scanState === "scanning" && (
           <div className="w-full max-w-[360px] h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-teal-500 transition-all duration-1000 ease-linear"
+              className="h-full bg-violet-500 transition-all duration-1000 ease-linear"
               style={{ width: `${((30 - secondsLeft) / 30) * 100}%` }}
             />
           </div>
@@ -886,7 +886,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         <div className="flex justify-between items-start gap-2">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-teal-600 animate-pulse" />
+              <Sparkles className="w-5 h-5 text-violet-600 animate-pulse" />
               {sTrans.resultsTitle}
             </h2>
             <p className="text-xs text-slate-500 leading-normal">
@@ -917,11 +917,11 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             <span className="text-[9px] text-slate-400 mt-1 font-semibold">Normal: {getNormalRanges(profileAge).spo2}%</span>
           </div>
 
-          <div className="bg-gradient-to-br from-teal-50 to-white border border-teal-100 p-3 rounded-2xl flex flex-col justify-between items-center text-center shadow-sm">
-            <div className="w-5 h-5 rounded-full border-2 border-teal-500/30 flex items-center justify-center text-[10px] font-bold text-teal-600">BR</div>
+          <div className="bg-gradient-to-br from-violet-50 to-white border border-violet-100 p-3 rounded-2xl flex flex-col justify-between items-center text-center shadow-sm">
+            <div className="w-5 h-5 rounded-full border-2 border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-600">BR</div>
             <div className="my-2">
-              <span className="text-2xl font-black text-teal-700">{capturedVitals.br}</span>
-              <span className="text-[9px] text-teal-500 block font-semibold">/min</span>
+              <span className="text-2xl font-black text-violet-700">{capturedVitals.br}</span>
+              <span className="text-[9px] text-violet-500 block font-semibold">/min</span>
             </div>
             <span className="text-[10px] font-bold text-slate-600">{sTrans.br}</span>
             <span className="text-[9px] text-slate-400 mt-1 font-semibold">Normal: {getNormalRanges(profileAge).br}</span>
@@ -975,7 +975,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
               {capturedVitals.hrList.map((val, idx) => (
                 <div key={idx} className="flex-1 bg-white border border-slate-100 rounded-xl p-2 text-center shadow-sm">
                   <span className="text-[8px] font-semibold text-slate-400 block mb-0.5">W{idx + 1}</span>
-                  <span className="text-xs font-black text-teal-605 font-bold">{Math.round(val)}</span>
+                  <span className="text-xs font-black text-violet-605 font-bold">{Math.round(val)}</span>
                   <span className="text-[7px] text-slate-405 block font-bold">bpm</span>
                 </div>
               ))}
@@ -1003,7 +1003,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           </div>
         </div>
 
-        <div className="bg-amber-50/80 border border-amber-200/60 rounded-xl p-3 flex gap-2 text-amber-800 leading-normal">
+        <div className="bg-amber-55/80 border border-amber-200/60 rounded-xl p-3 flex gap-2 text-amber-800 leading-normal">
           <AlertTriangle className="w-4.5 h-4.5 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-[10px] font-medium">{sTrans.disclaimer}</p>
         </div>
@@ -1011,13 +1011,13 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         <div className="flex gap-2">
           <button
             onClick={saveScanResults}
-            className="flex-1 bg-teal-600 text-white font-bold text-xs py-3 rounded-xl hover:bg-teal-700 transition-colors shadow-sm min-h-[44px]"
+            className="flex-1 bg-violet-600 text-white font-bold text-xs py-3 rounded-xl hover:bg-violet-700 transition-colors shadow-sm min-h-[44px]"
           >
             {sTrans.save}
           </button>
           <button
             onClick={startCameraScan}
-            className="px-4 py-3 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-50 transition-colors min-h-[44px]"
+            className="px-4 py-3 border border-slate-205 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-50 transition-colors min-h-[44px]"
           >
             {sTrans.scanAgain}
           </button>
@@ -1043,7 +1043,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         <div className="flex gap-2 w-full max-w-xs">
           <button
             onClick={startCameraScan}
-            className="flex-1 bg-teal-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-teal-700 transition-colors min-h-[44px]"
+            className="flex-1 bg-violet-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-violet-700 transition-colors min-h-[44px]"
           >
             {language === "hi" ? "पुनः प्रयास करें" : language === "gu" ? "ફરી પ્રયાસ કરો" : "Retry"}
           </button>
@@ -1063,20 +1063,20 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
       <div className="flex justify-between items-center">
         <div className="space-y-1">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-teal-600" />
+            <Activity className="w-5 h-5 text-violet-600" />
             {t.vitalsHeader}
           </h2>
           <p className="text-xs text-slate-500 leading-normal">{t.vitalsDesc}</p>
         </div>
         <button
           onClick={() => setShowVitalForm(!showVitalForm)}
-          className="bg-teal-50 text-teal-600 p-2 rounded-full border border-teal-100 hover:bg-teal-100 transition-all flex items-center justify-center min-w-[40px] min-h-[40px]"
+          className="bg-violet-50 text-violet-600 p-2 rounded-full border border-violet-100 hover:bg-violet-100 transition-all flex items-center justify-center min-w-[40px] min-h-[40px]"
         >
           {showVitalForm ? <X className="w-4.5 h-4.5" /> : <Plus className="w-4.5 h-4.5 font-bold" />}
         </button>
       </div>
 
-      <div className="bg-gradient-to-br from-teal-600 to-emerald-600 rounded-3xl p-5 text-white shadow-md relative overflow-hidden flex flex-col justify-between gap-4">
+      <div className="bg-gradient-to-br from-violet-600 to-indigo-650 rounded-3xl p-5 text-white shadow-md relative overflow-hidden flex flex-col justify-between gap-4">
         <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="absolute -left-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-lg pointer-events-none" />
 
@@ -1095,9 +1095,9 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
 
         <button
           onClick={startCameraScan}
-          className="w-full bg-white text-teal-700 font-extrabold text-xs py-3 rounded-2xl hover:bg-slate-50 transition-colors shadow-sm relative z-10 flex items-center justify-center gap-2 group min-h-[44px]"
+          className="w-full bg-white text-violet-700 font-extrabold text-xs py-3 rounded-2xl hover:bg-slate-50 transition-colors shadow-sm relative z-10 flex items-center justify-center gap-2 group min-h-[44px]"
         >
-          <Video className="w-4 h-4 text-teal-600 transition-transform group-hover:scale-110" />
+          <Video className="w-4 h-4 text-violet-600 transition-transform group-hover:scale-110" />
           <span>{sTrans.startScan}</span>
         </button>
       </div>
@@ -1117,7 +1117,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
                 placeholder="e.g. 120"
                 value={newVital.systolic}
                 onChange={e => setNewVital(prev => ({ ...prev, systolic: e.target.value }))}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500 h-[44px]"
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-violet-500 h-[44px]"
               />
             </div>
             <div className="space-y-1">
@@ -1129,7 +1129,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
                 placeholder="e.g. 80"
                 value={newVital.diastolic}
                 onChange={e => setNewVital(prev => ({ ...prev, diastolic: e.target.value }))}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500 h-[44px]"
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-violet-500 h-[44px]"
               />
             </div>
             <div className="space-y-1">
@@ -1141,7 +1141,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
                 placeholder="e.g. 72"
                 value={newVital.heartRate}
                 onChange={e => setNewVital(prev => ({ ...prev, heartRate: e.target.value }))}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500 h-[44px]"
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-violet-500 h-[44px]"
               />
             </div>
             <div className="space-y-1">
@@ -1153,13 +1153,13 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
                 placeholder="e.g. 98"
                 value={newVital.oxygen}
                 onChange={e => setNewVital(prev => ({ ...prev, oxygen: e.target.value }))}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-teal-500 h-[44px]"
+                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-violet-500 h-[44px]"
               />
             </div>
           </div>
           <button
             type="submit"
-            className="w-full bg-teal-600 text-white font-bold text-xs py-3 rounded-lg hover:bg-teal-700 transition-colors mt-2 min-h-[44px]"
+            className="w-full bg-violet-600 text-white font-bold text-xs py-3 rounded-lg hover:bg-violet-700 transition-colors mt-2 min-h-[44px]"
           >
             {t.addVitalBtn}
           </button>
@@ -1170,7 +1170,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-4">
           <div className="flex justify-between items-center px-1">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1">
-              <TrendingUp className="w-4 h-4 text-teal-600" />
+              <TrendingUp className="w-4 h-4 text-violet-600" />
               Blood Pressure Trend (mmHg)
             </span>
             <span className="text-[10px] text-slate-400">Past {vitalsHistory.length} Days</span>
@@ -1181,12 +1181,12 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
               <AreaChart data={vitalsHistory} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSys" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0d9488" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorDia" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#c084fc" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -1194,8 +1194,8 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
                 <YAxis domain={[50, 160]} stroke="#94a3b8" />
                 <Tooltip />
                 <Legend iconType="circle" />
-                <Area type="monotone" dataKey="systolic" name="Systolic BP" stroke="#0d9488" strokeWidth={2} fillOpacity={1} fill="url(#colorSys)" />
-                <Area type="monotone" dataKey="diastolic" name="Diastolic BP" stroke="#06b6d4" strokeWidth={1.5} fillOpacity={1} fill="url(#colorDia)" />
+                <Area type="monotone" dataKey="systolic" name="Systolic BP" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorSys)" />
+                <Area type="monotone" dataKey="diastolic" name="Diastolic BP" stroke="#c084fc" strokeWidth={1.5} fillOpacity={1} fill="url(#colorDia)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState } from "react";
-import { AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, ShieldAlert } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 const disclaimerTranslations: Record<
@@ -27,41 +29,44 @@ export const ClinicalDisclaimer: React.FC = () => {
   const { language } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Fallback to English if the current language doesn't have explicit translations
   const t = disclaimerTranslations[language] || disclaimerTranslations.en;
 
   return (
-    <div className="mt-4 bg-slate-50 border border-slate-200/60 rounded-xl overflow-hidden transition-all duration-300">
+    <div className="mt-4 bg-amber-500/[0.02] border border-amber-500/10 rounded-2xl overflow-hidden shadow-soft transition-all duration-300">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 text-left focus:outline-none hover:bg-slate-100/50 transition-colors"
+        className="w-full flex items-center justify-between p-3.5 text-left focus:outline-none hover:bg-amber-500/[0.04] transition-colors"
       >
-        <div className="flex items-center gap-2 text-slate-700">
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-          <span className="text-[10px] font-black uppercase tracking-wider">
+        <div className="flex items-center gap-2.5 text-slate-700">
+          <div className="w-7 h-7 bg-amber-100/60 rounded-xl flex items-center justify-center shrink-0">
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-650">
             {t.title}
           </span>
         </div>
-        {isExpanded ? (
-          <ChevronUp className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-        ) : (
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-        )}
+        <div className="w-6 h-6 rounded-lg bg-white/80 border border-slate-200 flex items-center justify-center shrink-0">
+          {isExpanded ? (
+            <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          )}
+        </div>
       </button>
 
       <div
-        className={`transition-all duration-300 ease-in-out px-3 pb-3 ${
-          isExpanded ? "max-h-40 opacity-100" : "max-h-0 opacity-0 pointer-events-none overflow-hidden pb-0"
+        className={`transition-all duration-300 ease-in-out px-3.5 pb-3.5 ${
+          isExpanded ? "max-h-48 opacity-100" : "max-h-0 opacity-0 pointer-events-none overflow-hidden pb-0"
         }`}
       >
-        <p className="text-[9px] text-slate-500 leading-relaxed font-semibold">
+        <p className="text-[10px] text-slate-550 leading-relaxed font-semibold">
           {t.fullText}
         </p>
       </div>
 
       {!isExpanded && (
-        <div className="px-3 pb-2.5 -mt-1">
-          <p className="text-[9px] text-slate-450 leading-relaxed truncate font-medium text-slate-400">
+        <div className="px-3.5 pb-3 -mt-1 pointer-events-none">
+          <p className="text-[9px] text-slate-400 leading-relaxed truncate font-bold">
             {t.shortText}
           </p>
         </div>

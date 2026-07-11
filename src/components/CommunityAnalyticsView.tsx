@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useMemo } from "react";
-import { Lock, AlertTriangle } from "lucide-react";
+import { Lock, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import {
   BarChart,
@@ -137,13 +139,16 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
   return (
     <div className="space-y-6 animate-fadeIn text-left">
       {/* Privacy Disclaimer Card */}
-      <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 flex items-start gap-3">
-        <Lock className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <h4 className="text-xs font-black text-teal-800 uppercase tracking-wide">
-            {l.anonymizedHeader}
+      <div className="bg-violet-500/[0.04] border border-violet-500/10 rounded-2xl p-4 flex items-start gap-3 shadow-soft">
+        <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+          <Lock className="w-4 h-4 text-violet-600" />
+        </div>
+        <div className="space-y-0.5">
+          <h4 className="text-xs font-black text-violet-800 uppercase tracking-wider flex items-center gap-1">
+            <span>{l.anonymizedHeader}</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-violet-605" />
           </h4>
-          <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
+          <p className="text-[10px] text-slate-550 leading-relaxed font-semibold">
             {l.anonymizedDesc}
           </p>
         </div>
@@ -159,34 +164,34 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
 
           <div className="grid grid-cols-1 gap-3">
             {outbreakAlerts.map((alert, index) => (
-              <div key={index} className="bg-rose-50 border border-rose-100 rounded-3xl p-5 flex items-start gap-4 shadow-sm relative overflow-hidden animate-pulseCard">
-                <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-16 h-16 bg-rose-500/5 rounded-full" />
-                <div className="bg-rose-500 text-white p-3 rounded-2xl shrink-0 shadow-inner">
+              <div key={index} className="bg-rose-500/[0.03] border border-rose-500/15 rounded-3xl p-5 flex items-start gap-4 shadow-soft relative overflow-hidden animate-pulseCard">
+                <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-16 h-16 bg-rose-500/5 rounded-full pointer-events-none" />
+                <div className="bg-rose-500 text-white p-3 rounded-2xl shrink-0 shadow-md">
                   <AlertTriangle className="w-6 h-6 animate-pulse" />
                 </div>
-                <div className="space-y-2 flex-grow">
-                  <div className="flex justify-between items-start">
-                    <span className="bg-rose-500 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                <div className="space-y-2.5 flex-grow">
+                  <div className="flex justify-between items-center gap-2 flex-wrap">
+                    <span className="bg-rose-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">
                       {l.ruleTriggered}
                     </span>
-                    <span className="text-[9px] text-rose-600 font-extrabold bg-rose-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[9px] text-rose-605 font-black bg-rose-100/60 px-2 py-0.5 rounded-full">
                       {l.feverExceeded}
                     </span>
                   </div>
-                  <h3 className="font-extrabold text-sm text-slate-800">
+                  <h3 className="font-black text-sm text-slate-800 leading-snug">
                     {l.potentialOutbreak
                       .replace("{infection}", alert.possibleInfection)
                       .replace("{village}", alert.village)}
                   </h3>
-                  <p className="text-[10px] text-slate-500 leading-normal">
+                  <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
                     {l.casesThreshold
                       .replace("{village}", alert.village)
                       .replace("{cases}", String(alert.feverCases))
                       .replace("{threshold}", String(alert.threshold))}
                   </p>
-                  <div className="pt-2 border-t border-rose-100/50 flex flex-col gap-1.5">
-                    <span className="text-[9px] font-black text-rose-700 uppercase tracking-wide">{l.recommendedActions}</span>
-                    <ul className="list-disc list-inside text-[9px] text-slate-600 space-y-1 pl-1 font-semibold">
+                  <div className="pt-3 border-t border-rose-100/50 flex flex-col gap-1.5">
+                    <span className="text-[9px] font-black text-rose-700 uppercase tracking-wider">{l.recommendedActions}</span>
+                    <ul className="list-disc list-inside text-[9px] text-slate-655 space-y-1 pl-1 font-semibold leading-relaxed">
                       <li>{l.actionVector.replace("{village}", alert.village)}</li>
                       <li>{l.actionCamp}</li>
                       <li>{l.actionLog}</li>
@@ -200,27 +205,27 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
       )}
 
       {/* Chart 1: Risk Types by Area (Village breakdown) */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 text-left">
+      <div className="glass-card p-5 space-y-4 text-left">
         <div>
           <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
             {l.commonSymptoms}
           </h3>
-          <p className="text-[9px] text-slate-400 mt-0.5">{l.aggregatedConditions}</p>
+          <p className="text-[9px] text-slate-400 mt-0.5 font-bold">{l.aggregatedConditions}</p>
         </div>
 
-        <div className="h-64 w-full">
+        <div className="h-64 w-full text-[9px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={riskTypesByArea} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0/40" />
               <XAxis dataKey="village" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
+                contentStyle={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 16, fontSize: 10, fontWeight: 750 }}
               />
-              <Legend wrapperStyle={{ fontSize: 10, fontWeight: 700, paddingTop: 10 }} iconType="circle" />
+              <Legend wrapperStyle={{ fontSize: 9, fontWeight: 800, paddingTop: 10 }} iconType="circle" />
               <Bar dataKey="Fever" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} name={l.feverFlu} />
               <Bar dataKey="Respiratory" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} name={l.respiratory} />
-              <Bar dataKey="Cardiovascular" stackId="a" fill="#0d9488" radius={[0, 0, 0, 0]} name={l.cardio} />
+              <Bar dataKey="Cardiovascular" stackId="a" fill="#7C3AED" radius={[0, 0, 0, 0]} name={l.cardio} />
               <Bar dataKey="Anemia" stackId="a" fill="#8b5cf6" radius={[4, 4, 0, 0]} name={l.anemiaNutrition} />
             </BarChart>
           </ResponsiveContainer>
@@ -228,36 +233,36 @@ export const CommunityAnalyticsView: React.FC<CommunityAnalyticsViewProps> = Rea
       </div>
 
       {/* Chart 2: Cases Trend Over Time */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4 text-left">
+      <div className="glass-card p-5 space-y-4 text-left">
         <div>
           <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">
             {l.epidemiologicalTrend}
           </h3>
-          <p className="text-[9px] text-slate-400 mt-0.5">{l.trackingDays}</p>
+          <p className="text-[9px] text-slate-400 mt-0.5 font-bold">{l.trackingDays}</p>
         </div>
 
-        <div className="h-64 w-full">
+        <div className="h-64 w-full text-[9px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={casesOverTime} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorHighRisk" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25}/>
                   <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="colorMediumRisk" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2}/>
+                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.25}/>
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0/40" />
               <XAxis dataKey="date" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 10, fontWeight: 700 }}
+                contentStyle={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 16, fontSize: 10, fontWeight: 750 }}
               />
-              <Legend wrapperStyle={{ fontSize: 10, fontWeight: 700, paddingTop: 10 }} iconType="circle" />
-              <Area type="monotone" name={l.highRiskRed} dataKey="High Risk" stroke="#ef4444" fill="url(#colorHighRisk)" strokeWidth={2} />
-              <Area type="monotone" name={l.mediumRiskYellow} dataKey="Medium Risk" stroke="#f59e0b" fill="url(#colorMediumRisk)" strokeWidth={2} />
+              <Legend wrapperStyle={{ fontSize: 9, fontWeight: 800, paddingTop: 10 }} iconType="circle" />
+              <Area type="monotone" name={l.highRiskRed} dataKey="High Risk" stroke="#ef4444" fill="url(#colorHighRisk)" strokeWidth={2.5} />
+              <Area type="monotone" name={l.mediumRiskYellow} dataKey="Medium Risk" stroke="#f59e0b" fill="url(#colorMediumRisk)" strokeWidth={2.5} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

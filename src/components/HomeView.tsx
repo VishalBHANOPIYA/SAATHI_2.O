@@ -1,28 +1,24 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Heart,
   ChevronRight,
-  ShieldAlert,
   Activity,
   Mic,
-  Video,
-  FileText,
-  Pill,
   Sparkles,
   Phone,
   Bell,
   Calendar,
   Plus,
-  MoreHorizontal,
-  Info,
-  Droplet,
-  Moon,
   Award,
   TrendingUp,
   AlertTriangle,
   Flame,
   CheckCircle,
-  Stethoscope
+  Stethoscope,
+  Droplet,
+  Moon
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
@@ -118,16 +114,16 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       
       {/* 1. HEADER */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3.5">
           <div 
             onClick={onEditProfile}
-            className="w-11 h-11 rounded-2xl bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-extrabold text-sm cursor-pointer shadow-soft hover:shadow-premium active:scale-95 transition-all"
+            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-650 flex items-center justify-center text-white font-black text-base cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all"
           >
             {displayUserName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <span className="text-[10px] text-textsecondary font-bold uppercase tracking-wider">{getGreeting()}</span>
-            <h2 className="text-base font-black text-textprimary leading-tight">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{getGreeting()}</span>
+            <h2 className="text-lg font-black text-slate-800 leading-tight">
               {displayUserName} 👋
             </h2>
           </div>
@@ -136,107 +132,114 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
         <div className="flex items-center gap-2">
           <button 
             onClick={onEditProfile}
-            className="w-9 h-9 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-textsecondary shadow-soft hover:bg-slate-50 active:scale-95 transition-all"
+            className="w-10 h-10 rounded-2xl bg-white border border-gray-150 flex items-center justify-center shadow-sm hover:bg-slate-50 active:scale-95 transition-all"
           >
-            <Calendar className="w-4 h-4 text-primary" />
+            <Calendar className="w-[18px] h-[18px] text-violet-650" />
           </button>
           <div className="relative">
-            <button className="w-9 h-9 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-textsecondary shadow-soft hover:bg-slate-50 active:scale-95 transition-all">
-              <Bell className="w-4 h-4 text-primary" />
+            <button className="w-10 h-10 rounded-2xl bg-white border border-gray-150 flex items-center justify-center shadow-sm hover:bg-slate-50 active:scale-95 transition-all">
+              <Bell className="w-[18px] h-[18px] text-violet-650" />
             </button>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
           </div>
         </div>
       </div>
 
       {/* 2. CALENDAR DAY PICKER ROW */}
-      <div className="flex items-center justify-between py-1 bg-white border border-slate-100/80 shadow-soft rounded-2xl px-2.5">
-        <div className="flex-1 flex justify-between items-center text-center text-xs font-bold text-textsecondary">
-          <span className="px-2 py-2 hover:text-textprimary transition-colors cursor-pointer">09</span>
-          <span className="px-2 py-2 hover:text-textprimary transition-colors cursor-pointer">10</span>
-          <span className="px-2 py-2 hover:text-textprimary transition-colors cursor-pointer">11</span>
-          <span className="bg-gradient-to-r from-primary to-secondary text-white shadow-soft rounded-xl px-3.5 py-1.5 text-[10px] font-black tracking-wider uppercase">
+      <div className="bg-white border border-gray-150 rounded-2xl p-2 shadow-sm">
+        <div className="flex justify-between items-center text-center text-xs font-bold text-slate-400 px-1">
+          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">09</span>
+          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">10</span>
+          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">11</span>
+          <span className="bg-gradient-to-r from-violet-600 to-purple-650 text-white shadow-md rounded-xl px-4 py-2 text-[10px] font-black tracking-wider uppercase">
             Today, 12 Jun
           </span>
-          <span className="px-2 py-2 hover:text-textprimary transition-colors cursor-pointer">13</span>
-          <span className="px-2 py-2 hover:text-textprimary transition-colors cursor-pointer">14</span>
-          <span className="px-2 py-2 hover:text-textprimary transition-colors cursor-pointer">15</span>
+          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">13</span>
+          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">14</span>
+          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">15</span>
         </div>
       </div>
 
       {/* 3. HERO DASHBOARD ROW (Health Score & Active Screening) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Health Score Card */}
-        <div className="bg-white border border-slate-100/80 rounded-[32px] p-5 shadow-soft flex items-center justify-between relative overflow-hidden">
-          <div className="space-y-1.5 z-10">
+        <div className="bg-white border border-gray-150 rounded-3xl p-5 flex items-center justify-between relative shadow-sm">
+          <div className="space-y-2 z-10">
             <div className="flex items-center gap-1.5">
-              <Award className="w-4.5 h-4.5 text-primary" />
-              <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wider">Health Score</span>
+              <div className="w-6 h-6 rounded-lg bg-violet-50 flex items-center justify-center">
+                <Award className="w-3.5 h-3.5 text-violet-600" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Health Score</span>
             </div>
-            <h3 className="text-2xl font-black text-textprimary">85<span className="text-xs text-textsecondary font-bold">/100</span></h3>
-            <span className="inline-block bg-primary/10 text-primary text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full">
+            <div>
+              <h3 className="text-2xl font-black text-slate-800 leading-none">85<span className="text-xs text-slate-400 font-bold">/100</span></h3>
+            </div>
+            <span className="inline-flex bg-violet-100 text-violet-750 border border-violet-200 text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full">
               Excellent
             </span>
-            <p className="text-[9px] text-textsecondary font-semibold max-w-[140px] leading-relaxed pt-1">
+            <p className="text-[10px] text-slate-400 font-medium max-w-[140px] leading-relaxed pt-1">
               Your health metrics are optimal today. Keep it up!
             </p>
           </div>
           <div className="relative w-24 h-24 flex items-center justify-center z-10">
-            <svg className="w-full h-full transform -rotate-90">
+            <div className="absolute inset-1.5 rounded-full bg-gradient-to-br from-slate-50 to-white shadow-inner" />
+            <svg className="w-full h-full transform -rotate-90 relative z-10">
               <circle
                 cx="48"
                 cy="48"
-                r="38"
-                className="stroke-slate-50"
-                strokeWidth="7"
+                r="36"
+                className="stroke-slate-100"
+                strokeWidth="6"
                 fill="transparent"
               />
               <circle
                 cx="48"
                 cy="48"
-                r="38"
-                className="stroke-primary transition-all duration-1000 ease-out"
-                strokeWidth="7"
+                r="36"
+                className="stroke-violet-600 transition-all duration-1000 ease-out"
+                strokeWidth="6"
                 fill="transparent"
-                strokeDasharray={2 * Math.PI * 38}
-                strokeDashoffset={2 * Math.PI * 38 * 0.15} // 85% progress
+                strokeDasharray={2 * Math.PI * 36}
+                strokeDashoffset={2 * Math.PI * 36 * 0.15} // 85% progress
                 strokeLinecap="round"
               />
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-sm font-black text-textprimary">85%</span>
-              <span className="text-[7px] font-extrabold uppercase text-textsecondary tracking-wider">Score</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20">
+              <span className="text-base font-black text-slate-800">85%</span>
+              <span className="text-[7px] font-bold uppercase text-slate-400 tracking-wider">Score</span>
             </div>
           </div>
         </div>
 
         {/* Last Screening Result */}
-        <div className="bg-white border border-slate-100/80 rounded-[32px] p-5 shadow-soft flex flex-col justify-between relative overflow-hidden">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 text-accent">
-              <Stethoscope className="w-4.5 h-4.5 text-primary" />
-              <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wider">Last Screening</span>
+        <div className="bg-white border border-gray-150 rounded-3xl p-5 flex flex-col justify-between shadow-sm">
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-6 rounded-lg bg-violet-50 flex items-center justify-center">
+                <Stethoscope className="w-3.5 h-3.5 text-violet-600" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Screening</span>
             </div>
             {latestScreening ? (
-              <div className="space-y-1">
-                <p className="text-xs font-extrabold text-textprimary">{latestScreening.title}</p>
-                <div className="flex items-center gap-1.5 pt-1">
-                  <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-slate-700 leading-normal">{latestScreening.title}</p>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
                     latestScreeningRisk === "High" 
-                      ? "bg-rose-100 text-rose-700" 
+                      ? "bg-rose-50 text-rose-600 border-rose-100" 
                       : latestScreeningRisk === "Moderate" 
-                      ? "bg-amber-100 text-amber-700" 
-                      : "bg-emerald-100 text-emerald-700"
+                      ? "bg-amber-50 text-amber-600 border-amber-100" 
+                      : "bg-emerald-50 text-emerald-600 border-emerald-100"
                   }`}>
                     {latestScreeningRisk || "Low"} Risk
                   </span>
-                  <span className="text-[9px] text-textsecondary font-semibold">{latestScreening.date}</span>
+                  <span className="text-[10px] text-slate-400 font-semibold">{latestScreening.date}</span>
                 </div>
               </div>
             ) : (
               <div className="space-y-1">
-                <p className="text-xs font-bold text-textprimary">No Screenings Recorded</p>
-                <p className="text-[9px] text-textsecondary font-semibold leading-relaxed">
+                <p className="text-xs font-bold text-slate-700">No Screenings Recorded</p>
+                <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
                   Run a camera-based AI screening for anemia & jaundice.
                 </p>
               </div>
@@ -244,7 +247,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </div>
           <button 
             onClick={() => setActiveTab("screen")}
-            className="w-full mt-4 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-[10px] py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1"
+            className="w-full mt-4 bg-violet-600 hover:bg-violet-700 text-white font-bold text-[11px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
           >
             <span>Perform New Scan</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -255,37 +258,37 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* 4. VITALS SUMMARY GRID */}
       <div className="grid grid-cols-2 gap-4">
         {/* Oxygen Card */}
-        <div className="bg-white border border-slate-100/80 rounded-[32px] p-4 shadow-soft flex flex-col justify-between min-h-[120px] hover:shadow-premium transition-all">
+        <div className="bg-white border border-gray-150 rounded-3xl p-4.5 flex flex-col justify-between min-h-[120px] shadow-sm">
           <div className="flex justify-between items-start">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 font-extrabold text-[10px] flex items-center justify-center shadow-inner">
+            <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-750 font-black text-xs flex items-center justify-center shadow-sm">
               O2
             </div>
-            <span className="bg-blue-100 text-blue-800 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full">
+            <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
               Optimal
             </span>
           </div>
-          <div className="space-y-0.5 pt-4">
-            <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">Oxygen Level</span>
-            <h4 className="text-lg font-black text-textprimary leading-none">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Oxygen Level</span>
+            <h4 className="text-xl font-black text-slate-800 leading-none">
               {currentOxygen}%
             </h4>
           </div>
         </div>
 
         {/* Heart Rate Card */}
-        <div className="bg-white border border-slate-100/80 rounded-[32px] p-4 shadow-soft flex flex-col justify-between min-h-[120px] hover:shadow-premium transition-all">
+        <div className="bg-white border border-gray-150 rounded-3xl p-4.5 flex flex-col justify-between min-h-[120px] shadow-sm">
           <div className="flex justify-between items-start">
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm">
               <Heart className="w-4 h-4 fill-rose-500/20 text-rose-500 animate-pulse" />
             </div>
-            <span className="bg-rose-100 text-rose-800 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full">
+            <span className="bg-rose-50 text-rose-600 border border-rose-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
               Steady
             </span>
           </div>
-          <div className="space-y-0.5 pt-4">
-            <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">Heart Rate</span>
-            <h4 className="text-lg font-black text-textprimary leading-none">
-              {currentHeartRate} bpm
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Heart Rate</span>
+            <h4 className="text-xl font-black text-slate-800 leading-none">
+              {currentHeartRate} <span className="text-xs text-slate-400 font-semibold">bpm</span>
             </h4>
           </div>
         </div>
@@ -293,67 +296,68 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
 
       {/* 5. INTERACTIVE WATER & SLEEP SUMMARY GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Water Intake Widget */}
-        <div className="bg-white border border-slate-100/80 rounded-[32px] p-5 shadow-soft space-y-3.5">
+        {/* Water Widget */}
+        <div className="bg-white border border-gray-150 rounded-3xl p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Droplet className="w-4.5 h-4.5 text-blue-500 fill-blue-500/10" />
-              <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wider">Water Intake</span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center">
+                <Droplet className="w-4 h-4 text-violet-600 fill-violet-600/10" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Water Intake</span>
             </div>
             <button 
               onClick={addWater}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-600 w-7 h-7 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all"
+              className="bg-violet-600 hover:bg-violet-700 text-white w-8 h-8 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all"
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-xl font-black text-textprimary">{waterIntake.toFixed(2)}</span>
-            <span className="text-xs text-textsecondary font-bold">L / 3.0 L</span>
+            <span className="text-2xl font-black text-slate-800">{waterIntake.toFixed(2)}</span>
+            <span className="text-xs text-slate-400 font-bold">L / 3.0 L</span>
           </div>
-          <div className="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100/60">
+          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
             <div 
-              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-300"
+              className="h-full bg-gradient-to-r from-violet-600 to-purple-500 rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, (waterIntake / 3.0) * 100)}%` }}
             />
           </div>
         </div>
 
         {/* Sleep Summary Card */}
-        <div className="bg-white border border-slate-100/80 rounded-[32px] p-5 shadow-soft space-y-3.5">
+        <div className="bg-white border border-gray-150 rounded-3xl p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Moon className="w-4.5 h-4.5 text-indigo-500 fill-indigo-500/10" />
-              <span className="text-[10px] font-bold text-textsecondary uppercase tracking-wider">Sleep Summary</span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center">
+                <Moon className="w-4 h-4 text-violet-600 fill-violet-600/10" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sleep Summary</span>
             </div>
-            <span className="bg-indigo-50 text-indigo-700 text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full">
+            <span className="bg-violet-100 text-violet-700 border border-violet-200 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
               Restful
             </span>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-xl font-black text-textprimary">7h 45m</span>
-            <span className="text-xs text-textsecondary font-semibold">Last Night</span>
+            <span className="text-2xl font-black text-slate-800">7h 45m</span>
+            <span className="text-xs text-slate-400 font-semibold">Last Night</span>
           </div>
-          <p className="text-[9px] text-textsecondary font-semibold">
-            Deep Sleep: <span className="text-textprimary font-extrabold">3h 10m</span> • Light Sleep: 4h 35m
+          <p className="text-[10px] text-slate-400 font-medium">
+            Deep Sleep: <span className="text-slate-700 font-bold">3h 10m</span> • Light Sleep: 4h 35m
           </p>
         </div>
       </div>
 
       {/* 6. AI INSIGHTS CARD */}
-      <div className="bg-gradient-to-br from-primary to-secondary rounded-[32px] p-6 text-white shadow-soft relative overflow-hidden">
-        <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
-        <div className="absolute -left-8 -top-8 w-16 h-16 bg-white/10 rounded-full blur-lg pointer-events-none" />
-
-        <div className="flex items-start gap-3 relative z-10">
-          <div className="bg-white/20 p-2 rounded-xl border border-white/10 shrink-0">
-            <Sparkles className="w-5 h-5 text-white" />
+      <div className="bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100 rounded-3xl p-5 shadow-sm">
+        <div className="flex items-start gap-3.5">
+          <div className="bg-gradient-to-br from-violet-600 to-purple-600 p-2.5 rounded-xl text-white shadow-md shrink-0">
+            <Sparkles className="w-4 h-4 animate-pulse" />
           </div>
           <div className="space-y-1">
-            <span className="text-[9px] bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full font-extrabold uppercase tracking-widest border border-white/10 inline-block">
+            <span className="text-[9px] bg-violet-100 text-violet-750 border border-violet-200 px-2.5 py-0.5 rounded-full font-black uppercase tracking-widest inline-block">
               AI Health Insight
             </span>
-            <p className="text-xs font-bold leading-normal pt-1.5">
+            <p className="text-xs font-bold leading-normal text-violet-950 pt-1">
               "Your heart rate is steady, and your O2 level is exceptional today. Consider adding a brief 10-minute stretch routine post-lunch to maintain metabolic flow."
             </p>
           </div>
@@ -361,10 +365,10 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       </div>
 
       {/* 7. UPCOMING REMINDERS */}
-      <div className="bg-white border border-slate-100/80 rounded-[32px] p-5 shadow-soft space-y-4">
+      <div className="bg-white border border-gray-150 rounded-3xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-black text-textprimary uppercase tracking-wider">Today's Reminders</h3>
-          <span className="text-[9px] text-textsecondary font-bold">
+          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Today's Reminders</h3>
+          <span className="text-[10px] text-violet-600 font-bold">
             {reminders.filter(r => !r.done).length} Pending
           </span>
         </div>
@@ -376,23 +380,23 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               onClick={() => toggleReminder(rem.id)}
               className={`p-3 rounded-2xl border transition-all flex items-center justify-between cursor-pointer active:scale-[0.99] ${
                 rem.done 
-                  ? "bg-slate-50 border-slate-100 opacity-60" 
-                  : "bg-white border-slate-100 hover:border-primary/20 shadow-sm"
+                  ? "bg-slate-50/50 border-slate-100 opacity-60" 
+                  : "bg-white border-slate-100 hover:border-violet-300 hover:bg-violet-50/30 shadow-sm"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
                   rem.done 
-                    ? "bg-primary border-primary text-white" 
-                    : "border-slate-300 bg-white"
+                    ? "bg-violet-600 border-violet-600 text-white" 
+                    : "border-slate-350 bg-white"
                 }`}>
-                  {rem.done && <CheckCircle className="w-3.5 h-3.5 fill-white text-primary" />}
+                  {rem.done && <CheckCircle className="w-3.5 h-3.5 fill-white text-violet-600" />}
                 </div>
-                <span className={`text-xs font-bold ${rem.done ? "line-through text-textsecondary" : "text-textprimary"}`}>
+                <span className={`text-xs font-bold ${rem.done ? "line-through text-slate-400 font-medium" : "text-slate-700"}`}>
                   {rem.text}
                 </span>
               </div>
-              <span className="text-[9px] font-bold text-textsecondary bg-slate-100 px-2 py-0.5 rounded-md">
+              <span className="text-[9px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
                 {rem.time}
               </span>
             </div>
@@ -401,54 +405,54 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       </div>
 
       {/* 8. DAILY GOALS */}
-      <div className="bg-white border border-slate-100/80 rounded-[32px] p-5 shadow-soft space-y-4">
+      <div className="bg-white border border-gray-150 rounded-3xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-black text-textprimary uppercase tracking-wider">Daily Goal Tracker</h3>
-          <TrendingUp className="w-4 h-4 text-primary" />
+          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Daily Goal Tracker</h3>
+          <TrendingUp className="w-4 h-4 text-violet-600" />
         </div>
 
-        <div className="space-y-3.5">
+        <div className="space-y-4">
           {/* Calorie Burn */}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
-              <span className="text-textsecondary flex items-center gap-1">
+              <span className="text-slate-500 flex items-center gap-1.5">
                 <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500/10" /> Calorie Burn
               </span>
-              <span className="text-textprimary">380 / 500 kcal</span>
+              <span className="text-slate-700">380 / 500 kcal</span>
             </div>
-            <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100/60">
-              <div className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full" style={{ width: "76%" }} />
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+              <div className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full transition-all duration-500" style={{ width: "76%" }} />
             </div>
           </div>
 
           {/* Active Minutes */}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
-              <span className="text-textsecondary flex items-center gap-1">
-                <Activity className="w-3.5 h-3.5 text-primary" /> Active Time
+              <span className="text-slate-500 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-violet-600" /> Active Time
               </span>
-              <span className="text-textprimary">45 / 60 mins</span>
+              <span className="text-slate-700">45 / 60 mins</span>
             </div>
-            <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100/60">
-              <div className="h-full bg-gradient-to-r from-primary to-secondary rounded-full" style={{ width: "75%" }} />
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+              <div className="h-full bg-gradient-to-r from-violet-600 to-purple-600 rounded-full transition-all duration-500" style={{ width: "75%" }} />
             </div>
           </div>
         </div>
       </div>
 
       {/* 9. EMERGENCY CONTACT */}
-      <div className="bg-rose-50 border border-rose-100 rounded-[32px] p-5 shadow-soft flex items-center justify-between">
+      <div className="bg-rose-50/50 border border-rose-100 rounded-3xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-sm">
         <div className="space-y-1">
-          <h4 className="text-xs font-black text-rose-800 uppercase tracking-wider flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4 text-rose-600 animate-pulse" /> Emergency Contact
+          <h4 className="text-xs font-black text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+            <AlertTriangle className="w-4 h-4 text-rose-500 animate-pulse" /> Emergency Contact
           </h4>
-          <p className="text-[10px] text-rose-700/80 font-bold leading-normal">
+          <p className="text-[10px] text-rose-600 font-bold leading-normal">
             Need urgent medical help or consultation?
           </p>
         </div>
         <button
           onClick={() => setActiveCall(true)}
-          className="bg-rose-600 hover:bg-rose-750 text-white font-extrabold text-xs px-4 py-2.5 rounded-2xl shadow-soft active:scale-95 transition-all flex items-center gap-1.5"
+          className="bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-2xl shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
         >
           <Phone className="w-3.5 h-3.5" />
           <span>Consult Now</span>
@@ -456,8 +460,8 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       </div>
 
       {/* 10. LANGUAGE SELECTOR */}
-      <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/80 shadow-soft text-left">
-        <h4 className="text-[10px] font-bold text-textsecondary mb-3.5 uppercase tracking-wider">
+      <div className="bg-white border border-gray-150 rounded-3xl p-5 text-left shadow-sm">
+        <h4 className="text-[10px] font-bold text-slate-400 mb-3.5 uppercase tracking-wider">
           {t.selectLanguage} / भाषा बदलें / ભાષા બદલો
         </h4>
         <div className="grid grid-cols-3 gap-2">
@@ -467,8 +471,8 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               onClick={() => setLanguage(langCode as any)}
               className={`py-2.5 px-1 text-[11px] font-extrabold rounded-2xl border text-center transition-all shadow-sm active:scale-95 ${
                 language === langCode
-                  ? "bg-gradient-to-r from-primary to-secondary text-white border-transparent"
-                  : "bg-slate-50 text-textsecondary border-slate-200 hover:bg-slate-100"
+                  ? "bg-gradient-to-r from-violet-600 to-purple-650 text-white border-transparent shadow-md"
+                  : "bg-white text-slate-500 border-slate-200 hover:bg-violet-50/50 hover:text-violet-750"
               }`}
             >
               {langCode === "en" ? "🇺🇸 English" : langCode === "hi" ? "🇮🇳 हिंदी" : "🇮🇳 ગુજરાતી"}
@@ -478,13 +482,13 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       </div>
 
       {/* 11. QUICK HEALTH TIP */}
-      <div className="bg-primary/5 border border-primary/10 rounded-[32px] p-5 flex gap-3 text-left">
-        <div className="text-primary shrink-0">
-          <Sparkles className="w-5 h-5 fill-primary/10 text-primary animate-pulse" />
+      <div className="bg-violet-50/30 border border-violet-100 rounded-3xl p-5 flex gap-3 text-left shadow-sm">
+        <div className="text-violet-600 shrink-0">
+          <Sparkles className="w-5 h-5 fill-violet-600/10 text-violet-600 animate-pulse" />
         </div>
         <div className="space-y-1">
-          <span className="text-xs font-bold text-primary">{t.quickHealthTip}</span>
-          <p className="text-[11px] text-textsecondary leading-relaxed font-semibold">
+          <span className="text-xs font-bold text-violet-750">{t.quickHealthTip}</span>
+          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
             {t.healthTipText}
           </p>
         </div>

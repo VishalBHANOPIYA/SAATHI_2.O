@@ -277,12 +277,12 @@ function TriageResultCard({
               >
                 {isSpeaking ? (
                   <>
-                    <VolumeX className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+                    <VolumeX className="w-3.5 h-3.5 text-violet-600 animate-pulse" />
                     <span>{t.stopVoice || "Stop Voice"}</span>
                   </>
                 ) : (
                   <>
-                    <Volume2 className="w-3.5 h-3.5 text-teal-605" />
+                    <Volume2 className="w-3.5 h-3.5 text-violet-600" />
                     <span>{t.playVoice || "Play Voice"}</span>
                   </>
                 )}
@@ -316,12 +316,12 @@ function TriageResultCard({
       {result.possible_concerns && result.possible_concerns.length > 0 && (
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
           <h4 className="text-xs font-bold text-slate-750 uppercase tracking-wider flex items-center gap-1.5">
-            <ShieldAlert className="w-4 h-4 text-teal-650" />
+            <ShieldAlert className="w-4 h-4 text-violet-650" />
             {t.cardConcerns || "Possible Concerns"}
           </h4>
           <div className="flex flex-wrap gap-1.5">
             {result.possible_concerns.map((concern, idx) => (
-              <span key={idx} className="bg-teal-50 text-teal-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-teal-100">
+              <span key={idx} className="bg-violet-50 text-violet-750 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-violet-100">
                 {getConcernText(concern)}
               </span>
             ))}
@@ -386,7 +386,7 @@ function TriageResultCard({
           {result.see_doctor && onConnectDoctor && (
             <button
               onClick={onConnectDoctor}
-              className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-650 text-white font-extrabold text-xs py-3 rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
+              className="flex-1 bg-gradient-to-r from-violet-600 to-purple-650 text-white font-extrabold text-xs py-3 rounded-full hover:from-violet-750 hover:to-purple-750 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
             >
               <Video className="w-4 h-4" />
               <span>{t.cardConnect || "Connect to a Doctor"}</span>
@@ -395,10 +395,10 @@ function TriageResultCard({
           {onReset && (
             <button
               onClick={onReset}
-              className={`py-3 px-4 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 min-h-[44px] ${
+              className={`py-3 px-4 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px] ${
                 result.see_doctor 
-                  ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                  : "w-full bg-teal-650 text-white hover:bg-teal-700 shadow-md"
+                  ? "border border-slate-200 text-slate-650 hover:bg-slate-50"
+                  : "w-full bg-gradient-to-r from-violet-600 to-purple-650 text-white hover:from-violet-700 hover:to-purple-700 shadow-md"
               }`}
             >
               <RefreshCw className="w-3.5 h-3.5 animate-spin-hover" />
@@ -1057,8 +1057,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                   <div
                     className={`max-w-[85%] rounded-[20px] px-4 py-2.5 text-xs font-bold leading-relaxed shadow-soft ${
                       msg.role === "assistant"
-                        ? "bg-slate-50 text-textprimary rounded-tl-none border border-slate-100"
-                        : "bg-gradient-to-r from-primary to-secondary text-white rounded-tr-none"
+                        ? "bg-white text-violet-900 rounded-tl-none border border-violet-100/80"
+                        : "bg-gradient-to-r from-violet-600 to-purple-650 text-white rounded-tr-none"
                     }`}
                   >
                     {msg.content}
@@ -1076,7 +1076,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder={t.placeholderTypeAnswer || "Type your answer..."}
-                  className="flex-grow px-4 py-3 input-premium text-xs font-bold focus:outline-none focus:border-primary text-textprimary placeholder-textsecondary h-[44px]"
+                  className="flex-grow px-4 py-3 input-premium text-xs font-bold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 text-textprimary placeholder-textsecondary h-[44px] rounded-full"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && chatInput.trim()) {
                       submitFollowUpAnswer(chatInput.trim());
@@ -1089,7 +1089,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                       submitFollowUpAnswer(chatInput.trim());
                     }
                   }}
-                  className="bg-gradient-to-r from-primary to-secondary text-white p-3 rounded-2xl hover:shadow-premium active:scale-[0.98] transition-all shadow-soft min-w-[44px] h-[44px] flex items-center justify-center"
+                  className="bg-gradient-to-r from-violet-600 to-purple-650 text-white p-3 rounded-full hover:from-violet-700 hover:to-purple-700 active:scale-[0.98] transition-all shadow-soft min-w-[44px] h-[44px] flex items-center justify-center"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -1099,14 +1099,14 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
               <div className="flex justify-center gap-2">
                 <button
                   onClick={startRecording}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-extrabold text-[10px] py-2 px-4 rounded-xl flex items-center gap-1.5 active:scale-[0.98] transition-all shadow-soft min-h-[36px]"
+                  className="bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200/50 font-extrabold text-[10px] py-2 px-4 rounded-full flex items-center gap-1.5 active:scale-[0.98] transition-all shadow-soft min-h-[36px]"
                 >
                   <Mic className="w-3.5 h-3.5" />
                   <span>{t.btnSpeakAnswer || "Speak your answer"}</span>
                 </button>
                 <button
                   onClick={resetTriageFlow}
-                  className="bg-slate-50 hover:bg-slate-100 text-textsecondary border border-slate-200 font-extrabold text-[10px] py-2 px-4 rounded-xl flex items-center gap-1.5 active:scale-[0.98] transition-all shadow-soft min-h-[36px]"
+                  className="bg-slate-50 hover:bg-slate-100 text-textsecondary border border-slate-200 font-extrabold text-[10px] py-2 px-4 rounded-full flex items-center gap-1.5 active:scale-[0.98] transition-all shadow-soft min-h-[36px]"
                 >
                   <span>{l.cancel}</span>
                 </button>
@@ -1118,8 +1118,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/80 shadow-soft space-y-4 animate-fadeIn">
             <div className="space-y-1">
               <h3 className="text-sm font-extrabold text-textprimary flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Info className="w-3.5 h-3.5 text-primary" />
+                <div className="w-6 h-6 rounded-lg bg-violet-55/60 flex items-center justify-center">
+                  <Info className="w-3.5 h-3.5 text-violet-605" />
                 </div>
                 {l.editingTitle}
               </h3>
@@ -1129,20 +1129,20 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
             <textarea
               value={transcriptText}
               onChange={(e) => setTranscriptText(e.target.value)}
-              className="w-full h-32 p-4 input-premium text-xs font-semibold focus:outline-none focus:border-primary text-textprimary leading-relaxed resize-none shadow-inner"
+              className="w-full h-32 p-4 input-premium text-xs font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 text-textprimary leading-relaxed resize-none shadow-inner rounded-2xl"
             />
 
             <div className="flex gap-2">
               <button
                 onClick={() => handleTriage()}
-                className="flex-grow bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-white font-extrabold text-xs py-3 rounded-2xl shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="flex-grow bg-gradient-to-r from-violet-600 to-purple-650 hover:from-violet-750 hover:to-purple-750 text-white font-extrabold text-xs py-3 rounded-full shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <span>{l.btnAnalyze}</span>
                 <Sparkles className="w-4 h-4" />
               </button>
               <button
                 onClick={resetTriageFlow}
-                className="px-4 border border-slate-200 text-textsecondary font-bold text-xs rounded-2xl hover:bg-slate-50 transition-colors shadow-soft min-h-[44px] active:scale-[0.98]"
+                className="px-4 border border-slate-200 text-textsecondary font-bold text-xs rounded-full hover:bg-slate-50 transition-colors shadow-soft min-h-[44px] active:scale-[0.98]"
               >
                 {l.btnRecordAgain}
               </button>
@@ -1153,7 +1153,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
       {!triageResult && !isTriaging && !isTranscribing && !isRecording && !transcriptText && (
         <div className="space-y-4">
-          <div className="bg-gradient-to-br from-primary to-secondary rounded-[32px] p-8 text-white shadow-soft flex flex-col items-center text-center space-y-5 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-violet-600 via-violet-700 to-purple-800 rounded-[32px] p-8 text-white shadow-soft flex flex-col items-center text-center space-y-5 relative overflow-hidden">
             <div className="absolute -right-8 -bottom-8 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
             <div className="absolute -left-8 -top-8 w-20 h-20 bg-white/10 rounded-full blur-lg pointer-events-none" />
 
@@ -1166,12 +1166,15 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
               </p>
             </div>
 
-            <button
-              onClick={startRecording}
-              className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-soft transition-transform hover:scale-105 active:scale-95 border-4 border-white/20 group relative z-10"
-            >
-              <Mic className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
-            </button>
+            <div className="relative">
+              <div className="absolute inset-0 bg-violet-600/30 rounded-full animate-ping duration-1000" />
+              <button
+                onClick={startRecording}
+                className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-soft transition-transform hover:scale-[1.03] active:scale-95 border-4 border-white/20 group relative z-10"
+              >
+                <Mic className="w-10 h-10 text-violet-600 group-hover:scale-110 transition-transform" />
+              </button>
+            </div>
 
             <span className="text-xs font-extrabold tracking-wide text-white/90 relative z-10">
               {l.tapRecord}
@@ -1180,8 +1183,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
           <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/80 shadow-soft space-y-3">
             <div className="flex items-center gap-1.5 px-0.5">
-              <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Info className="w-3.5 h-3.5 text-primary" />
+              <div className="w-6 h-6 rounded-lg bg-violet-50 flex items-center justify-center">
+                <Info className="w-3.5 h-3.5 text-violet-600" />
               </div>
               <span className="text-xs font-bold text-textprimary uppercase tracking-wide">Or type your symptoms</span>
             </div>
@@ -1189,7 +1192,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
               placeholder={l.textPlaceholder}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              className="w-full h-24 p-4 input-premium text-xs font-semibold focus:outline-none focus:border-primary text-textprimary leading-normal resize-none shadow-inner"
+              className="w-full h-24 p-4 input-premium text-xs font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 text-textprimary leading-normal resize-none shadow-inner rounded-2xl"
             />
             <button
               onClick={() => {
@@ -1199,7 +1202,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                 }
               }}
               disabled={!chatInput.trim()}
-              className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-white font-extrabold text-xs py-3 rounded-2xl transition-all disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-soft min-h-[44px]"
+              className="w-full bg-gradient-to-r from-violet-600 to-purple-650 hover:from-violet-750 hover:to-purple-750 text-white font-extrabold text-xs py-3 rounded-full transition-all disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-soft min-h-[44px]"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{l.btnSubmitText}</span>

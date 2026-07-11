@@ -978,14 +978,16 @@ export default function MainApp() {
         {/* STEP 0: Welcome & Language selection */}
         {onboardStep === 0 && (
           <div className="flex-1 flex flex-col justify-center space-y-6 z-10 animate-scaleUp text-center w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
-            <div className="space-y-3">
-              <div className="w-20 h-20 bg-primary/10 rounded-[24px] flex items-center justify-center mx-auto border border-primary/20 shadow-soft">
-                <Heart className="w-10 h-10 text-primary fill-primary/10" />
+            <div className="space-y-3 animate-fadeIn">
+              <div className="w-20 h-20 bg-violet-600 rounded-full flex items-center justify-center mx-auto shadow-md">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                  <Heart className="w-8 h-8 text-violet-600 fill-violet-600/10 animate-pulse" />
+                </div>
               </div>
-              <h2 className="text-3xl font-extrabold tracking-tight mt-4 text-textprimary">
+              <h2 className="text-[28px] font-bold mt-4 text-violet-600 leading-none">
                 Saathi
               </h2>
-              <p className="text-sm text-textsecondary max-w-xs mx-auto leading-relaxed font-semibold">
+              <p className="text-sm text-gray-500 max-w-xs mx-auto leading-relaxed font-semibold">
                 Your AI Health Companion
               </p>
             </div>
@@ -1006,14 +1008,14 @@ export default function MainApp() {
                       setLanguage(l.code as any);
                       setShowWorldLangDropdown(false);
                     }}
-                    className={`py-3 px-5 rounded-2xl text-xs font-bold border transition-all flex items-center justify-between ${
+                    className={`py-3 px-6 rounded-full text-xs font-bold border-2 transition-all flex items-center justify-between w-full ${
                       (language === l.code)
-                        ? "bg-primary/5 border-primary text-primary shadow-soft scale-[1.01]"
-                        : "bg-white border-slate-100 text-textsecondary hover:bg-slate-50"
+                        ? "bg-violet-600 border-violet-600 text-white shadow-soft scale-[1.01]"
+                        : "bg-white border-violet-600 text-violet-600 hover:bg-violet-50"
                     }`}
                   >
                     <span>{l.label}</span>
-                    {language === l.code && <Check className="w-4 h-4 text-primary" />}
+                    {language === l.code && <Check className="w-4 h-4 text-white" />}
                   </button>
                 ))}
               </div>
@@ -1031,15 +1033,15 @@ export default function MainApp() {
                     aria-expanded={showWorldLangDropdown}
                     aria-controls="onboard-lang-listbox"
                     onClick={() => setShowWorldLangDropdown(!showWorldLangDropdown)}
-                    className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-4 text-xs text-left font-bold flex items-center justify-between text-textsecondary hover:bg-slate-50 transition-colors focus:border-primary focus:outline-none"
+                    className="w-full bg-white border-2 border-violet-600 rounded-full py-3 px-6 text-xs text-left font-bold flex items-center justify-between text-violet-600 hover:bg-violet-50 transition-colors focus:border-violet-600 focus:outline-none"
                   >
                     <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-primary" />
-                      <span className="text-textprimary">
+                      <Globe className="w-4 h-4 text-violet-600" />
+                      <span className="text-violet-600">
                         {worldLanguages.find(wl => wl.code === language)?.label || t.selectLanguage}
                       </span>
                     </div>
-                    <ChevronDown className="w-4 h-4 text-primary" />
+                    <ChevronDown className="w-4 h-4 text-violet-600" />
                   </button>
 
                   {showWorldLangDropdown && (
@@ -1073,12 +1075,12 @@ export default function MainApp() {
                                 trigger.focus();
                               }
                             }}
-                            className={`w-full text-left px-4 py-3 text-xs font-semibold hover:bg-slate-55 transition-colors flex items-center justify-between ${
-                              language === wl.code ? "bg-primary/10 text-primary font-bold" : "text-textsecondary"
+                            className={`w-full text-left px-4 py-3 text-xs font-semibold hover:bg-violet-50 transition-colors flex items-center justify-between ${
+                              language === wl.code ? "bg-violet-100 text-violet-700 font-bold" : "text-textsecondary"
                             }`}
                           >
                             <span>{wl.label}</span>
-                            {language === wl.code && <Check className="w-3.5 h-3.5 text-primary" />}
+                            {language === wl.code && <Check className="w-3.5 h-3.5 text-violet-600" />}
                           </button>
                         ))}
                       </div>
@@ -1092,7 +1094,7 @@ export default function MainApp() {
             <div className="pt-4">
               <button
                 onClick={() => setOnboardStep(1)}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-xs font-bold text-white shadow-soft transition-all active:scale-[0.99] flex items-center justify-center gap-1.5 mx-auto"
+                className="w-full py-4 px-6 rounded-full bg-violet-600 hover:bg-violet-750 text-sm font-bold text-white shadow-soft transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 mx-auto"
               >
                 <span>{t.onboardGetStarted}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -1364,12 +1366,12 @@ export default function MainApp() {
         {onboardStep === 4 && (
           <div className="flex-1 flex flex-col justify-between z-10 text-left h-full overflow-hidden w-full max-w-lg card-premium p-6 sm:p-8 border border-slate-100 bg-white/80 backdrop-blur-md shadow-soft">
             <div className="space-y-4 overflow-y-auto no-scrollbar pb-4 flex-1 pr-1">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 className="text-md font-extrabold tracking-tight text-textprimary flex items-center gap-2">
-                  <span className="w-6 h-6 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-center text-primary text-xs font-bold">4</span>
+              <div className="flex justify-between items-center bg-violet-600 text-white rounded-t-[24px] -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 px-6 py-4 mb-4">
+                <h3 className="text-md font-extrabold tracking-tight flex items-center gap-2">
+                  <span className="w-6 h-6 bg-white/20 border border-white/30 rounded-lg flex items-center justify-center text-white text-xs font-bold">4</span>
                   {t.profileFormTitle}
                 </h3>
-                <span className="text-[9px] font-extrabold text-primary uppercase bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 shrink-0">
+                <span className="text-[9px] font-extrabold uppercase bg-white/20 px-2.5 py-1 rounded-full border border-white/30 shrink-0">
                   {profileSubStep === "A" ? t.partA : t.partB}
                 </span>
               </div>
@@ -1386,7 +1388,7 @@ export default function MainApp() {
                       placeholder={t.placeholderName}
                       value={profileForm.name}
                       onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
-                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
+                      className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                     />
                     {formErrors.name && (
                       <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
@@ -1404,7 +1406,7 @@ export default function MainApp() {
                       placeholder={t.placeholderAge}
                       value={profileForm.age}
                       onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))}
-                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
+                      className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                     />
                     {formErrors.age && (
                       <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
@@ -1423,10 +1425,10 @@ export default function MainApp() {
                           type="button"
                           key={g}
                           onClick={() => setProfileForm(p => ({ ...p, gender: g }))}
-                          className={`py-3.5 px-1 rounded-2xl text-xs font-bold border transition-all ${
+                          className={`py-3 px-1 rounded-full text-xs font-bold border transition-all ${
                             profileForm.gender === g
-                              ? "bg-primary border-primary text-white shadow-soft"
-                              : "bg-slate-50 border-slate-200 text-textsecondary hover:bg-slate-100"
+                              ? "bg-violet-600 border-violet-600 text-white shadow-soft"
+                              : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                           }`}
                         >
                           {g === "Male" ? t.male : g === "Female" ? t.female : t.other}
@@ -1439,21 +1441,16 @@ export default function MainApp() {
                     <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
                       {t.phone} <span className="text-danger font-bold">*</span>
                     </label>
-                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-2xl focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 transition-all relative">
+                    <div className="flex items-center bg-white border border-gray-300 rounded-2xl focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500 transition-all relative">
                       {/* Country code selector (Fix 2) */}
                       <div className="relative" ref={onboardCountryRef}>
                         <button
                           type="button"
-                          id="onboard-country-btn"
-                          aria-haspopup="listbox"
-                          aria-expanded={showCountryDropdown}
-                          aria-controls="onboard-country-listbox"
-                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                          className="text-xs text-primary bg-slate-100 py-3.5 px-3 font-bold border-r border-slate-200 flex items-center gap-1 hover:bg-slate-200 transition-colors whitespace-nowrap rounded-l-2xl"
+                                    className="text-xs text-violet-600 bg-violet-50 py-3.5 px-3 font-bold border-r border-gray-300 flex items-center gap-1 hover:bg-violet-100 transition-colors whitespace-nowrap rounded-l-2xl"
                         >
                           <span>{countryCodes.find(c => c.code === selectedCountryCode)?.flag}</span>
                           <span>{selectedCountryCode}</span>
-                          <ChevronDown className="w-3 h-3" />
+                          <ChevronDown className="w-3 h-3 text-violet-600" />
                         </button>
                         {showCountryDropdown && (
                           <div id="onboard-country-listbox" role="listbox" aria-labelledby="onboard-country-btn" className="absolute top-full left-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-48 overflow-hidden flex flex-col">
@@ -1467,6 +1464,7 @@ export default function MainApp() {
                                   onChange={e => setCountrySearch(e.target.value)}
                                   className="w-full text-[10px] p-1.5 bg-transparent text-textprimary focus:outline-none placeholder-textsecondary"
                                   autoFocus
+                                  style={{ caretColor: '#7C3AED' }}
                                 />
                               </div>
                             </div>
@@ -1491,12 +1489,12 @@ export default function MainApp() {
                                     }
                                   }}
                                   className={`w-full text-left px-3 py-2.5 text-[10px] font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors ${
-                                    selectedCountryCode === c.code ? "bg-primary/10 text-primary font-bold" : "text-textsecondary"
+                                    selectedCountryCode === c.code ? "bg-violet-100 text-violet-750 font-bold" : "text-textsecondary"
                                   }`}
                                 >
                                   <span>{c.flag}</span>
                                   <span className="flex-1 text-textprimary">{c.country}</span>
-                                  <span className="text-primary font-bold">{c.code}</span>
+                                  <span className="text-violet-600 font-bold">{c.code}</span>
                                 </button>
                               ))}
                             </div>
@@ -1546,8 +1544,8 @@ export default function MainApp() {
                             onClick={() => handleConditionClick(c.key)}
                             className={`py-2 px-3.5 rounded-full text-[10px] font-bold border transition-all ${
                               isSelected
-                                ? "bg-primary border-primary text-white shadow-soft"
-                                : "bg-slate-50 border-slate-200 text-textsecondary hover:bg-slate-100"
+                                ? "bg-violet-600 border-violet-600 text-white shadow-soft"
+                                : "bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100"
                             }`}
                           >
                             {c.label}
@@ -1566,7 +1564,7 @@ export default function MainApp() {
                           placeholder="e.g. Acid Reflux"
                           value={profileForm.otherCondition}
                           onChange={e => setProfileForm(p => ({ ...p, otherCondition: e.target.value }))}
-                          className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
+                          className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500"
                         />
                       </div>
                     )}
@@ -1580,7 +1578,7 @@ export default function MainApp() {
                       <select
                         value={profileForm.bloodGroup}
                         onChange={e => setProfileForm(p => ({ ...p, bloodGroup: e.target.value }))}
-                        className="w-full text-xs p-3 rounded-2xl bg-slate-50 border border-slate-200 text-textprimary font-bold focus:outline-none focus:border-primary h-[48px]"
+                        className="w-full text-xs p-3 rounded-2xl bg-white border border-gray-300 text-textprimary font-bold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
                       >
                         {["Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
                           <option key={bg} value={bg}>{bg}</option>
@@ -1597,7 +1595,7 @@ export default function MainApp() {
                         placeholder="e.g. Peanuts, Penicillin"
                         value={profileForm.allergies}
                         onChange={e => setProfileForm(p => ({ ...p, allergies: e.target.value }))}
-                        className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[48px]"
+                        className="w-full text-xs p-3 bg-white border border-gray-300 text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
                       />
                     </div>
                   </div>
@@ -1611,7 +1609,7 @@ export default function MainApp() {
                       placeholder="e.g. Metformin 500mg daily"
                       value={profileForm.medications}
                       onChange={e => setProfileForm(p => ({ ...p, medications: e.target.value }))}
-                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
+                      className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500"
                     />
                   </div>
 
@@ -1627,7 +1625,7 @@ export default function MainApp() {
                         const raw = e.target.value.replace(/\D/g, "").slice(0, 14);
                         setProfileForm(p => ({ ...p, abha: raw }));
                       }}
-                      className="w-full text-xs p-3.5 input-premium text-textprimary font-semibold focus:outline-none"
+                      className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500"
                     />
                     <p className="text-[9px] text-textsecondary font-semibold mt-0.5">
                       {t.abhaSubtext}
@@ -1653,7 +1651,7 @@ export default function MainApp() {
                           placeholder="e.g. Sunita Sharma"
                           value={profileForm.emergencyName}
                           onChange={e => setProfileForm(p => ({ ...p, emergencyName: e.target.value }))}
-                          className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[48px]"
+                          className="w-full text-xs p-3 bg-white border border-gray-300 text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1666,7 +1664,7 @@ export default function MainApp() {
                           placeholder="10-digit number"
                           value={profileForm.emergencyPhone}
                           onChange={e => setProfileForm(p => ({ ...p, emergencyPhone: e.target.value.replace(/\D/g, "") }))}
-                          className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[48px]"
+                          className="w-full text-xs p-3 bg-white border border-gray-300 text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
                         />
                       </div>
                     </div>
@@ -1692,7 +1690,7 @@ export default function MainApp() {
                     setOnboardStep(3);
                   }
                 }}
-                className="py-3 px-5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold transition-all text-textsecondary shadow-soft active:scale-[0.98]"
+                className="py-3 px-5 rounded-full bg-white hover:bg-slate-50 border border-gray-300 text-xs font-bold transition-all text-textsecondary shadow-soft active:scale-[0.98]"
               >
                 {t.back}
               </button>
@@ -1705,7 +1703,7 @@ export default function MainApp() {
                       setProfileSubStep("B");
                     }
                   }}
-                  className="py-3 px-6 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-xs font-bold text-white shadow-soft transition-all active:scale-[0.98] flex items-center gap-1.5 animate-pulse"
+                  className="py-3 px-6 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-750 text-xs font-bold text-white shadow-soft transition-all active:scale-[0.98] flex items-center gap-1.5"
                 >
                   <span>{t.nextDetails}</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1714,7 +1712,7 @@ export default function MainApp() {
                 <button
                   type="button"
                   onClick={handleSaveProfile}
-                  className="py-3 px-6 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-premium text-xs font-bold text-white shadow-soft transition-all active:scale-[0.98] flex items-center gap-1.5"
+                  className="py-3 px-6 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-750 hover:to-purple-750 text-xs font-bold text-white shadow-soft transition-all active:scale-[0.98] flex items-center gap-1.5"
                 >
                   <span>{t.finishSetup}</span>
                   <Check className="w-3.5 h-3.5" />
@@ -2104,7 +2102,7 @@ export default function MainApp() {
   if (!isMounted) {
     return (
       <div className="flex h-screen items-center justify-center bg-white md:bg-slate-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-600"></div>
       </div>
     );
   }
@@ -2169,7 +2167,7 @@ export default function MainApp() {
 
       {/* PERSISTENT DISCLAIMER BANNER */}
       <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-start gap-1.5 shrink-0 z-35 shadow-sm text-left">
-        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <AlertTriangle className="w-4 h-4 text-amber-605 shrink-0 mt-0.5" />
         <p className="leading-tight font-semibold">
           {t.disclaimer}
         </p>
@@ -2178,7 +2176,7 @@ export default function MainApp() {
       {/* OFFLINE BANNER */}
       {isOffline && (
         <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 text-[10px] text-red-805 flex items-center gap-2 shrink-0 z-30 animate-fadeIn text-left">
-          <WifiOff className="w-4 h-4 text-red-600 shrink-0" />
+          <WifiOff className="w-4 h-4 text-red-605 shrink-0" />
           <span className="font-extrabold tracking-wide">
             {t.offlineBanner}
           </span>
@@ -2186,20 +2184,20 @@ export default function MainApp() {
       )}
 
       {/* MOBILE HEADER — hidden on md+ (sidebar replaces it) */}
-      <header className="md:hidden bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-4 py-3 shrink-0 shadow-md flex justify-between items-center z-20 text-left">
+      <header className="md:hidden bg-gradient-to-r from-violet-600 to-purple-650 text-white px-4 py-3 shrink-0 shadow-md flex justify-between items-center z-20 text-left">
         <div>
           <div className="flex items-center gap-1.5">
-            <Heart className="w-5 h-5 fill-white text-teal-600 animate-pulse" />
+            <Heart className="w-5 h-5 fill-white text-violet-600 animate-pulse" />
             <h1 className="text-lg font-bold tracking-tight">{t.appTitle}</h1>
           </div>
-          <p className="text-[10px] text-teal-100 font-light mt-0.5">{t.tagline}</p>
+          <p className="text-[10px] text-violet-105 font-light mt-0.5">{t.tagline}</p>
         </div>
 
         <div className="flex items-center gap-2">
           {isInstallable && (
             <button
               onClick={handleInstallClick}
-              className="bg-white text-teal-700 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0 min-h-[44px] min-w-[44px] justify-center"
+              className="bg-white text-violet-700 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider flex items-center gap-1 shrink-0 min-h-[44px] min-w-[44px] justify-center"
             >
               <Download className="w-3 h-3" />
               {t.install}
@@ -2226,7 +2224,7 @@ export default function MainApp() {
 
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="p-1.5 rounded-full bg-teal-700/50 border border-teal-500/25 text-teal-100 hover:text-white hover:bg-teal-700/70 transition-all active:scale-95 shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px]"
+            className="p-1.5 rounded-full bg-violet-750/50 border border-violet-500/25 text-violet-100 hover:text-white hover:bg-violet-700/70 transition-all active:scale-95 shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px]"
             title="Settings"
             id="settings-btn"
           >
@@ -2238,7 +2236,7 @@ export default function MainApp() {
       {/* DESKTOP/TABLET PAGE TITLE BAR — visible only on md+ */}
       <div className="hidden md:flex items-center px-6 lg:px-10 py-3 border-b border-slate-200 bg-white shrink-0 z-20">
         <h1 className="text-lg lg:text-xl font-bold text-slate-800">{tabTitles[activeTab] || t.home}</h1>
-        <div className="ml-3 h-0.5 flex-1 max-w-[80px] bg-teal-500 rounded-full" />
+        <div className="ml-3 h-0.5 flex-1 max-w-[80px] bg-violet-500 rounded-full" />
       </div>
 
       {/* CONTENT AREA */}
@@ -2249,16 +2247,16 @@ export default function MainApp() {
             const activePatient = patientsList.find(p => p.id === activePatientId);
             if (!activePatient) return null;
             return (
-              <div className="bg-teal-50 border-b border-teal-200 px-4 py-2 flex items-center justify-between z-10 shrink-0 sticky top-0 shadow-sm animate-slideDown text-left">
+              <div className="bg-violet-50 border-b border-violet-200 px-4 py-2 flex items-center justify-between z-10 shrink-0 sticky top-0 shadow-sm animate-slideDown text-left">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-teal-600 rounded-full animate-pulse shrink-0" />
-                  <div className="text-[10px] text-teal-800 font-bold">
-                    Active Patient: <strong className="text-teal-900 font-extrabold">{activePatient.name}</strong> ({activePatient.age}y / {activePatient.gender})
+                  <span className="w-2 h-2 bg-violet-600 rounded-full animate-pulse shrink-0" />
+                  <div className="text-[10px] text-violet-800 font-bold">
+                    Active Patient: <strong className="text-violet-900 font-extrabold">{activePatient.name}</strong> ({activePatient.age}y / {activePatient.gender})
                   </div>
                 </div>
                 <button
                   onClick={() => selectActivePatientForASHA(null)}
-                  className="text-[9px] font-extrabold text-teal-700 bg-teal-100 hover:bg-teal-200 px-2 py-1 rounded-lg"
+                  className="text-[9px] font-extrabold text-violet-700 bg-violet-100 hover:bg-violet-200 px-2 py-1 rounded-lg"
                 >
                   Clear Selection
                 </button>
@@ -2433,7 +2431,7 @@ export default function MainApp() {
               <h3 className="text-lg font-black text-slate-800 uppercase tracking-wide">
                 {t.medicineReminder}
               </h3>
-              <p className="text-sm font-bold text-teal-600">{pendingReminderAlert.name}</p>
+              <p className="text-sm font-bold text-violet-600">{pendingReminderAlert.name}</p>
               <p className="text-xs text-slate-500">
                 {t.medicineDosageFrequency.replace("{dose}", pendingReminderAlert.dose).replace("{frequency}", pendingReminderAlert.frequency)}
               </p>
@@ -2441,7 +2439,7 @@ export default function MainApp() {
             <div className="pt-2">
               <button
                 onClick={() => setPendingReminderAlert(null)}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-colors"
+                className="w-full bg-gradient-to-r from-violet-600 to-purple-650 hover:from-violet-700 hover:to-purple-700 text-white font-black py-2.5 px-4 rounded-full shadow-md transition-all active:scale-95"
               >
                 {t.medicineTaken}
               </button>
@@ -2456,7 +2454,7 @@ export default function MainApp() {
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl max-w-sm w-full space-y-5 animate-scaleUp">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2 text-slate-800">
-                <Settings className="w-5 h-5 text-teal-650 animate-spin-slow" />
+                <Settings className="w-5 h-5 text-violet-605 animate-spin-slow" />
                 <h3 className="text-sm font-black uppercase tracking-wide">
                   {t.applicationSettings}
                 </h3>
@@ -2519,7 +2517,7 @@ export default function MainApp() {
                     }}
                     className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "en" 
-                        ? "bg-teal-605 border-teal-605 text-white shadow-md shadow-teal-500/20" 
+                        ? "bg-violet-605 border-violet-605 text-white shadow-md shadow-violet-500/20" 
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
@@ -2532,7 +2530,7 @@ export default function MainApp() {
                     }}
                     className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "hi" 
-                        ? "bg-teal-605 border-teal-605 text-white shadow-md shadow-teal-500/20" 
+                        ? "bg-violet-605 border-violet-605 text-white shadow-md shadow-violet-500/20" 
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
@@ -2545,7 +2543,7 @@ export default function MainApp() {
                     }}
                     className={`py-2 text-xs font-black rounded-xl transition-all border active:scale-95 ${
                       language === "gu" 
-                        ? "bg-teal-605 border-teal-605 text-white shadow-md shadow-teal-500/20" 
+                        ? "bg-violet-605 border-violet-605 text-white shadow-md shadow-violet-500/20" 
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
@@ -2562,10 +2560,10 @@ export default function MainApp() {
                     aria-expanded={showWorldLangDropdown}
                     aria-controls="settings-lang-listbox"
                     onClick={() => setShowWorldLangDropdown(!showWorldLangDropdown)}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-left font-bold flex items-center justify-between text-slate-700 hover:bg-slate-100 transition-colors focus:border-teal-400 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-left font-bold flex items-center justify-between text-slate-700 hover:bg-slate-100 transition-colors focus:border-violet-400 focus:outline-none"
                   >
                     <div className="flex items-center gap-1.5">
-                      <Globe className="w-3.5 h-3.5 text-teal-600" />
+                      <Globe className="w-3.5 h-3.5 text-violet-600" />
                       <span className="truncate">
                         {worldLanguages.find(wl => wl.code === language)?.label || 
                          (language !== "en" && language !== "hi" && language !== "gu" ? language : t.otherLanguage)}
@@ -2606,11 +2604,11 @@ export default function MainApp() {
                               }
                             }}
                             className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center justify-between ${
-                              language === wl.code ? "bg-teal-50 text-teal-700" : "text-slate-600"
+                              language === wl.code ? "bg-violet-50 text-violet-700" : "text-slate-600"
                             }`}
                           >
                             <span>{wl.label}</span>
-                            {language === wl.code && <Check className="w-3 h-3 text-teal-605" />}
+                            {language === wl.code && <Check className="w-3 h-3 text-violet-605" />}
                           </button>
                         ))}
                       </div>
@@ -2620,7 +2618,7 @@ export default function MainApp() {
 
                 {language !== "en" && language !== "hi" && language !== "gu" && (
                   <div className="mt-1.5 text-left bg-amber-50 border border-amber-100 text-amber-800 rounded-xl p-2 text-[9px] font-semibold leading-normal animate-fadeIn flex items-start gap-1">
-                    <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
+                    <AlertTriangle className="w-3 h-3 text-amber-505 shrink-0 mt-0.5" />
                     <span>
                       {t.translatingTo.replace("{lang}", worldLanguages.find(wl => wl.code === language)?.label || language)}
                     </span>
@@ -2632,7 +2630,7 @@ export default function MainApp() {
               <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <div className="space-y-0.5 max-w-[70%]">
                   <div className="flex items-center gap-1.5 text-slate-800">
-                    <Bell className="w-4 h-4 text-teal-650" />
+                    <Bell className="w-4 h-4 text-violet-605" />
                     <span className="text-xs font-extrabold uppercase tracking-wide">
                       {t.caregiverAlerts}
                     </span>
@@ -2645,7 +2643,7 @@ export default function MainApp() {
                   onClick={() => setCaregiverAlert(!caregiverAlert)}
                   className={`w-11 h-6 rounded-full transition-all relative flex items-center p-0.5 border ${
                     caregiverAlert 
-                      ? "bg-teal-650 border-teal-500 justify-end" 
+                      ? "bg-violet-600 border-violet-500 justify-end" 
                       : "bg-slate-200 border-slate-300 justify-start"
                   }`}
                 >
@@ -2746,8 +2744,8 @@ export default function MainApp() {
       {renderProfileModal()}
 
       {welcomeToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-teal-900/95 backdrop-blur-sm border border-teal-500/30 text-emerald-300 px-5 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-2 font-black text-xs animate-scaleUp">
-          <Heart className="w-4 h-4 text-emerald-400 fill-emerald-400 animate-pulse" />
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-violet-900/95 backdrop-blur-sm border border-violet-500/30 text-purple-205 px-5 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-2 font-black text-xs animate-scaleUp">
+          <Heart className="w-4 h-4 text-purple-400 fill-purple-400 animate-pulse" />
           <span>{welcomeToast}</span>
         </div>
       )}
