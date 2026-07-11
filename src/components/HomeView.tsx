@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
+import { computeHealthScore, getImproveTip } from "@/utils/healthScore";
 
 interface HomeViewProps {
   setActiveTab: (tab: string) => void;
@@ -61,7 +62,70 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   const currentHeartRate = latestVitalsEntry?.heartRate ? Number(latestVitalsEntry.heartRate) : 78;
   const currentOxygen = latestVitalsEntry?.oxygen ? Number(latestVitalsEntry.oxygen) : 96.3;
 
+  const computedScoreResult = React.useMemo(() => {
+    const latestVitals = latestVitalsEntry
+      ? {
+          heartRate: latestVitalsEntry.heartRate ? Number(latestVitalsEntry.heartRate) : undefined,
+          oxygen: latestVitalsEntry.oxygen ? Number(latestVitalsEntry.oxygen) : undefined,
+        }
+      : null;
+    return computeHealthScore({
+      latestScreeningRisk,
+      latestVitals,
+      conditions: userProfile?.conditions || []
+    }, language);
+  }, [latestScreeningRisk, latestVitalsEntry, userProfile, language]);
+
+  const improveTip = React.useMemo(() => {
+    return getImproveTip(computedScoreResult.biggestFactorKey, language);
+  }, [computedScoreResult.biggestFactorKey, language]);
+
+  const scoreColors = React.useMemo(() => {
+    if (computedScoreResult.score >= 80) {
+      return {
+        text: "text-emerald-600",
+        badge: "bg-emerald-100 text-emerald-750 border-emerald-200",
+        stroke: "stroke-emerald-500",
+      };
+    } else if (computedScoreResult.score >= 50) {
+      return {
+        text: "text-amber-600",
+        badge: "bg-amber-100 text-amber-750 border-amber-200",
+        stroke: "stroke-amber-500",
+      };
+    } else {
+      return {
+        text: "text-rose-600",
+        badge: "bg-rose-100 text-rose-750 border-rose-200",
+        stroke: "stroke-rose-500",
+      };
+    }
+  }, [computedScoreResult.score]);
+
+  const radius = 36;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (computedScoreResult.score / 100) * circumference;
+
   const displayUserName = userProfile?.name?.split(" ")[0] || "Vishal";
+
+  const calendarDays = React.useMemo(() => {
+    const today = new Date();
+    const days = [];
+    for (let i = -3; i <= 3; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+      days.push({
+        dayNum: String(d.getDate()).padStart(2, "0"),
+        isToday: i === 0,
+        formatted: d.toLocaleDateString(language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US", { day: "numeric", month: "short" })
+      });
+    }
+    return days;
+  }, [language]);
+
+  const formattedToday = React.useMemo(() => {
+    return `${language === "hi" ? "आज" : language === "gu" ? "આજે" : "Today"}, ${new Date().toLocaleDateString(language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US", { day: "numeric", month: "short" })}`;
+  }, [language]);
 
   // Time-based Greeting
   const getGreeting = () => {
@@ -148,15 +212,17 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* 2. CALENDAR DAY PICKER ROW */}
       <div className="bg-white border border-gray-150 rounded-2xl p-2 shadow-sm">
         <div className="flex justify-between items-center text-center text-xs font-bold text-slate-400 px-1">
-          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">09</span>
-          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">10</span>
-          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">11</span>
-          <span className="bg-gradient-to-r from-violet-600 to-purple-650 text-white shadow-md rounded-xl px-4 py-2 text-[10px] font-black tracking-wider uppercase">
-            Today, 12 Jun
-          </span>
-          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">13</span>
-          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">14</span>
-          <span className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">15</span>
+          {calendarDays.map((day, idx) => (
+            day.isToday ? (
+              <span key={idx} className="bg-gradient-to-r from-violet-600 to-purple-650 text-white shadow-md rounded-xl px-3 sm:px-4 py-2 text-[10px] font-black tracking-wider uppercase">
+                {formattedToday}
+              </span>
+            ) : (
+              <span key={idx} className="w-8 py-2.5 hover:text-violet-600 transition-colors cursor-pointer hover:bg-violet-50/50 rounded-xl">
+                {day.dayNum}
+              </span>
+            )
+          ))}
         </div>
       </div>
 
@@ -169,16 +235,16 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               <div className="w-6 h-6 rounded-lg bg-violet-50 flex items-center justify-center">
                 <Award className="w-3.5 h-3.5 text-violet-600" />
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Health Score</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.homeWellnessScore}</span>
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-800 leading-none">85<span className="text-xs text-slate-400 font-bold">/100</span></h3>
+              <h3 className="text-2xl font-black text-slate-800 leading-none">{computedScoreResult.score}<span className="text-xs text-slate-400 font-bold">/100</span></h3>
             </div>
-            <span className="inline-flex bg-violet-100 text-violet-750 border border-violet-200 text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full">
-              Excellent
+            <span className={`inline-flex border text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${scoreColors.badge}`}>
+              {computedScoreResult.label}
             </span>
             <p className="text-[10px] text-slate-400 font-medium max-w-[140px] leading-relaxed pt-1">
-              Your health metrics are optimal today. Keep it up!
+              {improveTip.text}
             </p>
           </div>
           <div className="relative w-24 h-24 flex items-center justify-center z-10">
@@ -196,16 +262,16 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                 cx="48"
                 cy="48"
                 r="36"
-                className="stroke-violet-600 transition-all duration-1000 ease-out"
+                className={`${scoreColors.stroke} transition-all duration-1000 ease-out`}
                 strokeWidth="6"
                 fill="transparent"
-                strokeDasharray={2 * Math.PI * 36}
-                strokeDashoffset={2 * Math.PI * 36 * 0.15} // 85% progress
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20">
-              <span className="text-base font-black text-slate-800">85%</span>
+              <span className="text-base font-black text-slate-800">{computedScoreResult.score}%</span>
               <span className="text-[7px] font-bold uppercase text-slate-400 tracking-wider">Score</span>
             </div>
           </div>
@@ -218,7 +284,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               <div className="w-6 h-6 rounded-lg bg-violet-50 flex items-center justify-center">
                 <Stethoscope className="w-3.5 h-3.5 text-violet-600" />
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Screening</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.homeLastScreening}</span>
             </div>
             {latestScreening ? (
               <div className="space-y-2">
@@ -231,16 +297,16 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                       ? "bg-amber-50 text-amber-600 border-amber-100" 
                       : "bg-emerald-50 text-emerald-600 border-emerald-100"
                   }`}>
-                    {latestScreeningRisk || "Low"} Risk
+                    {latestScreeningRisk === "High" ? t.screenHighRisk : latestScreeningRisk === "Moderate" ? t.screenModerateRisk : t.screenLowRisk}
                   </span>
                   <span className="text-[10px] text-slate-400 font-semibold">{latestScreening.date}</span>
                 </div>
               </div>
             ) : (
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-700">No Screenings Recorded</p>
+                <p className="text-xs font-bold text-slate-700">{t.homeNoScreenings}</p>
                 <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
-                  Run a camera-based AI screening for anemia & jaundice.
+                  {t.homeNoScreeningsDesc}
                 </p>
               </div>
             )}
@@ -249,7 +315,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
             onClick={() => setActiveTab("screen")}
             className="w-full mt-4 bg-violet-600 hover:bg-violet-700 text-white font-bold text-[11px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
           >
-            <span>Perform New Scan</span>
+            <span>{t.homePerformNewScan}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -264,11 +330,11 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               O2
             </div>
             <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
-              Optimal
+              {t.homeOptimal}
             </span>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Oxygen Level</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.homeOxygenLevel}</span>
             <h4 className="text-xl font-black text-slate-800 leading-none">
               {currentOxygen}%
             </h4>
@@ -282,13 +348,13 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               <Heart className="w-4 h-4 fill-rose-500/20 text-rose-500 animate-pulse" />
             </div>
             <span className="bg-rose-50 text-rose-600 border border-rose-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
-              Steady
+              {language === "hi" ? "स्थिर" : language === "gu" ? "સ્થિર" : "Steady"}
             </span>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Heart Rate</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.homeHeartRate}</span>
             <h4 className="text-xl font-black text-slate-800 leading-none">
-              {currentHeartRate} <span className="text-xs text-slate-400 font-semibold">bpm</span>
+              {currentHeartRate} <span className="text-xs text-slate-400 font-semibold">{t.vitalsBPM}</span>
             </h4>
           </div>
         </div>
@@ -303,7 +369,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               <div className="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center">
                 <Droplet className="w-4 h-4 text-violet-600 fill-violet-600/10" />
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Water Intake</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.homeWaterIntake}</span>
             </div>
             <button 
               onClick={addWater}
@@ -314,7 +380,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-black text-slate-800">{waterIntake.toFixed(2)}</span>
-            <span className="text-xs text-slate-400 font-bold">L / 3.0 L</span>
+            <span className="text-xs text-slate-400 font-bold">{t.homeLiters} / 3.0 {t.homeLiters}</span>
           </div>
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
             <div 
@@ -331,18 +397,18 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               <div className="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center">
                 <Moon className="w-4 h-4 text-violet-600 fill-violet-600/10" />
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sleep Summary</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.homeSleepSummary}</span>
             </div>
             <span className="bg-violet-100 text-violet-700 border border-violet-200 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">
-              Restful
+              {t.homeSleepRestful}
             </span>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black text-slate-800">7h 45m</span>
-            <span className="text-xs text-slate-400 font-semibold">Last Night</span>
+            <span className="text-2xl font-black text-slate-800">{language === "hi" ? "7घंटे 45मिनट" : language === "gu" ? "7કલાક 45મિનિટ" : "7h 45m"}</span>
+            <span className="text-xs text-slate-400 font-semibold">{t.homeSleepLastNight}</span>
           </div>
           <p className="text-[10px] text-slate-400 font-medium">
-            Deep Sleep: <span className="text-slate-700 font-bold">3h 10m</span> • Light Sleep: 4h 35m
+            {t.homeSleepDeep}: <span className="text-slate-700 font-bold">3h 10m</span> • {t.homeSleepLight}: 4h 35m
           </p>
         </div>
       </div>
@@ -355,10 +421,14 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </div>
           <div className="space-y-1">
             <span className="text-[9px] bg-violet-100 text-violet-750 border border-violet-200 px-2.5 py-0.5 rounded-full font-black uppercase tracking-widest inline-block">
-              AI Health Insight
+              {language === "hi" ? "एआई स्वास्थ्य अंतर्दृष्टि" : language === "gu" ? "AI આરોગ્ય આંતરદૃષ્ટિ" : "AI Health Insight"}
             </span>
             <p className="text-xs font-bold leading-normal text-violet-950 pt-1">
-              "Your heart rate is steady, and your O2 level is exceptional today. Consider adding a brief 10-minute stretch routine post-lunch to maintain metabolic flow."
+              {language === "hi" 
+                ? '"आपकी हृदय गति स्थिर है, और आज आपका ऑक्सीजन स्तर असाधारण है। चयापचय प्रवाह को बनाए रखने के लिए दोपहर के भोजन के बाद 10 मिनट के खिंचाव (stretch) व्यायाम पर विचार करें।"' 
+                : language === "gu" 
+                ? '"આજે તમારા હૃદયના ધબકારા સ્થિર છે અને ઓક્સિજનનું સ્તર અસાધારણ છે. ચયાપચય જાળવી રાખવા માટે બપોરના ભોજન પછી ૧૦ મિનિટ હળવી કસરત કરવાનું વિચારો."' 
+                : '"Your heart rate is steady, and your O2 level is exceptional today. Consider adding a brief 10-minute stretch routine post-lunch to maintain metabolic flow."'}
             </p>
           </div>
         </div>
@@ -367,9 +437,9 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* 7. UPCOMING REMINDERS */}
       <div className="bg-white border border-gray-150 rounded-3xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Today's Reminders</h3>
+          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">{t.homeTodayReminders}</h3>
           <span className="text-[10px] text-violet-600 font-bold">
-            {reminders.filter(r => !r.done).length} Pending
+            {reminders.filter(r => !r.done).length} {t.homePending}
           </span>
         </div>
 
@@ -393,11 +463,19 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                   {rem.done && <CheckCircle className="w-3.5 h-3.5 fill-white text-violet-600" />}
                 </div>
                 <span className={`text-xs font-bold ${rem.done ? "line-through text-slate-400 font-medium" : "text-slate-700"}`}>
-                  {rem.text}
+                  {rem.id === 1 
+                    ? (language === "hi" ? "सुबह की दवाएं (मल्टी-विटामिन)" : language === "gu" ? "સવારની દવાઓ (મલ્ટી-વિટામિન)" : "Morning Meds (Multi-vitamin)")
+                    : rem.id === 2
+                    ? (language === "hi" ? "वाइटल्स जांच (O2 और बीपी)" : language === "gu" ? "વાઇટલ્સ તપાસ (O2 અને BP)" : "Vitals Check (O2 & BP)")
+                    : rem.id === 3
+                    ? (language === "hi" ? "पानी पीने का अंतराल" : language === "gu" ? "પાણી પીવાનો વિરામ" : "Water Hydration Break")
+                    : rem.id === 4
+                    ? (language === "hi" ? "शाम की दवाएं (आयरन सप्लीमेंट)" : language === "gu" ? "સાંજ की दवाएं (आयरन सप्लीमेंट)" : "Evening Meds (Iron Supp.)")
+                    : rem.text}
                 </span>
               </div>
               <span className="text-[9px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
-                {rem.time}
+                {rem.time.replace("AM", language === "hi" ? "पूर्वाह्न" : language === "gu" ? "સવારે" : "AM").replace("PM", language === "hi" ? "अपराह्न" : language === "gu" ? "સાંજે" : "PM")}
               </span>
             </div>
           ))}
@@ -407,7 +485,9 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* 8. DAILY GOALS */}
       <div className="bg-white border border-gray-150 rounded-3xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Daily Goal Tracker</h3>
+          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+            {language === "hi" ? "दैनिक लक्ष्य ट्रैकर" : language === "gu" ? "દૈનિક લક્ષ્ય ટ્રેકર" : "Daily Goal Tracker"}
+          </h3>
           <TrendingUp className="w-4 h-4 text-violet-600" />
         </div>
 
@@ -416,7 +496,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500/10" /> Calorie Burn
+                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500/10" /> {language === "hi" ? "कैलोरी बर्न" : language === "gu" ? "કેલરી બર્ન" : "Calorie Burn"}
               </span>
               <span className="text-slate-700">380 / 500 kcal</span>
             </div>
@@ -429,9 +509,9 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-violet-600" /> Active Time
+                <Activity className="w-3.5 h-3.5 text-violet-600" /> {language === "hi" ? "सक्रिय समय" : language === "gu" ? "સક્રિય સમય" : "Active Time"}
               </span>
-              <span className="text-slate-700">45 / 60 mins</span>
+              <span className="text-slate-700">45 / 60 {language === "hi" ? "मिनट" : language === "gu" ? "મિનિટ" : "mins"}</span>
             </div>
             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
               <div className="h-full bg-gradient-to-r from-violet-600 to-purple-600 rounded-full transition-all duration-500" style={{ width: "75%" }} />
@@ -444,10 +524,10 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       <div className="bg-rose-50/50 border border-rose-100 rounded-3xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-sm">
         <div className="space-y-1">
           <h4 className="text-xs font-black text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4 text-rose-500 animate-pulse" /> Emergency Contact
+            <AlertTriangle className="w-4 h-4 text-rose-500 animate-pulse" /> {language === "hi" ? "आपातकालीन संपर्क" : language === "gu" ? "આપાતકાલીન સંપર્ક" : "Emergency Contact"}
           </h4>
           <p className="text-[10px] text-rose-600 font-bold leading-normal">
-            Need urgent medical help or consultation?
+            {language === "hi" ? "त्वरित चिकित्सा सहायता या परामर्श की आवश्यकता है?" : language === "gu" ? "તાત્કાલિક તબીબી મદદ અથવા સલાહની જરૂર છે?" : "Need urgent medical help or consultation?"}
           </p>
         </div>
         <button
@@ -455,7 +535,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           className="bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-2xl shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
         >
           <Phone className="w-3.5 h-3.5" />
-          <span>Consult Now</span>
+          <span>{language === "hi" ? "परामर्श करें" : language === "gu" ? "સલાહ લો" : "Consult Now"}</span>
         </button>
       </div>
 

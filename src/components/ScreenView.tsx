@@ -291,6 +291,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const [age, setAge] = useState(32);
   const [temperature, setTemperature] = useState("98.6");
   const [screeningResult, setScreeningResult] = useState<string | null>(null);
+  const [assessElapsed, setAssessElapsed] = useState<string | null>(null);
   const [isScreeningLoading, setIsScreeningLoading] = useState(false);
 
   // Nani-Dadi Ke Nuskhe Memoized Matcher
@@ -315,7 +316,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     const matched = findNuskhe(activeKeys, screeningResult, calculatedTriage, language);
 
     let voiceText = screeningResult;
-    if (matched.length > 0) {
+    if (calculatedTriage !== "RED" && matched.length > 0) {
       const remediesTitle = language === "hi"
         ? "\n\nपारंपरिक घरेलू नुस्खे:\n"
         : language === "gu"
@@ -986,7 +987,9 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     e.preventDefault();
     setIsScreeningLoading(true);
     setScreeningResult(null);
+    setAssessElapsed(null);
 
+    const startTimeAssess = Date.now();
     try {
       const { allowed } = checkRateLimit("assess", 4, 30000);
       if (!allowed) {
@@ -1007,6 +1010,8 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
 
       const data = await response.json();
       if (data.success) {
+        const elapsed = ((Date.now() - startTimeAssess) / 1000).toFixed(1);
+        setAssessElapsed(elapsed);
         setScreeningResult(data.assessment);
       } else {
         setScreeningResult("Unable to generate screening report. Please verify your connection and try again.");
@@ -1056,6 +1061,7 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
     setAge(32);
     setTemperature("98.6");
     setScreeningResult(null);
+    setAssessElapsed(null);
   };
 
   useEffect(() => {
@@ -1626,6 +1632,12 @@ Shared via Saathi.`;
               <div className="text-xs text-slate-700 leading-relaxed font-bold space-y-3 whitespace-pre-line bg-violet-50/30 p-4 rounded-xl border border-violet-100">
                 {screeningResult}
               </div>
+
+              {assessElapsed && (
+                <div className="text-[11px] text-slate-550 font-bold px-1 flex items-center gap-1">
+                  <span>⚡ {assessElapsed}s · Groq</span>
+                </div>
+              )}
 
               <div className="bg-amber-500/[0.03] border border-amber-500/10 rounded-2xl p-4 text-[10px] text-amber-900 leading-relaxed flex gap-3 font-semibold">
                 <Info className="w-4 h-4 shrink-0 text-amber-500 animate-pulse mt-0.5" />

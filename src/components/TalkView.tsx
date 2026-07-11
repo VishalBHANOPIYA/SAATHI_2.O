@@ -486,6 +486,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
   const [chatInput, setChatInput] = useState("");
   const [isMuted, setIsMuted] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [groqElapsed, setGroqElapsed] = useState<string | null>(null);
+  const [transcribeElapsed, setTranscribeElapsed] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -605,6 +607,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       formData.append("file", trimmedBlob, trimmedBlob.type === "audio/wav" ? "recording.wav" : "recording.webm");
       formData.append("language", language);
 
+      const startTimeTranscribe = Date.now();
       const res = await fetch("/api/transcribe", {
         method: "POST",
         body: formData,
@@ -612,6 +615,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
 
       const data = await res.json();
       if (data.success) {
+        const elapsed = ((Date.now() - startTimeTranscribe) / 1000).toFixed(1);
+        setTranscribeElapsed(elapsed);
         if (triageHistory.length > 0) {
           setChatInput("");
           submitFollowUpAnswer(data.text);
@@ -679,6 +684,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           speakAssistantMessage(data.follow_up_question);
         } else if (data.triageResult) {
           const latencySec = ((Date.now() - startTime) / 1000).toFixed(1);
+          setGroqElapsed(latencySec);
           const enrichedResult = {
             ...data.triageResult,
             latencySec: Number(latencySec),
@@ -829,6 +835,7 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
           speakAssistantMessage(data.follow_up_question);
         } else if (data.triageResult) {
           const latencySec = ((Date.now() - startTime) / 1000).toFixed(1);
+          setGroqElapsed(latencySec);
           const enrichedResult = {
             ...data.triageResult,
             latencySec: Number(latencySec),
@@ -915,6 +922,8 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
     setIsTranscribing(false);
     setIsTriaging(false);
     setTriageHistory([]);
+    setGroqElapsed(null);
+    setTranscribeElapsed(null);
   };
 
   return (
@@ -962,13 +971,20 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
       )}
 
       {triageResult && (
-        <TriageResultCard
-          result={triageResult}
-          language={language}
-          userProfile={userProfile}
-          onConnectDoctor={() => setActiveCall(true)}
-          onReset={resetTriageFlow}
-        />
+        <>
+          <TriageResultCard
+            result={triageResult}
+            language={language}
+            userProfile={userProfile}
+            onConnectDoctor={() => setActiveCall(true)}
+            onReset={resetTriageFlow}
+          />
+          {groqElapsed && (
+            <div className="text-[11px] text-slate-550 font-bold mt-2 px-1 flex items-center gap-1">
+              <span>⚡ {groqElapsed}s · Groq LLaMA-3.3-70B</span>
+            </div>
+          )}
+        </>
       )}
 
       {!triageResult && isTriaging && (
@@ -1124,6 +1140,11 @@ export const TalkView: React.FC<TalkViewProps> = React.memo(({
                 {l.editingTitle}
               </h3>
               <p className="text-[10px] text-textsecondary leading-normal font-semibold">{l.editingDesc}</p>
+              {transcribeElapsed && (
+                <p className="text-[11px] text-slate-500 font-bold pt-1 flex items-center gap-1 animate-fadeIn">
+                  <span>🎤 Transcribed in {transcribeElapsed}s · Groq Whisper</span>
+                </p>
+              )}
             </div>
 
             <textarea

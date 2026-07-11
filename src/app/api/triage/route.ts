@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { groq } from "@/lib/groq";
+import { getLanguageName } from "@/utils/languageHelper";
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
     const apiKey = process.env.GROQ_API_KEY;
     const isMock = !apiKey || apiKey === "your_key_here" || apiKey.trim() === "";
 
-    const langName = language === "hi" ? "Hindi" : language === "gu" ? "Gujarati" : "English";
+    const langName = getLanguageName(language);
 
     // Count assistant messages in history to track number of follow-up questions asked
     const assistantQuestionCount = history

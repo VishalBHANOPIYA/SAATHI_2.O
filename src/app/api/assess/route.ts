@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { groq } from "@/lib/groq";
+import { getLanguageName } from "@/utils/languageHelper";
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
       .map((entry) => entry[0])
       .join(", ");
 
-    const langName = language === "hi" ? "Hindi" : language === "gu" ? "Gujarati" : "English";
+    const langName = getLanguageName(language);
 
     let profileContext = "";
     if (userProfile && typeof userProfile === "object") {
