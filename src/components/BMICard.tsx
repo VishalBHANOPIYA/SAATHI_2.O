@@ -40,7 +40,10 @@ export const BMICard: React.FC<BMICardProps> = ({
   // Wait, to get precise category and advice for finalBmi, let's just calculate
   // it by setting height = 100cm (1m) and weight = finalBmi (since BMI = weight / height^2, if height = 1m, BMI = weight)
   const bmiDetails = calculateBMI(finalBmi, 100);
-  const adviceText = getBMIAdvice(bmiDetails.category, language);
+  if (!bmiDetails) {
+    return null;
+  }
+  const adviceText = getBMIAdvice(bmiDetails, language);
 
   // Set up colors/classes based on category
   let categoryColorClass = "";
