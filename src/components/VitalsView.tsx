@@ -30,6 +30,7 @@ import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { useChartHeight } from "@/hooks/useChartHeight";
 import { resampleSignal, estimateVitalsForWindow, detrend, computeChromSignal } from "../utils/vitalsRppg";
+import { calculateBMI } from "../utils/bmiCalculator";
 
 const scannerTranslations = {
   en: {
@@ -669,12 +670,49 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     const today = new Date();
     const dateStr = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
+    const activePatientId = safeGetItem("saathi_asha_active_patient_id");
+    let patientHeight = undefined;
+    let patientWeight = undefined;
+
+    if (activePatientId) {
+      const savedPatients = safeGetItem("saathi_asha_patients");
+      if (savedPatients) {
+        try {
+          const patients = JSON.parse(savedPatients);
+          const activePatient = patients.find((p: any) => p.id === activePatientId);
+          if (activePatient) {
+            patientHeight = activePatient.heightCm || activePatient.height;
+            patientWeight = activePatient.weightKg || activePatient.weight;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    const heightVal = patientHeight || userProfile?.heightCm || userProfile?.height || undefined;
+    const weightVal = patientWeight || userProfile?.weightKg || userProfile?.weight || undefined;
+    let bmiVal = undefined;
+    let bmiCatVal = undefined;
+
+    if (heightVal && weightVal) {
+      const bmiRes = calculateBMI(Number(weightVal), Number(heightVal));
+      if (bmiRes) {
+        bmiVal = bmiRes.bmi;
+        bmiCatVal = bmiRes.category;
+      }
+    }
+
     const newEntry = {
       date: dateStr,
       heartRate: capturedVitals.hr,
       systolic: 120,
       diastolic: 80,
-      oxygen: capturedVitals.spo2
+      oxygen: capturedVitals.spo2,
+      height: heightVal,
+      weight: weightVal,
+      bmi: bmiVal,
+      bmiCategory: bmiCatVal
     };
 
     const updatedHistory = [...vitalsHistory, newEntry];
@@ -687,7 +725,8 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
       date: today.toISOString().split("T")[0],
       category: "Lab Test",
       doctor: "Saathi Camera AI Scanner",
-      notes: `Heart Rate: ${capturedVitals.hr} bpm | SpO2: ${capturedVitals.spo2}% | Resp Rate: ${capturedVitals.br} bpm`
+      notes: `Heart Rate: ${capturedVitals.hr} bpm | SpO2: ${capturedVitals.spo2}% | Resp Rate: ${capturedVitals.br} bpm` +
+             (heightVal && weightVal ? ` | Height: ${heightVal} cm | Weight: ${weightVal} kg | BMI: ${bmiVal} (${bmiCatVal})` : '')
     };
 
     const updatedRecords = [newRecordItem, ...recordsList];
@@ -711,12 +750,49 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     const today = new Date();
     const dateStr = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
+    const activePatientId = safeGetItem("saathi_asha_active_patient_id");
+    let patientHeight = undefined;
+    let patientWeight = undefined;
+
+    if (activePatientId) {
+      const savedPatients = safeGetItem("saathi_asha_patients");
+      if (savedPatients) {
+        try {
+          const patients = JSON.parse(savedPatients);
+          const activePatient = patients.find((p: any) => p.id === activePatientId);
+          if (activePatient) {
+            patientHeight = activePatient.heightCm || activePatient.height;
+            patientWeight = activePatient.weightKg || activePatient.weight;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    const heightVal = patientHeight || userProfile?.heightCm || userProfile?.height || undefined;
+    const weightVal = patientWeight || userProfile?.weightKg || userProfile?.weight || undefined;
+    let bmiVal = undefined;
+    let bmiCatVal = undefined;
+
+    if (heightVal && weightVal) {
+      const bmiRes = calculateBMI(Number(weightVal), Number(heightVal));
+      if (bmiRes) {
+        bmiVal = bmiRes.bmi;
+        bmiCatVal = bmiRes.category;
+      }
+    }
+
     const newEntry = {
       date: dateStr,
       heartRate: parseInt(newVital.heartRate),
       systolic: parseInt(newVital.systolic),
       diastolic: parseInt(newVital.diastolic),
-      oxygen: parseInt(newVital.oxygen)
+      oxygen: parseInt(newVital.oxygen),
+      height: heightVal,
+      weight: weightVal,
+      bmi: bmiVal,
+      bmiCategory: bmiCatVal
     };
 
     const updatedHistory = [...vitalsHistory, newEntry];
@@ -729,7 +805,8 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
       date: today.toISOString().split("T")[0],
       category: "Lab Test",
       doctor: "Manual Entry Log",
-      notes: `Heart Rate: ${newEntry.heartRate} bpm | BP: ${newEntry.systolic}/${newEntry.diastolic} mmHg | SpO2: ${newEntry.oxygen}%`
+      notes: `Heart Rate: ${newEntry.heartRate} bpm | BP: ${newEntry.systolic}/${newEntry.diastolic} mmHg | SpO2: ${newEntry.oxygen}%` +
+             (heightVal && weightVal ? ` | Height: ${heightVal} cm | Weight: ${weightVal} kg | BMI: ${bmiVal} (${bmiCatVal})` : '')
     };
 
     const updatedRecords = [newRecordItem, ...recordsList];
@@ -900,7 +977,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           <VitalsSpeechPlayer hr={capturedVitals.hr} spo2={capturedVitals.spo2} br={capturedVitals.br} language={language} />
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <div className="bg-gradient-to-br from-pink-50 to-white border border-pink-100 p-3 rounded-2xl flex flex-col justify-between items-center text-center shadow-sm">
             <Heart className="w-5 h-5 text-pink-500 fill-pink-100 animate-pulse" />
             <div className="my-2">
@@ -930,6 +1007,32 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             <span className="text-[10px] font-bold text-slate-600">{sTrans.br}</span>
             <span className="text-[9px] text-slate-400 mt-1 font-semibold">Normal: {getNormalRanges(profileAge).br}</span>
           </div>
+
+          {userProfile?.bmi ? (
+            <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 p-3 rounded-2xl flex flex-col justify-between items-center text-center shadow-sm">
+              <div className="w-5 h-5 rounded-full border-2 border-blue-500/30 flex items-center justify-center text-[10px] font-bold text-blue-600">BMI</div>
+              <div className="my-2">
+                <span className="text-2xl font-black text-blue-700">{userProfile.bmi}</span>
+                <span className="text-[9px] text-blue-500 block font-semibold truncate max-w-[80px]">
+                  {userProfile.bmiCategory ? userProfile.bmiCategory.replace('_', ' ').toUpperCase() : ""}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-slate-600">Body Mass Index</span>
+              <span className="text-[9px] text-slate-400 mt-1 font-semibold">Healthy: 18.5 - 23</span>
+            </div>
+          ) : (
+            <div 
+              className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 p-3 rounded-2xl flex flex-col justify-between items-center text-center shadow-sm cursor-pointer hover:bg-slate-100/50" 
+              onClick={() => alert(language === "hi" ? "कृपया अपनी ऊंचाई और वजन प्रोफाइल में दर्ज करें।" : "Please configure your Height & Weight in Profile to calculate BMI")}
+            >
+              <div className="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-500">BMI</div>
+              <div className="my-2 text-[10px] text-slate-400 font-bold px-1 whitespace-nowrap">
+                {language === "hi" ? "प्रोफ़ाइल सेट करें" : language === "gu" ? "પ્રોફાઇલ સેટ કરો" : "Set Profile"}
+              </div>
+              <span className="text-[10px] font-bold text-slate-600">Body Mass Index</span>
+              <span className="text-[9px] text-slate-400 mt-1 font-semibold">Not Configured</span>
+            </div>
+          )}
         </div>
 
         {/* Tiered Confidence Feedback (Fix 5) */}

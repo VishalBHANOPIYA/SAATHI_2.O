@@ -44,12 +44,38 @@ const BottomNav = dynamic(() => import("@/components/BottomNav").then(m => m.Bot
 const Sidebar = dynamic(() => import("@/components/Sidebar").then(m => m.Sidebar), { ssr: false });
 const RightPanel = dynamic(() => import("@/components/RightPanel").then(m => m.RightPanel), { ssr: false });
 
+import { calculateBMI } from "@/utils/bmiCalculator";
+import { BMICard } from "@/components/BMICard";
+
 const formatABHA = (raw: string) => {
   const cleaned = raw.replace(/\D/g, "").slice(0, 14);
   if (cleaned.length <= 2) return cleaned;
   if (cleaned.length <= 6) return `${cleaned.slice(0, 2)}-${cleaned.slice(2)}`;
   if (cleaned.length <= 10) return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
   return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}-${cleaned.slice(6, 10)}-${cleaned.slice(10, 14)}`;
+};
+
+const getLiveBMI = (profileForm: any) => {
+  let hCm = 0;
+  if (profileForm.heightUnit === "cm") {
+    hCm = Number(profileForm.height);
+  } else {
+    const ft = Number(profileForm.heightFt) || 0;
+    const inch = Number(profileForm.heightIn) || 0;
+    hCm = (ft * 30.48) + (inch * 2.54);
+  }
+
+  let wKg = 0;
+  if (profileForm.weightUnit === "kg") {
+    wKg = Number(profileForm.weight);
+  } else {
+    wKg = (Number(profileForm.weight) || 0) * 0.453592;
+  }
+
+  if (hCm >= 50 && hCm <= 250 && wKg >= 2 && wKg <= 300) {
+    return calculateBMI(wKg, hCm);
+  }
+  return null;
 };
 
 export default function MainApp() {
@@ -298,7 +324,13 @@ export default function MainApp() {
     bloodGroup: "Unknown",
     emergencyName: "",
     emergencyPhone: "",
-    abha: ""
+    abha: "",
+    height: "",
+    heightFt: "",
+    heightIn: "",
+    heightUnit: "cm" as "cm" | "ft",
+    weight: "",
+    weightUnit: "kg" as "kg" | "lbs"
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -370,7 +402,13 @@ export default function MainApp() {
           bloodGroup: parsed.bloodGroup || "Unknown",
           emergencyName: parsed.emergencyContact?.name || "",
           emergencyPhone: parsed.emergencyContact?.phone || "",
-          abha: parsed.abha || ""
+          abha: parsed.abha || "",
+          height: parsed.heightCm ? String(Math.round(parsed.heightCm)) : "",
+          heightFt: parsed.heightCm ? String(Math.floor((parsed.heightCm / 2.54) / 12)) : "",
+          heightIn: parsed.heightCm ? String(Math.round((parsed.heightCm / 2.54) % 12)) : "",
+          heightUnit: "cm",
+          weight: parsed.weightKg ? String(Math.round(parsed.weightKg * 10) / 10) : "",
+          weightUnit: "kg"
         });
       } catch (e) {
         console.error("Failed to parse saved user profile:", e);
@@ -865,6 +903,32 @@ export default function MainApp() {
     if (abhaTrim && abhaTrim.length !== 14) {
       errors.abha = t.valAbhaValid;
     }
+    // Height & Weight validation
+    const heightVal = profileForm.heightUnit === "cm" ? profileForm.height : (profileForm.heightFt || profileForm.heightIn);
+    if (heightVal) {
+      let hCm = 0;
+      if (profileForm.heightUnit === "cm") {
+        hCm = Number(profileForm.height);
+      } else {
+        const ft = Number(profileForm.heightFt) || 0;
+        const inch = Number(profileForm.heightIn) || 0;
+        hCm = (ft * 30.48) + (inch * 2.54);
+      }
+      if (isNaN(hCm) || hCm < 50 || hCm > 250) {
+        errors.height = "Height must be between 50 and 250 cm";
+      }
+    }
+    if (profileForm.weight) {
+      let wKg = 0;
+      if (profileForm.weightUnit === "kg") {
+        wKg = Number(profileForm.weight);
+      } else {
+        wKg = Number(profileForm.weight) * 0.453592;
+      }
+      if (isNaN(wKg) || wKg < 2 || wKg > 300) {
+        errors.weight = "Weight must be between 2 and 300 kg";
+      }
+    }
     setFormErrors(prev => ({ ...prev, ...errors }));
     return Object.keys(errors).length === 0;
   };
@@ -893,6 +957,25 @@ export default function MainApp() {
       if (!validateSubStepB()) return;
     }
 
+    let hCm = 0;
+    if (profileForm.heightUnit === "cm") {
+      hCm = Number(profileForm.height);
+    } else {
+      const ft = Number(profileForm.heightFt) || 0;
+      const inch = Number(profileForm.heightIn) || 0;
+      hCm = (ft * 30.48) + (inch * 2.54);
+    }
+
+    let wKg = 0;
+    if (profileForm.weightUnit === "kg") {
+      wKg = Number(profileForm.weight);
+    } else {
+      wKg = (Number(profileForm.weight) || 0) * 0.453592;
+    }
+
+    const hasBmiData = hCm >= 50 && hCm <= 250 && wKg >= 2 && wKg <= 300;
+    const bmiResult = hasBmiData ? calculateBMI(wKg, hCm) : null;
+
     const existingProfile = userProfile || {};
     const finalProfile = {
       name: profileForm.name.trim(),
@@ -911,7 +994,12 @@ export default function MainApp() {
       },
       abha: profileForm.abha.replace(/\D/g, ""),
       language,
-      createdAt: existingProfile.createdAt || new Date().toISOString()
+      createdAt: existingProfile.createdAt || new Date().toISOString(),
+      heightCm: hasBmiData ? Math.round(hCm * 10) / 10 : undefined,
+      weightKg: hasBmiData ? Math.round(wKg * 10) / 10 : undefined,
+      bmi: bmiResult ? Math.round(bmiResult.bmi * 10) / 10 : undefined,
+      bmiCategory: bmiResult ? bmiResult.category : undefined,
+      bmiUpdatedAt: hasBmiData ? new Date().toISOString() : undefined
     };
 
     safeSetItem("saathi_user_profile", JSON.stringify(finalProfile));
@@ -929,6 +1017,8 @@ export default function MainApp() {
       setTimeout(() => {
         setWelcomeToast(null);
       }, 4000);
+    } else {
+      setShowProfileModal(false);
     }
   };
 
@@ -1521,6 +1611,125 @@ export default function MainApp() {
               ) : (
                 /* SUB-STEP B */
                 <div className="space-y-4 animate-scaleUp">
+                  {/* Height & Weight Inputs */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide flex items-center justify-between">
+                        <span>{t.heightLabel || "Height"}</span>
+                        <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-50">
+                          <button
+                            type="button"
+                            onClick={() => setProfileForm(p => ({ ...p, heightUnit: "cm" }))}
+                            className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                              profileForm.heightUnit === "cm"
+                                ? "bg-white text-violet-600 shadow-soft"
+                                : "text-textsecondary"
+                            }`}
+                          >
+                            cm
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setProfileForm(p => ({ ...p, heightUnit: "ft" }))}
+                            className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                              profileForm.heightUnit === "ft"
+                                ? "bg-white text-violet-600 shadow-soft"
+                                : "text-textsecondary"
+                            }`}
+                          >
+                            ft/in
+                          </button>
+                        </div>
+                      </label>
+                      {profileForm.heightUnit === "cm" ? (
+                        <input
+                          type="number"
+                          placeholder="cm"
+                          value={profileForm.height}
+                          onChange={e => setProfileForm(p => ({ ...p, height: e.target.value }))}
+                          className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
+                        />
+                      ) : (
+                        <div className="flex gap-1.5">
+                          <input
+                            type="number"
+                            placeholder="ft"
+                            value={profileForm.heightFt}
+                            onChange={e => setProfileForm(p => ({ ...p, heightFt: e.target.value }))}
+                            className="w-1/2 text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
+                          />
+                          <input
+                            type="number"
+                            placeholder="in"
+                            value={profileForm.heightIn}
+                            onChange={e => setProfileForm(p => ({ ...p, heightIn: e.target.value }))}
+                            className="w-1/2 text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
+                          />
+                        </div>
+                      )}
+                      {formErrors.height && (
+                        <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
+                          ⚠️ {formErrors.height}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide flex items-center justify-between">
+                        <span>{t.weightLabel || "Weight"}</span>
+                        <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-50">
+                          <button
+                            type="button"
+                            onClick={() => setProfileForm(p => ({ ...p, weightUnit: "kg" }))}
+                            className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                              profileForm.weightUnit === "kg"
+                                ? "bg-white text-violet-600 shadow-soft"
+                                : "text-textsecondary"
+                            }`}
+                          >
+                            kg
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setProfileForm(p => ({ ...p, weightUnit: "lbs" }))}
+                            className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                              profileForm.weightUnit === "lbs"
+                                ? "bg-white text-violet-600 shadow-soft"
+                                : "text-textsecondary"
+                            }`}
+                          >
+                            lbs
+                          </button>
+                        </div>
+                      </label>
+                      <input
+                        type="number"
+                        placeholder={profileForm.weightUnit === "kg" ? "kg" : "lbs"}
+                        value={profileForm.weight}
+                        onChange={e => setProfileForm(p => ({ ...p, weight: e.target.value }))}
+                        className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
+                      />
+                      {formErrors.weight && (
+                        <p className="text-[10px] text-danger font-bold flex items-center gap-1 mt-1">
+                          ⚠️ {formErrors.weight}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Live BMI Preview */}
+                  {(() => {
+                    const liveBmi = getLiveBMI(profileForm);
+                    if (liveBmi) {
+                      return (
+                        <div className="animate-fadeIn">
+                          <BMICard bmi={liveBmi.bmi} showAdvice={false} compact={true} />
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide block">
                       {t.conditions}
@@ -1897,6 +2106,121 @@ export default function MainApp() {
                 {t.healthDetails}
               </span>
 
+              {/* Height & Weight Inputs */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide flex items-center justify-between">
+                    <span>{t.heightLabel || "Height"}</span>
+                    <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setProfileForm(p => ({ ...p, heightUnit: "cm" }))}
+                        className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                          profileForm.heightUnit === "cm"
+                            ? "bg-white text-primary shadow-soft"
+                            : "text-textsecondary"
+                        }`}
+                      >
+                        cm
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProfileForm(p => ({ ...p, heightUnit: "ft" }))}
+                        className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                          profileForm.heightUnit === "ft"
+                            ? "bg-white text-primary shadow-soft"
+                            : "text-textsecondary"
+                        }`}
+                      >
+                        ft/in
+                      </button>
+                    </div>
+                  </label>
+                  {profileForm.heightUnit === "cm" ? (
+                    <input
+                      type="number"
+                      placeholder="cm"
+                      value={profileForm.height}
+                      onChange={e => setProfileForm(p => ({ ...p, height: e.target.value }))}
+                      className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[44px]"
+                    />
+                  ) : (
+                    <div className="flex gap-1.5">
+                      <input
+                        type="number"
+                        placeholder="ft"
+                        value={profileForm.heightFt}
+                        onChange={e => setProfileForm(p => ({ ...p, heightFt: e.target.value }))}
+                        className="w-1/2 text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[44px]"
+                      />
+                      <input
+                        type="number"
+                        placeholder="in"
+                        value={profileForm.heightIn}
+                        onChange={e => setProfileForm(p => ({ ...p, heightIn: e.target.value }))}
+                        className="w-1/2 text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[44px]"
+                      />
+                    </div>
+                  )}
+                  {formErrors.height && (
+                    <p className="text-[9px] text-danger font-bold">⚠️ {formErrors.height}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide flex items-center justify-between">
+                    <span>{t.weightLabel || "Weight"}</span>
+                    <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setProfileForm(p => ({ ...p, weightUnit: "kg" }))}
+                        className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                          profileForm.weightUnit === "kg"
+                            ? "bg-white text-primary shadow-soft"
+                            : "text-textsecondary"
+                        }`}
+                      >
+                        kg
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProfileForm(p => ({ ...p, weightUnit: "lbs" }))}
+                        className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                          profileForm.weightUnit === "lbs"
+                            ? "bg-white text-primary shadow-soft"
+                            : "text-textsecondary"
+                        }`}
+                      >
+                        lbs
+                      </button>
+                    </div>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder={profileForm.weightUnit === "kg" ? "kg" : "lbs"}
+                    value={profileForm.weight}
+                    onChange={e => setProfileForm(p => ({ ...p, weight: e.target.value }))}
+                    className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[44px]"
+                  />
+                  {formErrors.weight && (
+                    <p className="text-[9px] text-danger font-bold">⚠️ {formErrors.weight}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Live BMI Preview */}
+              {(() => {
+                const liveBmi = getLiveBMI(profileForm);
+                if (liveBmi) {
+                  return (
+                    <div className="animate-fadeIn">
+                      <BMICard bmi={liveBmi.bmi} showAdvice={false} compact={true} />
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide block">
                   {t.conditions}
@@ -2123,7 +2447,13 @@ export default function MainApp() {
         bloodGroup: userProfile.bloodGroup || "Unknown",
         emergencyName: userProfile.emergencyContact?.name || "",
         emergencyPhone: userProfile.emergencyContact?.phone || "",
-        abha: userProfile.abha || ""
+        abha: userProfile.abha || "",
+        height: userProfile.heightCm ? String(Math.round(userProfile.heightCm)) : "",
+        heightFt: userProfile.heightCm ? String(Math.floor((userProfile.heightCm / 2.54) / 12)) : "",
+        heightIn: userProfile.heightCm ? String(Math.round((userProfile.heightCm / 2.54) % 12)) : "",
+        heightUnit: "cm",
+        weight: userProfile.weightKg ? String(Math.round(userProfile.weightKg * 10) / 10) : "",
+        weightUnit: "kg"
       });
       setSelectedCountryCode(userProfile.countryCode || "+91");
     }

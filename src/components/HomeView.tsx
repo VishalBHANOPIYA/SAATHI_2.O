@@ -23,6 +23,7 @@ import {
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 import { computeHealthScore, getImproveTip } from "@/utils/healthScore";
+import { BMICard } from "./BMICard";
 
 interface HomeViewProps {
   setActiveTab: (tab: string) => void;
@@ -336,6 +337,13 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </button>
         </div>
       </div>
+
+      {/* BMI Card */}
+      {userProfile?.bmi && (
+        <div className="animate-fadeIn">
+          <BMICard bmi={userProfile.bmi} compact={true} />
+        </div>
+      )}
 
       {/* 4. VITALS SUMMARY GRID */}
       <div className="grid grid-cols-2 gap-4">

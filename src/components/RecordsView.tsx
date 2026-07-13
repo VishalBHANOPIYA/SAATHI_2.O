@@ -32,6 +32,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useChartHeight } from "@/hooks/useChartHeight";
 import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHelper";
 import { checkRateLimit } from "@/utils/rateLimit";
+import { calculateBMI } from "../utils/bmiCalculator";
 
 interface RecordsViewProps {
   vitalsHistory: any[];
@@ -250,7 +251,11 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
         disclaimerTitle: "CLINICAL DISCLAIMER & WARNING",
         disclaimerText1: "Saathi is an AI-powered health companion prototype. All vital sign estimates, camera screenings,",
         disclaimerText2: "and triage assessments are for educational and awareness purposes only. This report does NOT",
-        disclaimerText3: "constitute professional medical advice, diagnosis, or treatment. Consult a licensed doctor for clinical care."
+        disclaimerText3: "constitute professional medical advice, diagnosis, or treatment. Consult a licensed doctor for clinical care.",
+        height: "Height",
+        weight: "Weight",
+        bmi: "BMI",
+        bmiCategory: "BMI Category"
       },
       hi: {
         title: "साथी स्वास्थ्य कार्ड",
@@ -284,7 +289,11 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
         disclaimerTitle: "नैदानिक अस्वीकरण और चेतावनी",
         disclaimerText1: "साथी एक एआई-संचालित स्वास्थ्य साथी प्रोटोटाइप है। सभी वाइटल्स अनुमान, कैमरा स्क्रीनिंग,",
         disclaimerText2: "और ट्राइएज मूल्यांकन केवल शैक्षिक और जागरूकता उद्देश्यों के लिए हैं। यह रिपोर्ट पेशेवर",
-        disclaimerText3: "चिकित्सा सलाह, निदान या उपचार का गठन नहीं करती है। नैदानिक देखभाल के लिए डॉक्टर से परामर्श करें।"
+        disclaimerText3: "चिकित्सा सलाह, निदान या उपचार का गठन नहीं करती है। नैदानिक देखभाल के लिए डॉक्टर से परामर्श करें।",
+        height: "कद (Height)",
+        weight: "वजन (Weight)",
+        bmi: "बीएमआई (BMI)",
+        bmiCategory: "बीएमआई श्रेणी"
       },
       gu: {
         title: "સાથી સ્વાસ્થ્ય કાર્ડ",
@@ -318,7 +327,11 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
         disclaimerTitle: "ક્લિનિકલ ડિસ્ક્લેમર અને ચેતવણી",
         disclaimerText1: "સાથી એ એક AI-સંચાલિત હેલ્થ સાથી પ્રોટોટાઇપ છે. તમામ વાઇટલ્સ અંદાજ, કેમેરા સ્ક્રીનીંગ,",
         disclaimerText2: "અને ટ્રાયેજ મૂલ્યાંકન ફક્ત શૈક્ષણિક અને જાગૃતિ હેતુ માટે છે. આ અહેવાલ કોઈ પણ રીતે વ્યાવસાયિક",
-        disclaimerText3: "તબીબી સલાહ, નિદાન કે સારવાર સમાન નથી. ક્લિનિકલ સંભાળ માટે લાઇસન્સ પ્રાપ્ત ડૉક્ટરની સલાહ લો."
+        disclaimerText3: "તબીબી સલાહ, નિદાન કે સારવાર સમાન નથી. ક્લિનિકલ સંભાળ માટે લાઇસન્સ પ્રાપ્ત ડૉક્ટરની સલાહ લો.",
+        height: "ઊંચાઈ (Height)",
+        weight: "વજન (Weight)",
+        bmi: "બીએમઆઈ (BMI)",
+        bmiCategory: "બીએમઆઈ શ્રેણી"
       }
     }[activeLang];
 
@@ -346,9 +359,44 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       medications: "None"
     };
 
+    const pHeight = profile.heightCm || profile.height || null;
+    const pWeight = profile.weightKg || profile.weight || null;
+    let pBmi = profile.bmi || null;
+    let pBmiCategory = profile.bmiCategory || null;
+
+    if (pHeight && pWeight) {
+      const bmiRes = calculateBMI(Number(pWeight), Number(pHeight));
+      if (bmiRes) {
+        pBmi = bmiRes.bmi;
+        const catKey = bmiRes.category.toLowerCase().replace(/[\s\(\)]+/g, "_");
+        const catMap: Record<string, string> = {
+          severely_underweight: activeLang === "hi" ? "अत्यधिक कम वजन" : activeLang === "gu" ? "ખૂબ જ ઓછું વજન" : "Severely Underweight",
+          underweight: activeLang === "hi" ? "कम वजन" : activeLang === "gu" ? "ઓછું વજન" : "Underweight",
+          normal: activeLang === "hi" ? "सामान्य वजन" : activeLang === "gu" ? "સામાન્ય વજન" : "Normal Weight",
+          overweight: activeLang === "hi" ? "अधिक वजन" : activeLang === "gu" ? "વધુ વજન" : "Overweight",
+          obese_1: activeLang === "hi" ? "मोटापा (श्रेणी 1)" : activeLang === "gu" ? "સ્થૂળતા (વર્ગ ૧)" : "Obese (Class I)",
+          obese_2: activeLang === "hi" ? "मोटापा (श्रेणी 2)" : activeLang === "gu" ? "સ્થૂળતા (વર્ગ ૨)" : "Obese (Class II)"
+        };
+        pBmiCategory = catMap[catKey] || bmiRes.label;
+      }
+    } else if (pBmiCategory) {
+      const catKey = pBmiCategory.toLowerCase().replace(/[\s\(\)]+/g, "_");
+      const catMap: Record<string, string> = {
+        severely_underweight: activeLang === "hi" ? "अत्यधिक कम वजन" : activeLang === "gu" ? "ખૂબ જ ઓછું વજન" : "Severely Underweight",
+        underweight: activeLang === "hi" ? "कम वजन" : activeLang === "gu" ? "ઓછું વજન" : "Underweight",
+        normal: activeLang === "hi" ? "सामान्य वजन" : activeLang === "gu" ? "સામાન્ય વજન" : "Normal Weight",
+        overweight: activeLang === "hi" ? "अधिक वजन" : activeLang === "gu" ? "વધુ વજન" : "Overweight",
+        obese_1: activeLang === "hi" ? "मोटापा (श्रेणी 1)" : activeLang === "gu" ? "સ્થૂળતા (વર્ગ ૧)" : "Obese (Class I)",
+        obese_class_i: activeLang === "hi" ? "मोटापा (श्रेणी 1)" : activeLang === "gu" ? "સ્થૂળતા (વર્ગ ૧)" : "Obese (Class I)",
+        obese_2: activeLang === "hi" ? "मोटापा (श्रेणी 2)" : activeLang === "gu" ? "સ્થૂળતા (વર્ગ ૨)" : "Obese (Class II)",
+        obese_class_ii: activeLang === "hi" ? "मोटापा (श्रेणी 2)" : activeLang === "gu" ? "સ્થૂળતા (વર્ગ ૨)" : "Obese (Class II)"
+      };
+      pBmiCategory = catMap[catKey] || pBmiCategory;
+    }
+
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(226, 232, 240); 
-    doc.roundedRect(10, 50, 190, 48, 4, 4, "FD");
+    doc.roundedRect(10, 50, 190, 58, 4, 4, "FD");
 
     doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
@@ -358,35 +406,47 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.setTextColor(71, 85, 105);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
+
+    // Left Column
     doc.text(`${tPdf.name}:`, 15, 66);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.name || "N/A"}`, 45, 66);
+    doc.text(`${profile.name || "N/A"}`, 48, 66);
 
     doc.setFont("helvetica", "bold");
     doc.text(`${tPdf.ageGender}:`, 15, 72);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.age || "N/A"} yrs / ${profile.gender || "N/A"}`, 45, 72);
+    doc.text(`${profile.age || "N/A"} yrs / ${profile.gender || "N/A"}`, 48, 72);
 
     doc.setFont("helvetica", "bold");
-    doc.text(`${tPdf.bloodGroup}:`, 15, 78);
+    doc.text(`${tPdf.contact}:`, 15, 78);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.bloodGroup || "N/A"}`, 45, 78);
+    doc.text(`${profile.phone || "N/A"}`, 48, 78);
 
     doc.setFont("helvetica", "bold");
-    doc.text(`${tPdf.contact}:`, 15, 84);
+    doc.text(`${tPdf.height}:`, 15, 84);
     doc.setFont("helvetica", "normal");
-    doc.text(`${profile.phone || "N/A"}`, 45, 84);
+    doc.text(pHeight ? `${pHeight} cm` : "N/A", 48, 84);
 
     doc.setFont("helvetica", "bold");
-    doc.text(`${tPdf.allergies}:`, 110, 66);
+    doc.text(`${tPdf.weight}:`, 15, 90);
+    doc.setFont("helvetica", "normal");
+    doc.text(pWeight ? `${pWeight} kg` : "N/A", 48, 90);
+
+    // Right Column
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.bloodGroup}:`, 110, 66);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${profile.bloodGroup || "N/A"}`, 148, 66);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.allergies}:`, 110, 72);
     doc.setFont("helvetica", "normal");
     const allergyVal = profile.allergies || "None reported";
-    doc.text(allergyVal.length > 22 ? allergyVal.substring(0, 22) + "..." : allergyVal, 148, 66);
+    doc.text(allergyVal.length > 22 ? allergyVal.substring(0, 22) + "..." : allergyVal, 148, 72);
 
     doc.setFont("helvetica", "bold");
-    doc.text(`${tPdf.conditions}:`, 110, 72);
+    doc.text(`${tPdf.conditions}:`, 110, 78);
     doc.setFont("helvetica", "normal");
-    
     const condsStr = Array.isArray(profile.conditions)
       ? profile.conditions.map((cond: string) => {
           const keyMap: Record<string, string> = {
@@ -406,54 +466,65 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
             : cond;
         }).join(", ")
       : "None";
-
-    doc.text(condsStr.length > 22 ? condsStr.substring(0, 22) + "..." : condsStr, 148, 72);
+    doc.text(condsStr.length > 22 ? condsStr.substring(0, 22) + "..." : condsStr, 148, 78);
 
     doc.setFont("helvetica", "bold");
-    doc.text(`${tPdf.medications}:`, 110, 78);
+    doc.text(`${tPdf.medications}:`, 110, 84);
     doc.setFont("helvetica", "normal");
     const medsVal = profile.medications || "None";
-    doc.text(medsVal.length > 22 ? medsVal.substring(0, 22) + "..." : medsVal, 148, 78);
+    doc.text(medsVal.length > 22 ? medsVal.substring(0, 22) + "..." : medsVal, 148, 84);
 
-    doc.roundedRect(10, 104, 190, 36, 4, 4, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.bmi}:`, 110, 90);
+    doc.setFont("helvetica", "normal");
+    doc.text(pBmi ? `${pBmi} kg/m²` : "N/A", 148, 90);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`${tPdf.bmiCategory}:`, 110, 96);
+    doc.setFont("helvetica", "normal");
+    doc.text(pBmiCategory || "N/A", 148, 96);
+
+    // Vitals Section (shifted y by 8mm)
+    doc.roundedRect(10, 112, 190, 34, 4, 4, "FD");
     doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text(tPdf.vitals, 15, 112);
+    doc.text(tPdf.vitals, 15, 120);
 
     const latestVital = vitalsHistory && vitalsHistory.length > 0 ? vitalsHistory[vitalsHistory.length - 1] : null;
     doc.setTextColor(71, 85, 105);
     doc.setFontSize(10);
     if (latestVital) {
       doc.setFont("helvetica", "bold");
-      doc.text(`${tPdf.heartRate}:`, 15, 122);
+      doc.text(`${tPdf.heartRate}:`, 15, 128);
       doc.setFont("helvetica", "normal");
-      doc.text(`${latestVital.heartRate} bpm`, 58, 122);
+      doc.text(`${latestVital.heartRate} bpm`, 58, 128);
 
       doc.setFont("helvetica", "bold");
-      doc.text(`${tPdf.oxygen}:`, 15, 128);
+      doc.text(`${tPdf.oxygen}:`, 15, 134);
       doc.setFont("helvetica", "normal");
-      doc.text(`${latestVital.oxygen}%`, 58, 128);
+      doc.text(`${latestVital.oxygen}%`, 58, 134);
 
       doc.setFont("helvetica", "bold");
-      doc.text(`${tPdf.bp}:`, 110, 122);
+      doc.text(`${tPdf.bp}:`, 110, 128);
       doc.setFont("helvetica", "normal");
-      doc.text(`${latestVital.systolic || 120}/${latestVital.diastolic || 80} mmHg`, 148, 122);
+      doc.text(`${latestVital.systolic || 120}/${latestVital.diastolic || 80} mmHg`, 148, 128);
 
       doc.setFont("helvetica", "bold");
-      doc.text(`${tPdf.date}:`, 110, 128);
+      doc.text(`${tPdf.date}:`, 110, 134);
       doc.setFont("helvetica", "normal");
-      doc.text(`${latestVital.date || "N/A"}`, 148, 128);
+      doc.text(`${latestVital.date || "N/A"}`, 148, 134);
     } else {
       doc.setFont("helvetica", "normal");
-      doc.text(tPdf.noVitals, 15, 124);
+      doc.text(tPdf.noVitals, 15, 130);
     }
 
-    doc.roundedRect(10, 146, 190, 38, 4, 4, "FD");
+    // Screenings Section (shifted y by 4mm)
+    doc.roundedRect(10, 150, 190, 36, 4, 4, "FD");
     doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text(tPdf.screenings, 15, 154);
+    doc.text(tPdf.screenings, 15, 158);
 
     const latestScreening = [...recordsList]
       .filter(r => r.category === "AI Screen" || r.category === "Lab Test")
@@ -754,6 +825,34 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                 <p className="text-[11px] text-slate-400 font-semibold">
                   {userProfile.age} yrs / {userProfile.gender === "Male" ? (language === "hi" ? "पुरुष" : language === "gu" ? "પુરુષ" : "Male") : userProfile.gender === "Female" ? (language === "hi" ? "महिला" : language === "gu" ? "મહિલા" : "Female") : (language === "hi" ? "अन्य" : language === "gu" ? "અન્ય" : "Other")} | {language === "hi" ? "रक्त समूह" : language === "gu" ? "બ્લડ ગ્રુપ" : "Blood"}: {userProfile.bloodGroup || "N/A"}
                 </p>
+                {(() => {
+                  const h = userProfile.heightCm || userProfile.height;
+                  const w = userProfile.weightKg || userProfile.weight;
+                  if (!h || !w) return null;
+                  const res = calculateBMI(Number(w), Number(h));
+                  if (!res) return null;
+                  return (
+                    <div className="mt-1.5 flex flex-wrap gap-1.5 items-center">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                        {language === "hi" ? "कद" : language === "gu" ? "ઊંચાઈ" : "Height"}: {h} cm
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                        {language === "hi" ? "वजन" : language === "gu" ? "વજન" : "Weight"}: {w} kg
+                      </span>
+                      <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full text-white tracking-wide shadow-sm flex items-center gap-1" style={{ backgroundColor: res.colorHex }}>
+                        <span>{res.emoji}</span>
+                        <span>BMI: {res.bmi} ({
+                          res.category === "severely_underweight" ? (language === "hi" ? "अत्यधिक कम वजन" : language === "gu" ? "ખૂબ જ ઓછું વજન" : "Severely Underweight") :
+                          res.category === "underweight" ? (language === "hi" ? "कम वजन" : language === "gu" ? "ઓછું વજન" : "Underweight") :
+                          res.category === "normal" ? (language === "hi" ? "सामान्य वजन" : language === "gu" ? "સામાન્ય વજન" : "Normal Weight") :
+                          res.category === "overweight" ? (language === "hi" ? "अधिक वजन" : language === "gu" ? "વધુ વજન" : "Overweight") :
+                          res.category === "obese_1" ? (language === "hi" ? "मोटापा (श्रेणी 1)" : language === "gu" ? "સ્થૂળતા (વર્ગ ૧)" : "Obese (Class I)") :
+                          (language === "hi" ? "मोटापा (श्रेणी 2)" : language === "gu" ? "સ્થૂળતા (વર્ગ ૨)" : "Obese (Class II)")
+                        })</span>
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
             <button

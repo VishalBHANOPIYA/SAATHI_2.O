@@ -18,12 +18,15 @@ export async function POST(req: Request) {
 
     let profileContext = "";
     if (userProfile && typeof userProfile === "object") {
-      const { name, age: pAge, gender, conditions, allergies, medications, bloodGroup } = userProfile;
+      const { name, age: pAge, gender, conditions, allergies, medications, bloodGroup, height, weight, bmi, bmiCategory } = userProfile;
       const conditionStr = conditions && conditions.length > 0 ? conditions.join(", ") : "None";
       profileContext = `Patient Profile Information:
 - Name: ${name || "Unknown"}
 - Age: ${pAge || age || "Unknown"}
 - Gender: ${gender || "Unknown"}
+- Height: ${height || "Unknown"} cm
+- Weight: ${weight || "Unknown"} kg
+- BMI: ${bmi || "Unknown"} (${bmiCategory || "Not Category"})
 - Chronic Conditions: ${conditionStr}
 - Allergies: ${allergies || "None"}
 - Current Medications: ${medications || "None"}

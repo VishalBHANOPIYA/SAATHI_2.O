@@ -31,6 +31,9 @@ export async function POST(req: Request) {
           `- **Name:** ${profile.name || "N/A"}\n` +
           `- **Age:** ${profile.age || "N/A"} years\n` +
           `- **Gender:** ${profile.gender || "N/A"}\n` +
+          `- **Height:** ${profile.height || "N/A"} cm\n` +
+          `- **Weight:** ${profile.weight || "N/A"} kg\n` +
+          `- **BMI:** ${profile.bmi || "N/A"} (${profile.bmiCategory || "N/A"})\n` +
           `- **Blood Group:** ${profile.bloodGroup || "N/A"}\n` +
           `- **Pre-existing Conditions:** ${profile.conditions?.join(", ") || "None"}\n\n`;
       }
@@ -72,7 +75,7 @@ The output MUST be a valid JSON object matching the following schema:
 Ensure the JSON is well-formed. Output ONLY JSON, nothing else.`;
 
     const profileDetails = profile 
-      ? `\n- Name: ${profile.name || "N/A"}\n- Age: ${profile.age || "N/A"} years\n- Gender: ${profile.gender || "N/A"}\n- Blood Group: ${profile.bloodGroup || "N/A"}\n- Pre-existing Conditions: ${profile.conditions?.join(", ") || "None"}`
+      ? `\n- Name: ${profile.name || "N/A"}\n- Age: ${profile.age || "N/A"} years\n- Gender: ${profile.gender || "N/A"}\n- Height: ${profile.height || "N/A"} cm\n- Weight: ${profile.weight || "N/A"} kg\n- BMI: ${profile.bmi || "N/A"} (${profile.bmiCategory || "N/A"})\n- Blood Group: ${profile.bloodGroup || "N/A"}\n- Pre-existing Conditions: ${profile.conditions?.join(", ") || "None"}`
       : "Not provided";
 
     const userContent = `Patient Demographics: ${profileDetails}

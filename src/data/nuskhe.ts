@@ -1321,5 +1321,32 @@ export const nuskheList: Nuskha[] = [
       en: "If symptoms persist beyond 2-3 days, please consult a qualified doctor.",
       gu: "જો લક્ષણો ૨-૩ દિવસમાં મટે નહીં, તો ડૉક્ટરની સલાહ લો."
     }
+  },
+  {
+    id: 101,
+    symptoms: ["overweight", "obese", "obese_1", "obese_2", "fat", "weight loss", "motapa"],
+    condition: "Weight Management / Vajan Niyantran",
+    remedy: "Drink warm water with lemon and a teaspoon of honey every morning. Engaged in light exercises.",
+    ingredients: ["warm water", "lemon", "honey"],
+    emoji: "🍋",
+    language: {
+      hi: "हर सुबह गुनगुने पानी में नींबू और एक चम्मच शहद मिलाकर पिएं। हल्का व्यायाम करें।",
+      en: "Drink warm water with lemon and a teaspoon of honey every morning. Engaged in light exercises.",
+      gu: "દરરોજ સવારે નવશેકા પાણીમાં લીંબુ અને મધ મેળવીને પીઓ. હળવી કસરત કરો."
+    }
+  },
+  {
+    id: 102,
+    symptoms: ["underweight", "severely_underweight", "low weight", "malnutrition", "kam vajan"],
+    condition: "Nutritional Support / Poshan",
+    remedy: "Consume ripe bananas with milk, and include cow ghee, nuts, and raisins in your daily diet.",
+    ingredients: ["banana", "milk", "ghee", "nuts"],
+    emoji: "🥣",
+    language: {
+      hi: "दूध के साथ केले खाएं, और अपने आहार में गाय का घी, सूखे मेवे और किशमिश शामिल करें।",
+      en: "Consume ripe bananas with milk, and include cow ghee, nuts, and raisins in your daily diet.",
+      gu: "દૂધ સાથે કેળા ખાઓ, અને તમારા ખોરાકમાં ગાયનું ઘી અને સૂકો મેવો સામેલ કરો."
+    }
   }
 ];
+

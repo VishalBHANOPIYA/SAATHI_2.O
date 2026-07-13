@@ -5,6 +5,8 @@ interface ComputeScoreParams {
     oxygen?: number;
   } | null;
   conditions: string[];
+  bmi?: number | null;
+  bmiCategory?: string | null;
 }
 
 interface HealthScoreResult {
@@ -21,6 +23,7 @@ export function computeHealthScore(params: ComputeScoreParams, lang: string): He
   let screeningDeduction = 0;
   let vitalsDeduction = 0;
   let conditionsDeduction = 0;
+  let bmiDeduction = 0;
 
   // 1. Screening Risk deduction
   if (params.latestScreeningRisk === "High") {
@@ -57,18 +60,31 @@ export function computeHealthScore(params: ComputeScoreParams, lang: string): He
     conditionsDeduction = Math.min(30, params.conditions.length * 10);
   }
 
+  // 4. BMI deduction
+  if (params.bmiCategory) {
+    if (params.bmiCategory === "underweight" || params.bmiCategory === "overweight") {
+      bmiDeduction = 8;
+    } else if (params.bmiCategory === "severely_underweight" || params.bmiCategory === "obese_1") {
+      bmiDeduction = 15;
+    } else if (params.bmiCategory === "obese_2") {
+      bmiDeduction = 20;
+    }
+  }
+
   // Deduct from total score
-  score = Math.max(10, score - screeningDeduction - vitalsDeduction - conditionsDeduction);
+  score = Math.max(10, score - screeningDeduction - vitalsDeduction - conditionsDeduction - bmiDeduction);
 
   // Determine biggest factor key
-  const maxDeduction = Math.max(screeningDeduction, vitalsDeduction, conditionsDeduction);
+  const maxDeduction = Math.max(screeningDeduction, vitalsDeduction, conditionsDeduction, bmiDeduction);
   if (maxDeduction > 0) {
     if (maxDeduction === screeningDeduction) {
       biggestFactorKey = "screening";
     } else if (maxDeduction === vitalsDeduction) {
       biggestFactorKey = "vitals";
-    } else {
+    } else if (maxDeduction === conditionsDeduction) {
       biggestFactorKey = "conditions";
+    } else {
+      biggestFactorKey = "bmi";
     }
   }
 
@@ -80,6 +96,8 @@ export function computeHealthScore(params: ComputeScoreParams, lang: string): He
     biggestFactor = lang === "hi" ? "हाल के वाइटल्स" : lang === "gu" ? "તાજેતરના વાઇટલ્સ" : "Recent vital signs";
   } else if (biggestFactorKey === "conditions") {
     biggestFactor = lang === "hi" ? "पुरानी बीमारियाँ" : lang === "gu" ? "લાંબા ગાળાની બીમારીઓ" : "Chronic conditions";
+  } else if (biggestFactorKey === "bmi") {
+    biggestFactor = lang === "hi" ? "अस्वस्थ बीएमआई स्तर" : lang === "gu" ? "અસ્વસ્થ BMI સ્તર" : "Unhealthy BMI levels";
   } else {
     biggestFactor = lang === "hi" ? "कोई नहीं" : lang === "gu" ? "કોઈ નહીં" : "None";
   }
@@ -137,6 +155,16 @@ export function getImproveTip(biggestFactorKey: string, lang: string): { text: s
         ? "તમારી સ્વાસ્થ્ય સ્થિતિઓ માટે સૂચવેલ દવાઓ સમયસર લો."
         : "Stay consistent with your active care plans and daily medications.",
       tab: "medicines"
+    };
+  }
+  if (biggestFactorKey === "bmi") {
+    return {
+      text: lang === "hi"
+        ? "आहार और नियमित व्यायाम के माध्यम से एक स्वस्थ बीएमआई स्तर बनाए रखने पर काम करें।"
+        : lang === "gu"
+        ? "આહાર અને નિયમિત કસરત દ્વારા સ્વસ્થ BMI સ્તર જાળવવા પર કામ કરો."
+        : "Focus on nutrition and physical activity to work towards a healthy BMI range.",
+      tab: "vitals"
     };
   }
   return {

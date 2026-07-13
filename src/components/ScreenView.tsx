@@ -24,6 +24,7 @@ import { shareHealthReport } from "@/utils/shareHelper";
 import { checkRateLimit } from "@/utils/rateLimit";
 import { findNuskhe } from "../utils/nuskheEngine";
 import { performOfflineTriage } from "../utils/offlineTriage";
+import { calculateBMI } from "../utils/bmiCalculator";
 
 const screenTranslations = {
   en: {
@@ -383,7 +384,20 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     const triageRes = performOfflineTriage(inputForTriage, language);
     const calculatedTriage = triageRes.triage;
 
-    const matched = findNuskhe(activeKeys, screeningResult, calculatedTriage, language);
+    // Determine BMI Category
+    let bmiCategory = "";
+    if (ashaModeActive && activePatientId) {
+      const activePatient = patientsList.find(p => p.id === activePatientId);
+      if (activePatient && activePatient.height && activePatient.weight) {
+        const bmiRes = calculateBMI(activePatient.height, activePatient.weight);
+        bmiCategory = bmiRes.category;
+      }
+    } else if (userProfile && userProfile.height && userProfile.weight) {
+      const bmiRes = calculateBMI(userProfile.height, userProfile.weight);
+      bmiCategory = bmiRes.category;
+    }
+
+    const matched = findNuskhe(activeKeys, screeningResult, calculatedTriage, language, bmiCategory);
 
     let voiceText = screeningResult;
     if (calculatedTriage !== "RED" && matched.length > 0) {
@@ -405,7 +419,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
       triageLevel: calculatedTriage,
       speechText: voiceText
     };
-  }, [screeningResult, symptoms, language]);
+  }, [screeningResult, symptoms, language, ashaModeActive, activePatientId, patientsList, userProfile]);
 
   // Prefill age from userProfile if available
   useEffect(() => {

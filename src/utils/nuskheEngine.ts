@@ -4,7 +4,8 @@ export function findNuskhe(
   symptoms: string[],        // selected symptom chips
   transcript: string,        // voice transcript if any
   triageLevel: "GREEN" | "YELLOW" | "RED",
-  language: string           // 'en' | 'hi' | 'gu' | other
+  language: string,          // 'en' | 'hi' | 'gu' | other
+  bmiCategory?: string       // optional patient BMI category
 ): Nuskha[] {
   // 1. ONLY show nuskhe for GREEN or YELLOW triage (RED is empty)
   if (triageLevel === "RED") {
@@ -38,8 +39,8 @@ export function findNuskhe(
     }
   }
 
-  // Exclude serious alarm nuskhe and persistent advice (#100 is manually appended)
-  const excludedIds = [48, 49, 98, 99, 100];
+  // Exclude serious alarm nuskhe, persistent advice, and BMI-specific ones from standard keyword matching
+  const excludedIds = [48, 49, 98, 99, 100, 101, 102];
 
   const matched: { nuskha: Nuskha; score: number }[] = [];
 
@@ -80,6 +81,22 @@ export function findNuskhe(
     results = results.slice(0, 4);
   }
 
+  // Prepend BMI-specific nuskhe if category matches
+  if (bmiCategory) {
+    const category = bmiCategory.toLowerCase();
+    if (category === "overweight" || category === "obese_1" || category === "obese_2") {
+      const weightNuskha = nuskheList.find(n => n.id === 101);
+      if (weightNuskha && !results.some(r => r.id === 101)) {
+        results.unshift(weightNuskha);
+      }
+    } else if (category === "underweight" || category === "severely_underweight") {
+      const nutritionNuskha = nuskheList.find(n => n.id === 102);
+      if (nutritionNuskha && !results.some(r => r.id === 102)) {
+        results.unshift(nutritionNuskha);
+      }
+    }
+  }
+
   // Always append nuskha #100 at the end
   const nuskha100 = nuskheList.find(n => n.id === 100);
   if (nuskha100) {
@@ -91,3 +108,4 @@ export function findNuskhe(
 
   return results;
 }
+
