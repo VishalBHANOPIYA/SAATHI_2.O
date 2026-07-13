@@ -28,7 +28,7 @@ export const BMICard: React.FC<BMICardProps> = ({
     finalBmi = bmi;
   } else if (heightCm && weightKg) {
     const result = calculateBMI(weightKg, heightCm);
-    finalBmi = result.bmi;
+    finalBmi = result ? result.bmi : 0;
   }
 
   if (!finalBmi || isNaN(finalBmi) || finalBmi <= 0) {

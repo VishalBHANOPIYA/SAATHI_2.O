@@ -389,12 +389,12 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     if (ashaModeActive && activePatientId) {
       const activePatient = patientsList.find(p => p.id === activePatientId);
       if (activePatient && activePatient.height && activePatient.weight) {
-        const bmiRes = calculateBMI(activePatient.height, activePatient.weight);
-        bmiCategory = bmiRes.category;
+        const bmiRes = calculateBMI(Number(activePatient.weight), Number(activePatient.height));
+        bmiCategory = bmiRes ? bmiRes.category : "";
       }
     } else if (userProfile && userProfile.height && userProfile.weight) {
-      const bmiRes = calculateBMI(userProfile.height, userProfile.weight);
-      bmiCategory = bmiRes.category;
+      const bmiRes = calculateBMI(Number(userProfile.weight), Number(userProfile.height));
+      bmiCategory = bmiRes ? bmiRes.category : "";
     }
 
     const matched = findNuskhe(activeKeys, screeningResult, calculatedTriage, language, bmiCategory);
@@ -1755,7 +1755,7 @@ Shared via Saathi.`;
                         type="button"
                         onClick={() => {
                           stopSpeaking();
-                          if (matchedNuskhe && matchedNuskhe.length > 0 && triageLevel !== 'RED') {
+                          if (matchedNuskhe && matchedNuskhe.length > 0) {
                             const nuskheIntro = language === 'hi'
                               ? 'और ये रहे नानी-दादी के नुस्खे।'
                               : language === 'gu'

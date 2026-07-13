@@ -18,12 +18,17 @@ import {
   CheckCircle,
   Stethoscope,
   Droplet,
-  Moon
+  Moon,
+  Apple,
+  Dumbbell,
+  Target,
+  Clock
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 import { computeHealthScore, getImproveTip } from "@/utils/healthScore";
 import { BMICard } from "./BMICard";
+import { calculateHealthPlan } from "@/utils/healthPlanCalculator";
 
 interface HomeViewProps {
   setActiveTab: (tab: string) => void;
@@ -158,6 +163,31 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
     }
   };
 
+  // Personal Health Plan calculation
+  const healthPlan = React.useMemo(() => {
+    if (
+      userProfile?.age &&
+      userProfile?.gender &&
+      userProfile?.heightCm &&
+      userProfile?.weightKg
+    ) {
+      return calculateHealthPlan(
+        Number(userProfile.age),
+        userProfile.gender,
+        Number(userProfile.heightCm),
+        Number(userProfile.weightKg),
+        (userProfile.activityLevel || "sedentary") as any,
+        userProfile.bmiCategory || "normal",
+        language || "en"
+      );
+    }
+    return null;
+  }, [userProfile, language]);
+
+  const dailyWaterGoal = healthPlan ? healthPlan.water.dailyLiters : 3.0;
+
+  const [activePlanTab, setActivePlanTab] = useState<"nutrition" | "water_sleep" | "workout" | "weight">("nutrition");
+
   // Water Intake Interactive State
   const [waterIntake, setWaterIntake] = useState(() => {
     if (typeof window !== "undefined") {
@@ -167,7 +197,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   });
 
   const addWater = () => {
-    const nextWater = Math.min(4.0, Number((waterIntake + 0.25).toFixed(2)));
+    const nextWater = Math.min(dailyWaterGoal + 1.0, Number((waterIntake + 0.25).toFixed(2)));
     setWaterIntake(nextWater);
     if (typeof window !== "undefined") {
       localStorage.setItem("saathi_water_intake", String(nextWater));
@@ -404,12 +434,12 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-black text-slate-800">{waterIntake.toFixed(2)}</span>
-            <span className="text-xs text-slate-400 font-bold">{t.homeLiters} / 3.0 {t.homeLiters}</span>
+            <span className="text-xs text-slate-400 font-bold">{t.homeLiters} / {dailyWaterGoal.toFixed(1)} {t.homeLiters}</span>
           </div>
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
             <div 
               className="h-full bg-gradient-to-r from-violet-600 to-purple-500 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, (waterIntake / 3.0) * 100)}%` }}
+              style={{ width: `${Math.min(100, (waterIntake / dailyWaterGoal) * 100)}%` }}
             />
           </div>
         </div>
@@ -456,6 +486,263 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
             </p>
           </div>
         </div>
+      </div>
+
+      {/* PERSONAL HEALTH PLAN */}
+      <div className="bg-white border border-gray-150 rounded-3xl p-5 space-y-4 shadow-sm text-left">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center">
+              <Award className="w-4 h-4 text-violet-600 fill-violet-600/10" />
+            </div>
+            <span className="text-[12px] font-black text-slate-700 uppercase tracking-wider">
+              {t.healthPlanTitle || "Personal Health Plan"}
+            </span>
+          </div>
+          {healthPlan && (
+            <span className="text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+              {healthPlan.topPriority}
+            </span>
+          )}
+        </div>
+
+        {!healthPlan ? (
+          <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-center space-y-3">
+            <p className="text-xs font-semibold text-slate-500">
+              {t.healthPlanNoProfile || "Complete your profile (age, gender, height, weight, activity level) to generate your personalized health plan!"}
+            </p>
+            <button
+              onClick={onEditProfile}
+              className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-[10px] px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95"
+            >
+              Configure Profile
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Tab Buttons */}
+            <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-200/50">
+              {[
+                { id: "nutrition", label: t.healthPlanCalories || "Nutrition", icon: Apple },
+                { id: "water_sleep", label: t.healthPlanSleep || "Water & Sleep", icon: Droplet },
+                { id: "workout", label: t.healthPlanExercise || "Workout", icon: Dumbbell },
+                { id: "weight", label: t.healthPlanWeight || "Weight", icon: Target },
+              ].map(tab => {
+                const Icon = tab.icon;
+                const isActive = activePlanTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActivePlanTab(tab.id as any)}
+                    className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all gap-1 ${
+                      isActive 
+                        ? "bg-white text-violet-600 shadow-soft font-bold border border-slate-100" 
+                        : "text-slate-400 hover:text-slate-600 font-semibold"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span className="text-[8px] uppercase tracking-wide truncate max-w-full">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Tab Contents */}
+            <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 animate-fadeIn space-y-3.5">
+              
+              {/* NUTRITION & CALORIES TAB */}
+              {activePlanTab === "nutrition" && (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                        {t.healthPlanTarget || "Your Daily Target"}
+                      </span>
+                      <h4 className="text-2xl font-black text-slate-800">
+                        {healthPlan.targetCalories} <span className="text-xs text-slate-400 font-bold">kcal / day</span>
+                      </h4>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                        {t.healthPlanTDEE || "Calorie Burn"}
+                      </span>
+                      <span className="text-xs font-extrabold text-slate-600">
+                        {healthPlan.tdee} kcal
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Macros breakdown */}
+                  <div className="space-y-2 pt-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                      {t.healthPlanMacros || "Macro Breakdown"}
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center shadow-sm">
+                        <span className="text-[8px] text-slate-400 font-bold block">{t.healthPlanProtein || "Protein"}</span>
+                        <span className="text-xs font-black text-slate-700">{healthPlan.macros.protein}g</span>
+                        <span className="text-[8px] text-slate-400 font-medium block mt-0.5">{healthPlan.macros.proteinKcal} kcal</span>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center shadow-sm">
+                        <span className="text-[8px] text-slate-400 font-bold block">{t.healthPlanCarbs || "Carbs"}</span>
+                        <span className="text-xs font-black text-slate-700">{healthPlan.macros.carbs}g</span>
+                        <span className="text-[8px] text-slate-400 font-medium block mt-0.5">{healthPlan.macros.carbsKcal} kcal</span>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center shadow-sm">
+                        <span className="text-[8px] text-slate-400 font-bold block">{t.healthPlanFats || "Fats"}</span>
+                        <span className="text-xs font-black text-slate-700">{healthPlan.macros.fats}g</span>
+                        <span className="text-[8px] text-slate-400 font-medium block mt-0.5">{healthPlan.macros.fatsKcal} kcal</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Indian Diet Tips */}
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                      {language === "hi" ? "आहार सुझाव" : language === "gu" ? "આહાર સૂચનો" : "Indian Dietary Tips"}
+                    </span>
+                    <ul className="space-y-1.5">
+                      {healthPlan.weightPlan.indianFoodTips.map((tip, idx) => (
+                        <li key={idx} className="text-[10px] font-semibold text-slate-600 flex items-start gap-1.5 leading-relaxed">
+                          <span className="text-violet-600 mt-1 shrink-0">•</span>
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* WATER & SLEEP TAB */}
+              {activePlanTab === "water_sleep" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white p-3 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                        <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider">{t.healthPlanWater || "Water"}</span>
+                        <Droplet className="w-3.5 h-3.5 text-blue-500 fill-blue-500/10" />
+                      </div>
+                      <div className="mt-2">
+                        <h5 className="text-lg font-black text-slate-800 leading-none">{healthPlan.water.dailyLiters}L</h5>
+                        <span className="text-[9px] text-slate-400 font-bold">{t.healthPlanWaterGlasses?.replace("{glasses}", String(healthPlan.water.glassesPerDay)) || `${healthPlan.water.glassesPerDay} glasses`}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                        <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider">{t.healthPlanSleep || "Sleep"}</span>
+                        <Moon className="w-3.5 h-3.5 text-violet-600 fill-violet-600/10" />
+                      </div>
+                      <div className="mt-2">
+                        <h5 className="text-lg font-black text-slate-800 leading-none">{healthPlan.sleep.recommendedHours} hrs</h5>
+                        <span className="text-[9px] text-slate-400 font-bold">
+                          {healthPlan.sleep.suggestedBedtime} - {healthPlan.sleep.suggestedWakeTime}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sleep tips list */}
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                      {language === "hi" ? "स्वस्थ नींद की आदतें" : language === "gu" ? "સ્વસ્થ ઊંઘની ટેવો" : "Sleep Hygiene Tips"}
+                    </span>
+                    <ul className="space-y-1.5">
+                      {healthPlan.sleep.sleepTips.map((tip, idx) => (
+                        <li key={idx} className="text-[10px] font-semibold text-slate-600 flex items-start gap-1.5 leading-relaxed">
+                          <span className="text-violet-600 mt-1 shrink-0">•</span>
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* WORKOUT TAB */}
+              {activePlanTab === "workout" && (
+                <div className="space-y-3">
+                  <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-extrabold text-slate-700">{healthPlan.exercise.cardioType}</span>
+                      <span className="text-[9px] font-bold text-slate-400">{healthPlan.exercise.cardioDuration} min • {healthPlan.exercise.cardioFrequency} days/wk</span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
+                      <span className="text-xs font-extrabold text-slate-700">{healthPlan.exercise.strengthType}</span>
+                      <span className="text-[9px] font-bold text-slate-400">{healthPlan.exercise.strengthDuration} min • {healthPlan.exercise.strengthFrequency} days/wk</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                      {t.healthPlanWeeklyPlan || "Weekly Schedule"}
+                    </span>
+                    <div className="max-h-40 overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+                      {healthPlan.exercise.weeklyPlan.map((dayPlan, idx) => (
+                        <div key={idx} className="flex justify-between items-center py-1.5 px-2 bg-white rounded-lg border border-slate-100/80 text-[10px] font-semibold text-slate-600 shadow-sm">
+                          <span className="font-extrabold text-slate-700 min-w-[60px]">{dayPlan.day}</span>
+                          <span className="flex-1 truncate text-left px-2">{dayPlan.activity}</span>
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
+                            dayPlan.intensity === 'rest' 
+                              ? 'bg-slate-100 text-slate-400' 
+                              : dayPlan.intensity === 'light' 
+                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                              : dayPlan.intensity === 'moderate'
+                              ? 'bg-violet-50 text-violet-600 border border-violet-100'
+                              : 'bg-rose-50 text-rose-600 border border-rose-100'
+                          }`}>
+                            {dayPlan.intensity === 'rest' ? 'Rest' : dayPlan.duration + ' min'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* WEIGHT GOAL TAB */}
+              {activePlanTab === "weight" && (
+                <div className="space-y-3">
+                  <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-2">
+                    <div className="flex justify-between items-center text-xs font-bold">
+                      <span className="text-slate-400">{t.healthPlanCurrentWeight || "Current"}</span>
+                      <span className="text-slate-800 font-extrabold">{healthPlan.weightKg} kg</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-bold border-t border-slate-100 pt-1.5">
+                      <span className="text-slate-400">{t.healthPlanTargetWeight || "Target"}</span>
+                      <span className="text-slate-800 font-extrabold">{healthPlan.weightPlan.targetWeight} kg</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-bold border-t border-slate-100 pt-1.5">
+                      <span className="text-slate-400">{t.healthPlanTimeline || "Timeline"}</span>
+                      <span className="text-slate-800 font-extrabold">{healthPlan.weightPlan.weeksToGoal > 0 ? `${healthPlan.weightPlan.weeksToGoal} weeks (${healthPlan.weightPlan.targetDate})` : "Maintained"}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-500 italic leading-relaxed text-center font-medium bg-white p-2 rounded-xl border border-slate-100">
+                    "{healthPlan.motivationalMessage}"
+                  </p>
+
+                  {healthPlan.weightPlan.milestones.length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Milestones Forecast
+                      </span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {healthPlan.weightPlan.milestones.map((m, idx) => (
+                          <div key={idx} className="bg-white p-2 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-semibold text-slate-600 shadow-sm">
+                            <span className="text-slate-400">Week {m.week}</span>
+                            <span className="font-extrabold text-slate-700">{m.expectedWeight} kg</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 7. UPCOMING REMINDERS */}

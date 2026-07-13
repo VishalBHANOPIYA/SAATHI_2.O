@@ -330,7 +330,8 @@ export default function MainApp() {
     heightIn: "",
     heightUnit: "cm" as "cm" | "ft",
     weight: "",
-    weightUnit: "kg" as "kg" | "lbs"
+    weightUnit: "kg" as "kg" | "lbs",
+    activityLevel: "sedentary" as "sedentary" | "light" | "moderate" | "active" | "very_active"
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -408,7 +409,8 @@ export default function MainApp() {
           heightIn: parsed.heightCm ? String(Math.round((parsed.heightCm / 2.54) % 12)) : "",
           heightUnit: "cm",
           weight: parsed.weightKg ? String(Math.round(parsed.weightKg * 10) / 10) : "",
-          weightUnit: "kg"
+          weightUnit: "kg",
+          activityLevel: parsed.activityLevel || "sedentary"
         });
       } catch (e) {
         console.error("Failed to parse saved user profile:", e);
@@ -999,7 +1001,8 @@ export default function MainApp() {
       weightKg: hasBmiData ? Math.round(wKg * 10) / 10 : undefined,
       bmi: bmiResult ? Math.round(bmiResult.bmi * 10) / 10 : undefined,
       bmiCategory: bmiResult ? bmiResult.category : undefined,
-      bmiUpdatedAt: hasBmiData ? new Date().toISOString() : undefined
+      bmiUpdatedAt: hasBmiData ? new Date().toISOString() : undefined,
+      activityLevel: profileForm.activityLevel || "sedentary"
     };
 
     safeSetItem("saathi_user_profile", JSON.stringify(finalProfile));
@@ -1717,6 +1720,24 @@ export default function MainApp() {
                     </div>
                   </div>
 
+                  {/* Activity Level Selector */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide block">
+                      Activity Level / शारीरिक गतिविधि
+                    </label>
+                    <select
+                      value={profileForm.activityLevel}
+                      onChange={e => setProfileForm(p => ({ ...p, activityLevel: e.target.value as any }))}
+                      className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-bold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
+                    >
+                      <option value="sedentary">{t.activitySedentary || "Sedentary"}</option>
+                      <option value="light">{t.activityLight || "Light Activity"}</option>
+                      <option value="moderate">{t.activityModerate || "Moderate Activity"}</option>
+                      <option value="active">{t.activityActive || "Active"}</option>
+                      <option value="very_active">{t.activityVeryActive || "Very Active"}</option>
+                    </select>
+                  </div>
+
                   {/* Live BMI Preview */}
                   {(() => {
                     const liveBmi = getLiveBMI(profileForm);
@@ -2208,6 +2229,24 @@ export default function MainApp() {
                 </div>
               </div>
 
+              {/* Activity Level Selector */}
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide block">
+                  Activity Level / शारीरिक गतिविधि
+                </label>
+                <select
+                  value={profileForm.activityLevel}
+                  onChange={e => setProfileForm(p => ({ ...p, activityLevel: e.target.value as any }))}
+                  className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 text-textprimary font-bold focus:outline-none focus:border-primary h-[44px]"
+                >
+                  <option value="sedentary">{t.activitySedentary || "Sedentary"}</option>
+                  <option value="light">{t.activityLight || "Light Activity"}</option>
+                  <option value="moderate">{t.activityModerate || "Moderate Activity"}</option>
+                  <option value="active">{t.activityActive || "Active"}</option>
+                  <option value="very_active">{t.activityVeryActive || "Very Active"}</option>
+                </select>
+              </div>
+
               {/* Live BMI Preview */}
               {(() => {
                 const liveBmi = getLiveBMI(profileForm);
@@ -2453,7 +2492,8 @@ export default function MainApp() {
         heightIn: userProfile.heightCm ? String(Math.round((userProfile.heightCm / 2.54) % 12)) : "",
         heightUnit: "cm",
         weight: userProfile.weightKg ? String(Math.round(userProfile.weightKg * 10) / 10) : "",
-        weightUnit: "kg"
+        weightUnit: "kg",
+        activityLevel: userProfile.activityLevel || "sedentary"
       });
       setSelectedCountryCode(userProfile.countryCode || "+91");
     }
@@ -2621,7 +2661,6 @@ export default function MainApp() {
               vitalsHistory={vitalsHistory}
               language={language}
               onEditProfile={() => {
-                if (userProfile) {
                   setProfileForm({
                     name: userProfile.name || "",
                     age: String(userProfile.age || ""),
@@ -2634,9 +2673,15 @@ export default function MainApp() {
                     bloodGroup: userProfile.bloodGroup || "Unknown",
                     emergencyName: userProfile.emergencyContact?.name || "",
                     emergencyPhone: userProfile.emergencyContact?.phone || "",
-                    abha: userProfile.abha || ""
+                    abha: userProfile.abha || "",
+                    height: userProfile.heightCm ? String(Math.round(userProfile.heightCm)) : "",
+                    heightFt: userProfile.heightCm ? String(Math.floor((userProfile.heightCm / 2.54) / 12)) : "",
+                    heightIn: userProfile.heightCm ? String(Math.round((userProfile.heightCm / 2.54) % 12)) : "",
+                    heightUnit: "cm",
+                    weight: userProfile.weightKg ? String(Math.round(userProfile.weightKg * 10) / 10) : "",
+                    weightUnit: "kg",
+                    activityLevel: userProfile.activityLevel || "sedentary"
                   });
-                }
                 setFormErrors({});
                 setProfileSubStep("A");
                 setShowProfileModal(true);
@@ -2706,7 +2751,14 @@ export default function MainApp() {
                   bloodGroup: userProfile.bloodGroup || "Unknown",
                   emergencyName: userProfile.emergencyContact?.name || "",
                   emergencyPhone: userProfile.emergencyContact?.phone || "",
-                  abha: userProfile.abha || ""
+                  abha: userProfile.abha || "",
+                  height: userProfile.heightCm ? String(Math.round(userProfile.heightCm)) : "",
+                  heightFt: userProfile.heightCm ? String(Math.floor((userProfile.heightCm / 2.54) / 12)) : "",
+                  heightIn: userProfile.heightCm ? String(Math.round((userProfile.heightCm / 2.54) % 12)) : "",
+                  heightUnit: "cm",
+                  weight: userProfile.weightKg ? String(Math.round(userProfile.weightKg * 10) / 10) : "",
+                  weightUnit: "kg",
+                  activityLevel: userProfile.activityLevel || "sedentary"
                 });
               } else {
                 setProfileForm({
@@ -2721,7 +2773,14 @@ export default function MainApp() {
                   bloodGroup: "Unknown",
                   emergencyName: "",
                   emergencyPhone: "",
-                  abha: ""
+                  abha: "",
+                  height: "",
+                  heightFt: "",
+                  heightIn: "",
+                  heightUnit: "cm",
+                  weight: "",
+                  weightUnit: "kg",
+                  activityLevel: "sedentary"
                 });
               }
               setFormErrors({});
