@@ -628,6 +628,7 @@
   "stepsWeeklyAvg": "સાપ્તાહિક સરેરાશ: {steps}",
   "waterGoalBMI": "તમારા વજન ({kg}kg) ના આધારે: {liters}L/દિવસ ભલામણ કરેલ",
   "waterGlassAdd": "+ ગ્લાસ (250ml)",
+  "waterGlassRemove": "- ગ્લાસ (250ml)",
   "waterProgress": "આજે {drunk}L / {goal}L",
   "sleepLog": "ઊંઘ લોગ કરો",
   "sleepHoursPrompt": "ગઈકાલે રાત્રે કેટલા કલાક ઊંઘ્યા"

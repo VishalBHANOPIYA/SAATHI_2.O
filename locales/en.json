@@ -628,6 +628,7 @@
   "stepsWeeklyAvg": "Weekly avg: {steps}",
   "waterGoalBMI": "Based on your weight ({kg}kg): {liters}L/day recommended",
   "waterGlassAdd": "+ Glass (250ml)",
+  "waterGlassRemove": "- Glass (250ml)",
   "waterProgress": "{drunk}L / {goal}L today",
   "sleepLog": "Log Sleep",
   "sleepHoursPrompt": "Hours slept last night"

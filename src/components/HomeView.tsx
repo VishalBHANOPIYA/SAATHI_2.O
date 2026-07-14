@@ -11,6 +11,7 @@ import {
   Bell,
   Calendar,
   Plus,
+  Minus,
   Award,
   TrendingUp,
   AlertTriangle,
@@ -143,7 +144,15 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   const formattedToday = React.useMemo(() => {
     if (!currentDate) return "";
     const today = currentDate;
-    return `${language === "hi" ? "आज" : language === "gu" ? "આજે" : "Today"}, ${today.toLocaleDateString(language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US", { day: "numeric", month: "short" })}`;
+    const weekdayStr = today.toLocaleDateString(
+      language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US",
+      { weekday: "long" }
+    );
+    const dateStr = today.toLocaleDateString(
+      language === "hi" ? "hi-IN" : language === "gu" ? "gu-IN" : "en-US",
+      { day: "numeric", month: "short" }
+    );
+    return `${weekdayStr}, ${dateStr}`;
   }, [currentDate, language]);
 
   // Time-based Greeting
@@ -224,6 +233,19 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       const updated = {
         ...prev,
         waterGlasses: prev.waterGlasses + 1,
+        waterGoalGlasses,
+        waterGoalLiters,
+      };
+      saveTodayTracker(updated);
+      return updated;
+    });
+  };
+
+  const removeWater = () => {
+    setTracker(prev => {
+      const updated = {
+        ...prev,
+        waterGlasses: Math.max(0, prev.waterGlasses - 1),
         waterGoalGlasses,
         waterGoalLiters,
       };
@@ -493,12 +515,22 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               </div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.homeWaterIntake}</span>
             </div>
-            <button 
-              onClick={addWater}
-              className="bg-violet-600 hover:bg-violet-700 text-white w-8 h-8 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={removeWater}
+                className="bg-slate-150 hover:bg-slate-200 text-slate-700 w-8 h-8 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all"
+                title="Decrease Water"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={addWater}
+                className="bg-violet-600 hover:bg-violet-700 text-white w-8 h-8 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all"
+                title="Increase Water"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-black text-slate-800">{(tracker.waterGlasses * 0.25).toFixed(2)}</span>
@@ -956,12 +988,20 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                 <span className="text-slate-700">
                   {(tracker.waterGlasses * 0.25).toFixed(2)}L / {waterGoalLiters.toFixed(1)}L ({tracker.waterGlasses} / {waterGoalGlasses} gl)
                 </span>
-                <button
-                  onClick={addWater}
-                  className="bg-blue-50 hover:bg-blue-100 text-blue-600 font-extrabold text-[9px] px-2 py-1 rounded-xl transition-all shadow-sm active:scale-95 border border-blue-200/50"
-                >
-                  {t("waterGlassAdd") || "+ Glass (250ml)"}
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={removeWater}
+                    className="bg-slate-50 hover:bg-slate-100 text-slate-600 font-extrabold text-[9px] px-2 py-1 rounded-xl transition-all shadow-sm active:scale-95 border border-slate-200/50"
+                  >
+                    {t("waterGlassRemove") || "- Glass (250ml)"}
+                  </button>
+                  <button
+                    onClick={addWater}
+                    className="bg-blue-50 hover:bg-blue-100 text-blue-600 font-extrabold text-[9px] px-2 py-1 rounded-xl transition-all shadow-sm active:scale-95 border border-blue-200/50"
+                  >
+                    {t("waterGlassAdd") || "+ Glass (250ml)"}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
