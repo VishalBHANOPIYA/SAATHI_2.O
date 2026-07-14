@@ -950,46 +950,55 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       )}
 
       {/* ABHA HEALTH ID CARD (ABDM) */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden border border-blue-500/10 animate-float">
-        <div className="absolute right-[-10px] top-[-10px] w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-200 block">National Health Authority</span>
-            <h4 className="text-sm font-extrabold flex items-center gap-1.5 mt-0.5">
-              {language === "hi" ? "ABHA स्वास्थ्य पहचान पत्र" : language === "gu" ? "ABHA સ્વાસ્થ્ય આઈડી" : "ABHA Health ID"}
-            </h4>
-          </div>
-          {isAbhaLinked ? (
+      {isAbhaLinked ? (
+        <div className="bg-violet-50 border border-violet-300 rounded-3xl p-5 text-violet-900 shadow-sm relative overflow-hidden animate-float">
+          <div className="absolute right-[-10px] top-[-10px] w-24 h-24 bg-violet-200/20 rounded-full blur-xl pointer-events-none" />
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-violet-605 block">National Health Authority</span>
+              <h4 className="text-sm font-extrabold flex items-center gap-1.5 mt-0.5 text-violet-900">
+                {language === "hi" ? "ABHA स्वास्थ्य पहचान पत्र" : language === "gu" ? "ABHA સ્વાસ્થ્ય આઈડી" : "ABHA Health ID"}
+              </h4>
+            </div>
             <span className="bg-emerald-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm uppercase tracking-wider border border-emerald-400/30">
               <CheckCircle className="w-2.5 h-2.5 fill-white text-emerald-500" />
               Linked
             </span>
-          ) : (
-            <span className="bg-amber-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">
-              Unlinked
-            </span>
-          )}
-        </div>
+          </div>
 
-        {isAbhaLinked ? (
           <div className="space-y-3">
-            <div className="bg-white/10 px-3.5 py-2.5 rounded-2xl border border-white/10 backdrop-blur-md">
-              <div className="text-[9px] text-blue-200 font-bold uppercase tracking-wider">Ayushman Bharat Health Account</div>
-              <div className="font-mono text-base font-extrabold tracking-widest mt-1">{abhaNumber}</div>
+            <div className="bg-white/80 px-3.5 py-2.5 rounded-2xl border border-violet-200 backdrop-blur-md">
+              <div className="text-[9px] text-violet-605 font-bold uppercase tracking-wider">Ayushman Bharat Health Account</div>
+              <div className="font-mono text-base font-extrabold tracking-widest mt-1 text-violet-900">{abhaNumber}</div>
             </div>
             <div className="flex justify-between items-center text-[10px] pt-1">
-              <span className="text-blue-100 font-bold">Holder: {userProfile?.name || "Vishal Bhanopiya"}</span>
+              <span className="text-violet-755 font-bold">Holder: {userProfile?.name || "Vishal Bhanopiya"}</span>
               <button 
                 onClick={handleUnlinkAbha}
-                className="text-red-200 hover:text-red-100 underline font-extrabold transition-colors active:scale-95"
+                className="text-red-650 hover:text-red-850 underline font-extrabold transition-colors active:scale-95"
               >
                 Unlink ID
               </button>
             </div>
           </div>
-        ) : (
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-3xl p-5 text-gray-900 shadow-sm relative overflow-hidden">
+          <div className="absolute right-[-10px] top-[-10px] w-24 h-24 bg-gray-100 rounded-full blur-xl pointer-events-none" />
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-gray-500 block">National Health Authority</span>
+              <h4 className="text-sm font-extrabold flex items-center gap-1.5 mt-0.5 text-gray-850">
+                {language === "hi" ? "ABHA स्वास्थ्य पहचान पत्र" : language === "gu" ? "ABHA સ્વાસ્થ્ય આઈડી" : "ABHA Health ID"}
+              </h4>
+            </div>
+            <span className="bg-amber-100 text-amber-850 text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-200">
+              Unlinked
+            </span>
+          </div>
+
           <div className="space-y-3.5">
-            <p className="text-[10px] text-blue-100 leading-relaxed font-semibold">
+            <p className="text-[10px] text-gray-600 leading-relaxed font-semibold">
               {language === "hi" 
                 ? "डिजिटल स्वास्थ्य मिशन के अंतर्गत अपने 14-अंकों के ABHA कार्ड को जोड़ें।"
                 : language === "gu"
@@ -1003,26 +1012,26 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
                   placeholder="e.g. 12-3456-7890-1234"
                   value={abhaNumber}
                   onChange={handleAbhaChange}
-                  className="flex-1 text-xs p-3 rounded-xl border border-white/20 bg-white/10 font-bold placeholder-white/40 text-white focus:outline-none focus:border-white focus:bg-white/15 tracking-wider h-[44px]"
+                  className="flex-1 text-xs p-3 rounded-xl border border-gray-200 bg-gray-50 font-bold placeholder-gray-400 text-gray-800 focus:outline-none focus:border-violet-500 focus:bg-white tracking-wider h-[44px]"
                 />
                 <button
                   onClick={handleLinkAbha}
-                  className="bg-white text-blue-700 font-extrabold text-xs px-5 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-md min-h-[44px]"
+                  className="bg-violet-600 text-white font-extrabold text-xs px-5 rounded-xl hover:bg-violet-700 transition-all active:scale-95 shadow-md min-h-[44px]"
                 >
                   Link
                 </button>
               </div>
               {abhaError && (
-                <div className="text-[10px] text-red-350 font-bold px-1">{abhaError}</div>
+                <div className="text-[10px] text-red-650 font-bold px-1">{abhaError}</div>
               )}
             </div>
-            <div className="text-[8px] text-blue-200/90 leading-relaxed border-t border-white/5 pt-2 flex items-start gap-1">
-              <Info className="w-2.5 h-2.5 shrink-0 mt-0.5" />
+            <div className="text-[8px] text-gray-500 leading-relaxed border-t border-gray-100 pt-2 flex items-start gap-1">
+              <Info className="w-2.5 h-2.5 shrink-0 mt-0.5 text-gray-400" />
               <span><strong>ABDM Prototype:</strong> Real integrations require ABDM sandbox access keys. Card linking is simulated here.</span>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Upload Record Form */}
       {showRecordForm && (
@@ -1207,7 +1216,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
       {/* DETAILS OVERLAY MODAL */}
       {selectedRecordForDetails && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
           <div className="bg-white/95 backdrop-blur-md rounded-t-3xl md:rounded-3xl w-full max-w-full md:max-w-sm p-6 space-y-4 border-t md:border border-white/50 shadow-glass-lg animate-slideUp md:animate-scaleUp pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-start">
               <div className="space-y-0.5">
@@ -1243,7 +1252,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
             <button
               onClick={() => setSelectedRecordForDetails(null)}
-              className="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 min-h-[44px]"
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-extrabold text-xs py-3 rounded-xl transition-all border border-gray-200 active:scale-95 min-h-[44px]"
             >
               Close Details
             </button>
@@ -1253,7 +1262,7 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
 
       {/* EXPORT OVERLAY MODAL */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
           <div className="bg-white/95 backdrop-blur-md rounded-t-3xl md:rounded-3xl w-full max-w-full md:max-w-sm p-6 space-y-4 border-t md:border border-white/50 shadow-glass-lg animate-slideUp md:animate-scaleUp flex flex-col max-h-[85vh] pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-start shrink-0">
               <div className="space-y-0.5">

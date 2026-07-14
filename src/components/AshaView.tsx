@@ -513,7 +513,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
                           }}
                           className={`text-[9px] font-black py-2 px-3.5 rounded-full transition-all shadow-sm min-h-[32px] active:scale-95 flex items-center gap-1 ${
                             isActive 
-                              ? "bg-slate-800 text-white hover:bg-slate-900" 
+                              ? "bg-gray-100 text-gray-850 hover:bg-gray-200 border border-gray-200" 
                               : "bg-gradient-to-r from-violet-600 to-purple-650 text-white hover:from-violet-700 hover:to-purple-700 shadow-md"
                           }`}
                         >
@@ -551,7 +551,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
       {/* Modal: Add Patient */}
       {showAddPatientModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
           <div className="bg-white rounded-t-3xl md:rounded-3xl p-6 border-t md:border border-slate-150 shadow-xl max-w-full md:max-w-sm w-full space-y-4 animate-slideUp md:animate-scaleUp text-left pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="text-sm font-black text-slate-855 uppercase tracking-wide">
@@ -631,7 +631,7 @@ export const AshaView: React.FC<AshaViewProps> = React.memo(({
 
       {/* Modal: Patient Screening Records Profile */}
       {selectedPatientForProfile && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
           <div className="bg-white rounded-t-3xl md:rounded-3xl p-6 border-t md:border border-slate-150 shadow-xl max-w-full md:max-w-md w-full space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar animate-slideUp md:animate-scaleUp text-left pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div className="space-y-1 text-left font-sans">

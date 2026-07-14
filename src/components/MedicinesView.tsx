@@ -266,9 +266,9 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
           </div>
         </div>
 
-        <div className="relative border-2 border-dashed border-slate-200 hover:border-violet-500/50 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 hover:bg-slate-50/50 transition-all cursor-pointer">
-          <UploadCloud className="w-9 h-9 text-slate-400" />
-          <span className="text-[10px] font-bold text-slate-500">
+        <div className="relative border-2 border-dashed border-violet-300 bg-violet-50/50 hover:bg-violet-100/50 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer">
+          <UploadCloud className="w-9 h-9 text-violet-650" />
+          <span className="text-[10px] font-bold text-violet-700">
             {isOcrLoading ? ocrProgress : (language === "hi" ? "फ़ाइल चुनें या कैमरा खोलें" : language === "gu" ? "ફાઇલ પસંદ કરો અથવા કેમેરો ખોલો" : "Choose File or Capture Image")}
           </span>
           <input
@@ -300,7 +300,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
         ) : (
           <div className="space-y-3">
             {medicinesList.map((med, index) => (
-              <div key={med.id} className="glass-card p-4.5 space-y-4 relative group animate-fadeIn">
+              <div key={med.id} className="bg-white border-l-4 border-violet-500 shadow-sm p-4.5 space-y-4 relative group animate-fadeIn rounded-r-2xl border-y border-r border-gray-150">
                 <button
                   onClick={() => {
                     const updated = medicinesList.filter(m => m.id !== med.id);
@@ -314,7 +314,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
 
                 {/* Header info */}
                 <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                  <span className="text-[9px] font-black text-violet-700 bg-violet-50 border border-violet-150 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[9px] font-black text-violet-700 bg-violet-100 border border-violet-200 px-2.5 py-0.5 rounded-full">
                     #{index + 1}
                   </span>
                   <input
