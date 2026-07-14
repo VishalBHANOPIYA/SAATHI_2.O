@@ -501,13 +501,13 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
             </button>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black text-slate-800">{waterIntake.toFixed(2)}</span>
-            <span className="text-xs text-slate-400 font-bold">{t.homeLiters} / {dailyWaterGoal.toFixed(1)} {t.homeLiters}</span>
+            <span className="text-2xl font-black text-slate-800">{(tracker.waterGlasses * 0.25).toFixed(2)}</span>
+            <span className="text-xs text-slate-400 font-bold">{t.homeLiters} / {waterGoalLiters.toFixed(1)} {t.homeLiters}</span>
           </div>
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
             <div 
               className="h-full bg-gradient-to-r from-violet-600 to-purple-500 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, (waterIntake / dailyWaterGoal) * 100)}%` }}
+              style={{ width: `${Math.min(100, ((tracker.waterGlasses * 0.25) / waterGoalLiters) * 100)}%` }}
             />
           </div>
         </div>
