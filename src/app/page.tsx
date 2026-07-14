@@ -884,11 +884,11 @@ export default function MainApp() {
       errors.name = t.valNameRequired;
     }
     const ageNum = Number(profileForm.age);
-    if (!profileForm.age || isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+    if (!profileForm.age || isNaN(ageNum) || ageNum <= 0 || ageNum > 120) {
       errors.age = t.valAgeValid;
     }
     const phoneTrim = profileForm.phone.trim();
-    if (!phoneTrim || phoneTrim.length < 4 || phoneTrim.length > 15 || !/^\d+$/.test(phoneTrim)) {
+    if (!phoneTrim || phoneTrim.length !== 10 || !/^\d+$/.test(phoneTrim)) {
       errors.phone = t.valPhoneValid;
     }
     setFormErrors(errors);
@@ -898,7 +898,7 @@ export default function MainApp() {
   const validateSubStepB = () => {
     const errors: { [key: string]: string } = {};
     const emergencyPhone = profileForm.emergencyPhone.trim();
-    if (emergencyPhone && (emergencyPhone.length < 4 || emergencyPhone.length > 15 || !/^\d+$/.test(emergencyPhone))) {
+    if (emergencyPhone && (emergencyPhone.length !== 10 || !/^\d+$/.test(emergencyPhone))) {
       errors.emergencyPhone = t.valEmergencyPhoneValid;
     }
     const abhaTrim = profileForm.abha.replace(/\D/g, "");
@@ -1499,7 +1499,17 @@ export default function MainApp() {
                       type="number"
                       placeholder={t.placeholderAge}
                       value={profileForm.age}
-                      onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val.includes('-') || val.includes('+')) return;
+                        setProfileForm(p => ({ ...p, age: val }));
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                          e.preventDefault();
+                        }
+                      }}
+                      min="1"
                       className="w-full text-xs p-3.5 bg-white border border-gray-300 rounded-2xl text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                     />
                     {formErrors.age && (
@@ -1597,10 +1607,10 @@ export default function MainApp() {
                       </div>
                       <input
                         type="tel"
-                        maxLength={15}
+                        maxLength={10}
                         placeholder={t.placeholderPhone}
                         value={profileForm.phone}
-                        onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
+                        onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
                         className="w-full text-xs p-3.5 bg-transparent text-textprimary font-semibold focus:outline-none rounded-r-2xl h-[48px]"
                       />
                     </div>
@@ -1894,7 +1904,7 @@ export default function MainApp() {
                           maxLength={10}
                           placeholder="10-digit number"
                           value={profileForm.emergencyPhone}
-                          onChange={e => setProfileForm(p => ({ ...p, emergencyPhone: e.target.value.replace(/\D/g, "") }))}
+                          onChange={e => setProfileForm(p => ({ ...p, emergencyPhone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
                           className="w-full text-xs p-3 bg-white border border-gray-300 text-textprimary font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 h-[48px]"
                         />
                       </div>
@@ -2014,7 +2024,17 @@ export default function MainApp() {
                     type="number"
                     placeholder="e.g. 28"
                     value={profileForm.age}
-                    onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val.includes('-') || val.includes('+')) return;
+                      setProfileForm(p => ({ ...p, age: val }));
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                        e.preventDefault();
+                      }
+                    }}
+                    min="1"
                     className="w-full text-xs p-3 input-premium text-textprimary font-semibold focus:outline-none h-[44px]"
                   />
                   {formErrors.age && (
@@ -2108,10 +2128,10 @@ export default function MainApp() {
                   </div>
                   <input
                     type="tel"
-                    maxLength={15}
+                    maxLength={10}
                     placeholder="Phone number"
                     value={profileForm.phone}
-                    onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))}
+                    onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
                     className="w-full text-xs p-3 bg-transparent text-textprimary font-semibold focus:outline-none rounded-r-2xl h-[44px]"
                   />
                 </div>
@@ -2401,7 +2421,7 @@ export default function MainApp() {
                       maxLength={10}
                       placeholder="10-digit"
                       value={profileForm.emergencyPhone}
-                      onChange={e => setProfileForm(p => ({ ...p, emergencyPhone: e.target.value.replace(/\D/g, "") }))}
+                      onChange={e => setProfileForm(p => ({ ...p, emergencyPhone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
                       className="w-full text-xs p-3 rounded-2xl border border-slate-200 bg-slate-50 font-semibold focus:outline-none focus:border-primary h-[44px]"
                     />
                   </div>
