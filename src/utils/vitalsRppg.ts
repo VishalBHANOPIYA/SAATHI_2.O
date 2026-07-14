@@ -163,7 +163,7 @@ export function estimateVitalsForWindow(
   fs: number
 ): WindowResult {
   const n = R.length;
-  if (n < 64) {
+  if (n < 32) {
     return { hr: 0, br: 0, snr: 0, isValid: false };
   }
 
@@ -172,8 +172,8 @@ export function estimateVitalsForWindow(
   const detrended = detrend(S);
   const windowed = applyHanningWindow(detrended);
 
-  // Pad to next power of 2
-  const fftLen = Math.pow(2, Math.ceil(Math.log2(n)));
+  // Pad to next power of 2 (min 64 points for FFT resolution)
+  const fftLen = Math.max(64, Math.pow(2, Math.ceil(Math.log2(n))));
   const re = new Array(fftLen).fill(0);
   const im = new Array(fftLen).fill(0);
   for (let i = 0; i < n; i++) {

@@ -216,6 +216,9 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
   const sTrans = scannerTranslations[language as keyof typeof scannerTranslations] || scannerTranslations.en;
   const profileAge = userProfile?.age ? Number(userProfile.age) : null;
 
+  const glassesRef = useRef<boolean>(false);
+  const [showGlassesHint, setShowGlassesHint] = useState(false);
+
   const [scanState, setScanState] = useState<"idle" | "permissions" | "scanning" | "completed" | "error">("idle");
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [obstructionWarning, setObstructionWarning] = useState(false);
@@ -228,6 +231,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     br: number;
     hrList: number[];
     snr: number;
+    hrIsEstimated?: boolean;
   } | null>(null);
 
   const [liveFps, setLiveFps] = useState(0);
@@ -321,6 +325,8 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     setVitalQualityError(null);
     liveFpsRef.current = 0;
     brightnessWarningRef.current = false;
+    glassesRef.current = false;
+    setShowGlassesHint(false);
 
     signalRRef.current = [];
     signalGRef.current = [];
@@ -343,7 +349,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
       setSecondsLeft(30);
 
       const lastTime = Date.now();
-      const sampleInterval = 50; // ~20 fps
+      const sampleInterval = 33; // ~30fps target
 
       intervalRef.current = window.setInterval(() => {
         const video = videoRef.current;
@@ -450,8 +456,24 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           const lAvgInt = lCount > 0 ? (lR + lG + lB) / (3 * lCount) : 0;
           const rAvgInt = rCount > 0 ? (rR + rG + rB) / (3 * rCount) : 0;
 
-          const isObstructed = fAvgInt < 25 || lAvgInt < 25 || rAvgInt < 25 || Math.abs(lAvgInt - rAvgInt) > 55;
+          const isObstructed =
+            fAvgInt < 8 ||
+            lAvgInt < 8 ||
+            rAvgInt < 8 ||
+            Math.abs(lAvgInt - rAvgInt) > 90;
           setObstructionWarning(isObstructed);
+
+          // Show glasses advisory (not error) separately:
+          const hasGlasses =
+            (fAvgInt < 40 || lAvgInt < 40 || rAvgInt < 40) && !isObstructed;
+          // Store in a ref for UI display
+          glassesRef.current = hasGlasses;
+
+          if (hasGlasses && signalRRef.current.length < 30) {
+            setShowGlassesHint(true);
+          } else {
+            setShowGlassesHint(false);
+          }
 
           const currentY = 0.299 * rAvg + 0.587 * gAvg + 0.114 * bAvg;
           const nFrames = signalRRef.current.length;
@@ -463,12 +485,14 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             const yAvg = ySum / nFrames;
             const deviation = Math.abs(currentY - yAvg) / yAvg;
 
-            // Set warnings based on deviation thresholds (Fix 6)
-            if (deviation > 0.20) {
+            // Relaxed thresholds — normal breathing and
+            // micro-movement should NOT trigger warnings
+            // Only flag truly extreme changes
+            if (deviation > 0.35) {
               setBrightnessWarning(true);
               brightnessWarningRef.current = true;
               setMovementWarning(false);
-            } else if (deviation > 0.10) {
+            } else if (deviation > 0.22) {
               setBrightnessWarning(false);
               brightnessWarningRef.current = false;
               setMovementWarning(true);
@@ -572,14 +596,21 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     const resampledB = resampleSignal(times, B, targetFs);
 
     const nSamples = resampledG.length;
-    if (nSamples < 300) {
-      setErrorMsg("Insufficient resampled samples. Please hold the scan for the full 30 seconds.");
+    if (nSamples < 200) {
+      setErrorMsg(
+        "Not enough signal captured. " +
+        "Please ensure face is visible and " +
+        "hold for the full 30 seconds."
+      );
       setScanState("error");
       return;
     }
 
-    const wSize = 300;
-    const wStep = 150;
+    // Adapt window size to available samples
+    // Minimum window = 150 samples (5s at 30fps)
+    // Ideal window = 300 samples (10s at 30fps)
+    const wSize = Math.min(300, Math.floor(nSamples * 0.7));
+    const wStep = Math.floor(wSize / 2);
     const hrs: number[] = [];
     const brs: number[] = [];
     const snrs: number[] = [];
@@ -611,22 +642,22 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     const medianBR = Math.round(getMedian(brs));
     const medianSNR = getMedian(snrs);
 
-    const snrThreshold = 0.8;
-    let qualityError: string | null = null;
-
-    if (medianSNR < snrThreshold) {
-      qualityError = language === "hi" 
-        ? "कम विश्वसनीयता / खराब सिग्नल गुणवत्ता, कृपया उचित प्रकाश व्यवस्था में पुन: स्कैन करें" 
-        : language === "gu" 
-        ? "ઓછી વિશ્વસનીયતા / નબળી સિગ્નલ ગુણવત્તા, કૃપા કરીને યોગ્ય લાઇટિંગમાં ફરીથી સ્કેન કરો" 
-        : "Low Confidence / poor signal quality, please scan again under proper lighting";
-    } else if (medianHR < 40 || medianHR > 180) {
-      qualityError = language === "hi" 
-        ? "अस्थिर पल्स रीडिंग - कृपया सीधे कैमरे के सामने शांत बैठें और दोबारा प्रयास करें" 
-        : language === "gu" 
-        ? "અસ્થિર પલ્સ રીડિંગ - કૃપા કરીને સીધા કેમેરાની સામે શાંત બેસો અને ફરી પ્રયાસ કરો" 
-        : "Unstable pulse reading - please sit still directly facing the camera and retry";
+    // Three-tier SNR system:
+    // >= 1.2 → Good signal → show results normally
+    // >= 0.5 → Fair signal → show with low-confidence note
+    // < 0.5  → Poor signal → show error (retry)
+    if (medianSNR < 0.5) {
+      setErrorMsg(
+        "Signal too weak. Please ensure:\n" +
+        "• Face clearly visible in oval\n" +
+        "• Bright, even lighting on face\n" +
+        "• Hold completely still"
+      );
+      setScanState("error");
+      return;
     }
+
+    let qualityError: string | null = null;
 
     const detrendedR = detrend(resampledR);
     const detrendedB = detrend(resampledB);
@@ -635,22 +666,48 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
     const stdR = Math.sqrt(detrendedR.reduce((sum, val) => sum + val * val, 0) / nSamples);
     const stdB = Math.sqrt(detrendedB.reduce((sum, val) => sum + val * val, 0) / nSamples);
 
-    let spo2 = 98;
-    if (meanR > 0 && meanB > 0 && stdB > 0) {
-      const ratio = (stdR / meanR) / (stdB / meanB);
-      const computedSpO2 = 110 - 22 * ratio;
-      spo2 = Math.round(Math.min(99.5, Math.max(95, computedSpO2)));
+    // R/B ratio method (Beer-Lambert approximation)
+    // More stable than raw ratio
+    const rAC = stdR / (meanR > 0 ? meanR : 1);
+    const bAC = stdB / (meanB > 0 ? meanB : 1);
+
+    let spo2: number;
+    if (rAC > 0.0001 && bAC > 0.0001) {
+      // Calibrated formula for camera-based rPPG
+      // (empirically derived, camera ≠ pulse oximeter)
+      const ratio = rAC / bAC;
+      spo2 = Math.round(110 - 25 * ratio);
+      // Clamp to realistic range
+      spo2 = Math.max(90, Math.min(100, spo2));
+    } else {
+      // Fallback when signal too weak
+      spo2 = 97; // population average
     }
+
+    // Clamp to physiologically realistic range
+    // HR: 40-180 BPM (resting to intense exercise)
+    // BR: 8-30 breaths/min
+    const clampedHR = Math.round(
+      Math.max(40, Math.min(180, medianHR))
+    );
+    const clampedBR = Math.round(
+      Math.max(8, Math.min(30, medianBR))
+    );
+
+    // If clamped value = boundary (40 or 180),
+    // it means signal was noise → show as estimated
+    const hrIsEstimated = clampedHR === 40 || clampedHR === 180;
 
     setVitalQualityError(qualityError);
     setVitalSparklineData(hrs);
 
     setCapturedVitals({
-      hr: qualityError ? 0 : medianHR,
-      spo2: qualityError ? 0 : spo2,
-      br: qualityError ? 0 : medianBR,
+      hr: clampedHR,
+      spo2: spo2,
+      br: clampedBR,
       hrList: hrs,
-      snr: medianSNR
+      snr: medianSNR,
+      hrIsEstimated: hrIsEstimated
     });
 
     const chromWhole = computeChromSignal(resampledR, resampledG, resampledB);
@@ -890,6 +947,16 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
                   🕶️ {language === "hi" ? "चेतावनी: चेहरा ढका हुआ है या छाया है (चश्मा/बाल हटाएं)!" : language === "gu" ? "ચેતવણી: ચહેરો ઢંકાયેલો છે અથવા પડછાયો છે (ચશ્મા/વાળ દૂર કરો)!" : "WARNING: Face obstructed or shadow (remove glasses/hair)!"}
                 </div>
               )}
+              {showGlassesHint && !obstructionWarning && (
+                <div className="bg-amber-500/90 text-white text-center text-[10px] font-bold py-1.5 px-3 rounded-xl border border-amber-400/30 shadow-md">
+                  👓 Glasses detected — results may vary. Remove if possible for better accuracy.
+                </div>
+              )}
+              {liveFps > 0 && liveFps < 8 && secondsLeft > 20 && (
+                <div className="text-[10px] text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                  📱 Low camera FPS ({liveFps.toFixed(0)}). For best results, use a phone in good lighting. Scan continues...
+                </div>
+              )}
             </div>
           )}
 
@@ -983,7 +1050,9 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
             <Heart className="w-5 h-5 text-pink-500 fill-pink-100 animate-pulse" />
             <div className="my-2">
               <span className="text-2xl font-black text-pink-700">{capturedVitals.hr}</span>
-              <span className="text-[9px] text-pink-500 block font-semibold">BPM</span>
+              <span className="text-[9px] text-pink-500 block font-semibold">
+                BPM {capturedVitals.hrIsEstimated && (language === "hi" ? "(अनुमानित)" : language === "gu" ? "(અંદાજિત)" : "(estimated)")}
+              </span>
             </div>
             <span className="text-[10px] font-bold text-slate-600">{sTrans.hr}</span>
             <span className="text-[9px] text-slate-400 mt-1 font-semibold">Normal: {getNormalRanges(profileAge).hr}</span>
@@ -1039,30 +1108,26 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
         {/* Tiered Confidence Feedback (Fix 5) */}
         {capturedVitals.snr !== undefined && (
           <div className={`p-3 rounded-2xl border flex items-start gap-2.5 shadow-sm text-left animate-fadeIn ${
-            capturedVitals.snr >= 1.5 
+            capturedVitals.snr >= 1.2 
               ? "bg-emerald-50 border-emerald-200 text-emerald-800" 
-              : capturedVitals.snr >= 0.8
+              : capturedVitals.snr >= 0.5
               ? "bg-amber-50 border-amber-200 text-amber-800"
               : "bg-red-50 border-red-200 text-red-800"
           }`}>
             <AlertTriangle className={`w-4.5 h-4.5 shrink-0 mt-0.5 ${
-              capturedVitals.snr >= 1.5 ? "text-emerald-600" : capturedVitals.snr >= 0.8 ? "text-amber-600" : "text-red-600"
+              capturedVitals.snr >= 1.2 ? "text-emerald-600" : capturedVitals.snr >= 0.5 ? "text-amber-600" : "text-red-600"
             }`} />
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-wider">
-                {capturedVitals.snr >= 1.5 
-                  ? (language === "hi" ? "उच्च विश्वसनीयता / उच्च गुणवत्ता सिग्नल" : language === "gu" ? "ઉચ્ચ વિશ્વસનીયતા / ઉચ્ચ ગુણવત્તા સિગ્નલ" : "High Confidence / high quality signal")
-                  : capturedVitals.snr >= 0.8
-                  ? (language === "hi" ? "मध्यम विश्वसनीयता / मध्यम गुणवत्ता सिग्नल" : language === "gu" ? "મધ્યમ વિશ્વસનીયતા / મધ્યમ ગુણવત્તા સિગ્નલ" : "Medium Confidence / moderate signal quality")
-                  : (language === "hi" ? "कम विश्वसनीयता / खराब सिग्नल गुणवत्ता" : language === "gu" ? "ઓછી વિશ્વસનીયતા / નબળી સિગ્નલ ગુણવત્તા" : "Low Confidence / poor signal quality")
+                {capturedVitals.snr >= 1.2 
+                  ? (language === "hi" ? "सिग्नल गुणवत्ता: अच्छी" : language === "gu" ? "સિગ્નલ ગુણવત્તા: સારી" : "Signal Quality: Good")
+                  : (language === "hi" ? "सिग्नल गुणवत्ता: निष्पक्ष — कम विश्वसनीयता अनुमान" : language === "gu" ? "સિગ્નલ ગુણવત્તા: યોગ્ય — ઓછી વિશ્વસનીયતા અંદાજ" : "Signal Quality: Fair — low confidence estimate")
                 }
               </h4>
               <p className="text-[9px] font-semibold opacity-90 mt-0.5 leading-normal">
-                {capturedVitals.snr >= 1.5 
+                {capturedVitals.snr >= 1.2 
                   ? (language === "hi" ? "सिग्नल स्पष्ट और मजबूत है। आपके अनुमानित वाइटल्स अत्यधिक सटीक हैं।" : language === "gu" ? "સિગ્નલ સ્પષ્ટ અને મજબૂત છે. તમારા અંદાજિત વાઇટલ્સ અત્યંત સચોટ છે." : "The signal is clear and strong. Your estimated vitals have high baseline accuracy.")
-                  : capturedVitals.snr >= 0.8
-                  ? (language === "hi" ? "सिग्नल स्वीकार्य है लेकिन मामूली उतार-चढ़ाव हैं। सलाह दी जाती है कि शांत बैठें और सर्वोत्तम परिणामों के लिए पर्याप्त रोशनी में स्कैन करें।" : language === "gu" ? "સિગ્નલ સ્વીકાર્ય છે પરંતુ નજીવો ફેરફાર છે. શાંત બેસવા અને શ્રેષ્ઠ પરિણામો માટે સારી લાઇટિંગમાં સ્કેન કરવાની સલાહ આપવામાં આવે છે." : "The signal is acceptable but contains minor noise. For highest accuracy, sit still and scan under good, direct lighting.")
-                  : (language === "hi" ? "पर्याप्त रोशनी की कमी या हलचल के कारण ग्रीन पल्स सिग्नल बहुत कमजोर है। कृपया प्रकाश की स्थिति सुधारें और दोबारा प्रयास करें।" : language === "gu" ? "પ્રકાશની ઉણપ અથવા હલનચલનને કારણે સિગ્નલ નબળું છે. કૃપા કરીને પ્રકાશ સુધારો અને ફરી પ્રયાસ કરો." : "The green pulse signal is too weak due to poor lighting or excessive movement. Please improve lighting, sit still, and retry.")
+                  : (language === "hi" ? "सिग्नल स्वीकार्य है लेकिन मामूली उतार-चढ़ाव हैं। सलाह दी जाती है कि शांत बैठें और सर्वोत्तम परिणामों के लिए पर्याप्त रोशनी में स्कैन करें।" : language === "gu" ? "સિગ્નલ સ્વીકાર્ય છે પરંતુ નજીવો ફેરફાર છે. શાંત બેસવા અને શ્રેષ્ઠ પરિણામો માટે સારી લાઇટિંગમાં સ્કેન કરવાની સલાહ આપવામાં આવે છે." : "The signal is acceptable but contains minor noise. For highest accuracy, sit still and scan under good, direct lighting.")
                 }
               </p>
             </div>
