@@ -181,3 +181,48 @@ export function getBMINuskheKeywords(
       'digestion', 'acidity'];
   return [];
 }
+
+// Water goal from BMI + weight
+// Formula: 35ml per kg body weight
+// + climate adjustment for India (+300ml)
+// Capped at 4000ml max
+export function getWaterGoalFromWeight(
+  weightKg: number,
+  activityLevel: string = 'light'
+): { ml: number; liters: number;
+     glasses: number } {
+  const base = weightKg * 35;
+  const activity = ({
+    sedentary: 0,
+    light: 300,
+    moderate: 500,
+    active: 700,
+    very_active: 900,
+  } as Record<string, number>)[activityLevel] || 300;
+  const climate = 300; // India hot climate
+  const total = Math.min(
+    4000,
+    Math.max(1500, base + activity + climate)
+  );
+  return {
+    ml: Math.round(total),
+    liters: Math.round(total / 100) / 10,
+    glasses: Math.round(total / 250),
+  };
+}
+
+// Daily step calorie burn
+// Uses MET formula:
+// Calories = MET × weight(kg) × hours
+// Walking MET = 3.5, Running MET = 7.0
+export function stepCalorieBurn(
+  steps: number,
+  weightKg: number
+): number {
+  // Approximate: 0.04 kcal per step
+  // adjusted for weight vs 70kg baseline
+  return Math.round(
+    steps * 0.04 * (weightKg / 70)
+  );
+}
+

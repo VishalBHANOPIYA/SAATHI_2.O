@@ -27,6 +27,7 @@ import {
 } from "recharts";
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
+import { StepCounterWidget } from "./StepCounterWidget";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { useChartHeight } from "@/hooks/useChartHeight";
 import { resampleSignal, estimateVitalsForWindow, detrend, computeChromSignal } from "../utils/vitalsRppg";
@@ -1370,6 +1371,11 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           </div>
         </div>
       )}
+
+      {/* Step Counter Section */}
+      <div className="mt-4">
+        <StepCounterWidget userProfile={userProfile} />
+      </div>
 
       {/* Collapsible Clinical Disclaimer (Fix 4) */}
       <ClinicalDisclaimer />

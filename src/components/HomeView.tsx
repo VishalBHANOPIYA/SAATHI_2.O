@@ -29,6 +29,8 @@ import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
 import { computeHealthScore, getImproveTip } from "@/utils/healthScore";
 import { BMICard } from "./BMICard";
 import { calculateHealthPlan } from "@/utils/healthPlanCalculator";
+import { stepCalorieBurn, getWaterGoalFromWeight } from "@/utils/bmiCalculator";
+import { loadTodayTracker, saveTodayTracker, getStepGoalFromBMI, DailyTrackerData } from "@/utils/dailyTracker";
 
 interface HomeViewProps {
   setActiveTab: (tab: string) => void;
@@ -188,19 +190,85 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
 
   const [activePlanTab, setActivePlanTab] = useState<"nutrition" | "water_sleep" | "workout" | "weight">("nutrition");
 
-  // Water Intake Interactive State
-  const [waterIntake, setWaterIntake] = useState(() => {
-    if (typeof window !== "undefined") {
-      return Number(localStorage.getItem("saathi_water_intake") || "1.2");
-    }
-    return 1.2;
+  // Water Intake Interactive State (Auto-goal from BMI based on weight & activity)
+  const weightKg = Number(userProfile?.weightKg) || 70;
+  const activityLevel = userProfile?.activityLevel || "light";
+  const waterGoalLiters = React.useMemo(() => {
+    return getWaterGoalFromWeight(weightKg, activityLevel) / 1000;
+  }, [weightKg, activityLevel]);
+  const waterGoalGlasses = React.useMemo(() => {
+    return Math.round(waterGoalLiters / 0.25);
+  }, [waterGoalLiters]);
+
+  const [tracker, setTracker] = useState<DailyTrackerData>(() => {
+    return loadTodayTracker({
+      stepGoal: getStepGoalFromBMI(userProfile?.bmiCategory || 'normal'),
+      calorieGoal: userProfile?.calorieGoal || 2000,
+      waterGoalGlasses,
+      waterGoalLiters,
+    });
   });
 
+  React.useEffect(() => {
+    const loaded = loadTodayTracker({
+      stepGoal: getStepGoalFromBMI(userProfile?.bmiCategory || 'normal'),
+      calorieGoal: userProfile?.calorieGoal || 2000,
+      waterGoalGlasses,
+      waterGoalLiters,
+    });
+    setTracker(loaded);
+  }, [userProfile, waterGoalGlasses, waterGoalLiters]);
+
   const addWater = () => {
-    const nextWater = Math.min(dailyWaterGoal + 1.0, Number((waterIntake + 0.25).toFixed(2)));
-    setWaterIntake(nextWater);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("saathi_water_intake", String(nextWater));
+    setTracker(prev => {
+      const updated = {
+        ...prev,
+        waterGlasses: prev.waterGlasses + 1,
+        waterGoalGlasses,
+        waterGoalLiters,
+      };
+      saveTodayTracker(updated);
+      return updated;
+    });
+  };
+
+  // States for manual logs
+  const [showCalorieInput, setShowCalorieInput] = useState(false);
+  const [calorieInputVal, setCalorieInputVal] = useState("");
+  const [showSleepInput, setShowSleepInput] = useState(false);
+  const [sleepInputVal, setSleepInputVal] = useState("");
+
+  const handleLogCalories = (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseInt(calorieInputVal, 10);
+    if (!isNaN(val) && val > 0) {
+      setTracker(prev => {
+        const updated = {
+          ...prev,
+          caloriesConsumed: prev.caloriesConsumed + val,
+        };
+        saveTodayTracker(updated);
+        return updated;
+      });
+      setCalorieInputVal("");
+      setShowCalorieInput(false);
+    }
+  };
+
+  const handleLogSleep = (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(sleepInputVal);
+    if (!isNaN(val) && val > 0) {
+      setTracker(prev => {
+        const updated = {
+          ...prev,
+          sleepHours: val,
+        };
+        saveTodayTracker(updated);
+        return updated;
+      });
+      setSleepInputVal("");
+      setShowSleepInput(false);
     }
   };
 
@@ -623,8 +691,8 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                         <Droplet className="w-3.5 h-3.5 text-blue-500 fill-blue-500/10" />
                       </div>
                       <div className="mt-2">
-                        <h5 className="text-lg font-black text-slate-800 leading-none">{healthPlan.water.dailyLiters}L</h5>
-                        <span className="text-[9px] text-slate-400 font-bold">{t.healthPlanWaterGlasses?.replace("{glasses}", String(healthPlan.water.glassesPerDay)) || `${healthPlan.water.glassesPerDay} glasses`}</span>
+                        <h5 className="text-lg font-black text-slate-800 leading-none">{waterGoalLiters.toFixed(2)}L</h5>
+                        <span className="text-[9px] text-slate-400 font-bold">{waterGoalGlasses} glasses</span>
                       </div>
                     </div>
 
@@ -639,6 +707,26 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                           {healthPlan.sleep.suggestedBedtime} - {healthPlan.sleep.suggestedWakeTime}
                         </span>
                       </div>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between col-span-2 text-[10px] text-slate-500 leading-normal space-y-1.5">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Info className="w-3.5 h-3.5 text-blue-500" />
+                        <span>{language === "hi" ? "जल लक्ष्य गणना (BMI आधारित)" : language === "gu" ? "પાણીના લક્ષ્યની ગણતરી (BMI આધારિત)" : "Water Goal Formula (BMI-based)"}</span>
+                      </div>
+                      <p className="opacity-90">
+                        {language === "hi" 
+                          ? `वजन के आधार पर: ${weightKg}kg * 35 = ${(weightKg * 35).toLocaleString()}ml + गतिविधि स्तर संशोधक (${
+                              activityLevel === "sedentary" ? "0" : activityLevel === "light" ? "300" : activityLevel === "moderate" ? "500" : activityLevel === "active" ? "700" : "900"
+                            }ml) + 300ml (जलवायु समायोजन), 1500ml और 4000ml के बीच सीमित।`
+                          : language === "gu"
+                          ? `વજનના આધારે: ${weightKg}kg * 35 = ${(weightKg * 35).toLocaleString()}ml + પ્રવૃત્તિ સ્તર મોડિફાયર (${
+                              activityLevel === "sedentary" ? "0" : activityLevel === "light" ? "300" : activityLevel === "moderate" ? "500" : activityLevel === "active" ? "700" : "900"
+                            }ml) + 300ml (હવામાન ગોઠવણ), 1500ml અને 4000ml વચ્ચે મર્યાદિત.`
+                          : `Based on weight: ${weightKg}kg * 35 = ${(weightKg * 35).toLocaleString()}ml + activity level modifier (${
+                              activityLevel === "sedentary" ? "0" : activityLevel === "light" ? "300" : activityLevel === "moderate" ? "500" : activityLevel === "active" ? "700" : "900"
+                            }ml) + 300ml (climate adjustment), capped between 1500ml and 4000ml.`}
+                      </p>
                     </div>
                   </div>
 
@@ -670,6 +758,40 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                     <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
                       <span className="text-xs font-extrabold text-slate-700">{healthPlan.exercise.strengthType}</span>
                       <span className="text-[9px] font-bold text-slate-400">{healthPlan.exercise.strengthDuration} min • {healthPlan.exercise.strengthFrequency} days/wk</span>
+                    </div>
+                  </div>
+
+                  {/* Steps progress block in workout tab */}
+                  <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm space-y-2">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      <span>{language === "hi" ? "दैनिक कदम प्रगति" : language === "gu" ? "દૈનિક પગલાં પ્રગતિ" : "Daily Step Progress"}</span>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
+                        tracker.steps >= tracker.stepGoal
+                          ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                          : tracker.steps >= tracker.stepGoal * 0.5
+                          ? "bg-amber-50 text-amber-600 border border-amber-100"
+                          : "bg-slate-100 text-slate-400"
+                      }`}>
+                        {tracker.steps >= tracker.stepGoal
+                          ? (language === "hi" ? "पूर्ण" : language === "gu" ? "પૂર્ણ" : "Completed")
+                          : tracker.steps >= tracker.stepGoal * 0.5
+                          ? (language === "hi" ? "ट्रैक पर" : language === "gu" ? "ટ્રેક પર" : "On Track")
+                          : (language === "hi" ? "कम सक्रिय" : language === "gu" ? "ઓછી પ્રવૃત્તિ" : "Need Activity")}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <h5 className="text-sm font-black text-slate-700">
+                        {tracker.steps.toLocaleString()} / {tracker.stepGoal.toLocaleString()}
+                      </h5>
+                      <span className="text-[9px] text-slate-400 font-bold">
+                        {Math.round((tracker.steps / tracker.stepGoal) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+                      <div
+                        className="h-full bg-purple-600 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, (tracker.steps / tracker.stepGoal) * 100)}%` }}
+                      />
                     </div>
                   </div>
 
@@ -803,30 +925,156 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
         </div>
 
         <div className="space-y-4">
-          {/* Calorie Burn */}
+          {/* 1. Steps Progress */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500/10" /> {language === "hi" ? "कैलोरी बर्न" : language === "gu" ? "કેલરી બર્ન" : "Calorie Burn"}
+                <Target className="w-3.5 h-3.5 text-purple-600" /> {language === "hi" ? "दैनिक कदम" : language === "gu" ? "દૈનિક પગલાં" : "Steps"}
               </span>
-              <span className="text-slate-700">380 / 500 kcal</span>
+              <span className="text-slate-700">
+                {tracker.steps.toLocaleString()} / {tracker.stepGoal.toLocaleString()} ({Math.round(Math.min(100, (tracker.steps / tracker.stepGoal) * 100))}%)
+              </span>
             </div>
             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
-              <div className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full transition-all duration-500" style={{ width: "76%" }} />
+              <div
+                className="h-full bg-gradient-to-r from-purple-600 to-violet-505 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (tracker.steps / tracker.stepGoal) * 100)}%` }}
+              />
+            </div>
+            <span className="text-[9px] text-purple-650 font-bold block pt-0.5">
+              🔥 {stepCalorieBurn(tracker.steps, weightKg)} kcal burned from steps
+            </span>
+          </div>
+
+          {/* 2. Water Intake Progress */}
+          <div className="space-y-1.5 border-t border-slate-50 pt-2.5">
+            <div className="flex justify-between items-center text-xs font-bold">
+              <span className="text-slate-500 flex items-center gap-1.5">
+                <Droplet className="w-3.5 h-3.5 text-blue-500 fill-blue-500/10" /> {language === "hi" ? "पानी का सेवन" : language === "gu" ? "પાણીનો વપરાશ" : "Water Intake"}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-700">
+                  {(tracker.waterGlasses * 0.25).toFixed(2)}L / {waterGoalLiters.toFixed(1)}L ({tracker.waterGlasses} / {waterGoalGlasses} gl)
+                </span>
+                <button
+                  onClick={addWater}
+                  className="bg-blue-50 hover:bg-blue-100 text-blue-600 font-extrabold text-[9px] px-2 py-1 rounded-xl transition-all shadow-sm active:scale-95 border border-blue-200/50"
+                >
+                  {t("waterGlassAdd") || "+ Glass (250ml)"}
+                </button>
+              </div>
+            </div>
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-sky-400 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (tracker.waterGlasses / waterGoalGlasses) * 100)}%` }}
+              />
             </div>
           </div>
 
-          {/* Active Minutes */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-bold">
+          {/* 3. Calories Consumed Progress */}
+          <div className="space-y-1.5 border-t border-slate-50 pt-2.5">
+            <div className="flex justify-between items-center text-xs font-bold">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-violet-600" /> {language === "hi" ? "सक्रिय समय" : language === "gu" ? "સક્રિય સમય" : "Active Time"}
+                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500/10" /> {language === "hi" ? "कैलोरी सेवन" : language === "gu" ? "કેલરી વપરાશ" : "Calories"}
               </span>
-              <span className="text-slate-700">45 / 60 {language === "hi" ? "मिनट" : language === "gu" ? "મિનિટ" : "mins"}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-700">
+                  {tracker.caloriesConsumed} / {tracker.calorieGoal} kcal
+                </span>
+                <button
+                  onClick={() => setShowCalorieInput(!showCalorieInput)}
+                  className="bg-orange-50 hover:bg-orange-100 text-orange-600 font-extrabold text-[10px] w-5 h-5 rounded-full flex items-center justify-center transition-all active:scale-95 border border-orange-200/30"
+                >
+                  +
+                </button>
+              </div>
             </div>
             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
-              <div className="h-full bg-gradient-to-r from-violet-600 to-purple-600 rounded-full transition-all duration-500" style={{ width: "75%" }} />
+              <div
+                className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (tracker.caloriesConsumed / tracker.calorieGoal) * 100)}%` }}
+              />
             </div>
+            {showCalorieInput && (
+              <form onSubmit={handleLogCalories} className="flex gap-2 pt-1 animate-fadeIn">
+                <input
+                  type="number"
+                  placeholder="Add kcal"
+                  value={calorieInputVal}
+                  onChange={(e) => setCalorieInputVal(e.target.value)}
+                  className="flex-1 border border-slate-200 rounded-xl px-2 py-1 text-[11px] focus:outline-none focus:border-orange-500"
+                />
+                <button
+                  type="submit"
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-[9px] px-3 py-1 rounded-xl shadow-sm"
+                >
+                  Log
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* 4. Active Minutes Progress */}
+          <div className="space-y-1.5 border-t border-slate-50 pt-2.5">
+            <div className="flex justify-between text-xs font-bold">
+              <span className="text-slate-500 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-emerald-600" /> {language === "hi" ? "सक्रिय समय" : language === "gu" ? "સક્રિય સમય" : "Active Time"}
+              </span>
+              <span className="text-slate-700">
+                {tracker.activeMinutes} / {tracker.activeMinuteGoal} {language === "hi" ? "मिनट" : language === "gu" ? "મિનિટ" : "mins"}
+              </span>
+            </div>
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-600 to-teal-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (tracker.activeMinutes / tracker.activeMinuteGoal) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* 5. Sleep Hours Progress */}
+          <div className="space-y-1.5 border-t border-slate-50 pt-2.5">
+            <div className="flex justify-between items-center text-xs font-bold">
+              <span className="text-slate-500 flex items-center gap-1.5">
+                <Moon className="w-3.5 h-3.5 text-violet-600 fill-violet-600/10" /> {language === "hi" ? "नींद" : language === "gu" ? "ઊંઘ" : "Sleep"}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-750 font-bold">
+                  {tracker.sleepHours} / {tracker.sleepGoal} hrs
+                </span>
+                <button
+                  onClick={() => setShowSleepInput(!showSleepInput)}
+                  className="bg-violet-50 hover:bg-violet-100 text-violet-650 font-extrabold text-[10px] w-5 h-5 rounded-full flex items-center justify-center transition-all active:scale-95 border border-violet-250/35"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+              <div
+                className="h-full bg-gradient-to-r from-violet-600 to-indigo-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (tracker.sleepHours / tracker.sleepGoal) * 100)}%` }}
+              />
+            </div>
+            {showSleepInput && (
+              <form onSubmit={handleLogSleep} className="flex gap-2 pt-1 animate-fadeIn">
+                <input
+                  type="number"
+                  step="0.5"
+                  placeholder="Hours slept last night"
+                  value={sleepInputVal}
+                  onChange={(e) => setSleepInputVal(e.target.value)}
+                  className="flex-1 border border-slate-200 rounded-xl px-2 py-1 text-[11px] focus:outline-none focus:border-violet-500"
+                />
+                <button
+                  type="submit"
+                  className="bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[9px] px-3 py-1 rounded-xl shadow-sm"
+                >
+                  Log
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
