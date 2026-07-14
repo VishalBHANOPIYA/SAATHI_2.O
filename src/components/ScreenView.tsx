@@ -1318,7 +1318,7 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
 
           {/* 2. CAMERA CAPTURE STEP */}
           {screenStep === "capture" && (
-            <div className="bg-[#1E1B4B] border border-slate-800 rounded-3xl overflow-hidden shadow-lg relative flex flex-col items-center p-5 space-y-4 w-full">
+            <div className="bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden shadow-lg relative flex flex-col items-center p-5 space-y-4 w-full">
               <div className="relative w-full aspect-[4/3] md:max-w-md lg:max-w-lg mx-auto rounded-2xl overflow-hidden bg-black border-2 border-slate-800 shadow-inner">
                 <video
                   ref={screenVideoRef}
@@ -1363,7 +1363,7 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
                     stopScreenCameraStream();
                     setScreenStep("select");
                   }}
-                  className="flex-1 bg-slate-800 text-slate-300 font-black text-xs py-3 rounded-full hover:bg-slate-700 active:scale-[0.97] transition-all min-h-[44px]"
+                  className="flex-1 bg-gray-800 text-gray-300 font-black text-xs py-3 rounded-full hover:bg-gray-700 active:scale-[0.97] transition-all min-h-[44px]"
                 >
                   {sTrans.cancel}
                 </button>

@@ -87,7 +87,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
 
     if (!hasData) {
       return (
-        <aside className="hidden lg:flex flex-col w-[300px] 2xl:w-[320px] bg-white/40 backdrop-blur-xl h-[100dvh] sticky top-0 shrink-0 border-l border-white/60 overflow-y-auto no-scrollbar">
+        <aside className="hidden lg:flex flex-col w-[300px] 2xl:w-[320px] bg-white h-[100dvh] sticky top-0 shrink-0 border-l border-gray-200 overflow-y-auto no-scrollbar">
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
             <div className="w-20 h-20 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-3xl flex items-center justify-center shadow-soft animate-float">
               <Sparkles className="w-10 h-10 text-violet-600 animate-pulse" />
@@ -104,7 +104,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
     }
 
     return (
-      <aside className="hidden lg:flex flex-col w-[300px] 2xl:w-[320px] bg-white/40 backdrop-blur-xl h-[100dvh] sticky top-0 shrink-0 overflow-y-auto no-scrollbar border-l border-white/60">
+      <aside className="hidden lg:flex flex-col w-[300px] 2xl:w-[320px] bg-white h-[100dvh] sticky top-0 shrink-0 overflow-y-auto no-scrollbar border-l border-gray-200">
         <div className="p-5 space-y-4">
           {/* Header */}
           <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -112,10 +112,10 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
           </h2>
 
           {/* Health Score Ring */}
-          <div className={`glass-card p-5 ${colorClasses.glow}`}>
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-4">
               <div className="relative w-[76px] h-[76px] shrink-0">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-50 to-white shadow-soft" />
+                <div className="absolute inset-0 rounded-full bg-slate-50 shadow-inner" />
                 <svg className="w-full h-full transform -rotate-90 relative z-10">
                   <circle
                      cx="38"
@@ -152,7 +152,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
                 >
                   {colorClasses.label}
                 </span>
-                <p className="text-xs font-black text-slate-600">
+                <p className="text-xs font-black text-slate-650">
                   {t.wellnessScore}
                 </p>
               </div>
@@ -163,7 +163,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
           {latestVitals && (
             <div className="grid grid-cols-2 gap-3">
               {latestVitals.heartRate && (
-                <div className="glass-card p-4 text-center group hover:shadow-soft transition-all duration-300">
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center group hover:bg-violet-50/50 transition-all duration-300">
                   <div className="w-9 h-9 bg-rose-500/[0.04] rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
                     <Heart className="w-4 h-4 text-rose-500 fill-rose-200" />
                   </div>
@@ -176,9 +176,9 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
                 </div>
               )}
               {latestVitals.oxygen && (
-                <div className="glass-card p-4 text-center group hover:shadow-soft transition-all duration-300">
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center group hover:bg-violet-50/50 transition-all duration-300">
                   <div className="w-9 h-9 bg-violet-500/[0.04] rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
-                    <Activity className="w-4 h-4 text-violet-600" />
+                    <Activity className="w-4 h-4 text-violet-650" />
                   </div>
                   <p className="text-xl font-black text-slate-800 leading-none mb-0.5">
                     {latestVitals.oxygen}%
@@ -194,7 +194,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
           {/* Need help link */}
           <button
             onClick={() => setActiveTab("talk")}
-            className="w-full flex items-center justify-between bg-gradient-to-r from-violet-500/[0.04] to-purple-500/[0.04] hover:from-violet-500/[0.08] hover:to-purple-500/[0.08] border border-violet-500/10 rounded-2xl px-4 py-3.5 text-xs font-black text-violet-700 transition-all min-h-[44px] group"
+            className="w-full flex items-center justify-between bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-2xl px-4 py-3.5 text-xs font-black text-violet-700 transition-all min-h-[44px] group"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-violet-500/10 rounded-xl flex items-center justify-center group-hover:bg-violet-500/20 transition-colors">
@@ -206,13 +206,13 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(
           </button>
 
           {/* Improve tip */}
-          <div className="glass-card p-4 space-y-2">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">
+          <div className="bg-violet-50 border border-violet-150 rounded-2xl p-4 space-y-2">
+            <p className="text-[9px] font-black text-violet-600 uppercase tracking-wider">
               {t.improvementTip}
             </p>
             <button
               onClick={() => setActiveTab(improveTip.tab)}
-              className="flex items-center gap-1 text-xs font-black text-violet-700 hover:text-violet-900 transition-all group text-left"
+              className="flex items-center gap-1 text-xs font-black text-violet-750 hover:text-violet-900 transition-all group text-left"
             >
               <span className="leading-snug">{t[`tip${wellness.biggestFactorKey.charAt(0).toUpperCase()}${wellness.biggestFactorKey.slice(1)}` as keyof typeof t]}</span>
               <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform shrink-0" />

@@ -1161,13 +1161,13 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       </div>
 
       {/* 11. QUICK HEALTH TIP */}
-      <div className="bg-violet-50/30 border border-violet-100 rounded-3xl p-5 flex gap-3 text-left shadow-sm">
-        <div className="text-violet-600 shrink-0">
-          <Sparkles className="w-5 h-5 fill-violet-600/10 text-violet-600 animate-pulse" />
+      <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 flex gap-3 text-left shadow-sm">
+        <div className="text-amber-650 shrink-0">
+          <Sparkles className="w-5 h-5 fill-amber-600/10 text-amber-650 animate-pulse" />
         </div>
         <div className="space-y-1">
-          <span className="text-xs font-bold text-violet-750">{t.quickHealthTip}</span>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
+          <span className="text-xs font-bold text-amber-900">{t.quickHealthTip}</span>
+          <p className="text-[11px] text-amber-800 leading-relaxed font-semibold">
             {t.healthTipText}
           </p>
         </div>

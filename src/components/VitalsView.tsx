@@ -892,7 +892,7 @@ export const VitalsView: React.FC<VitalsViewProps> = React.memo(({
           </p>
         </div>
 
-        <div className="relative w-full md:max-w-md lg:max-w-lg mx-auto aspect-[4/3] bg-slate-950 rounded-2xl overflow-hidden shadow-lg border-2 border-violet-500/80">
+        <div className="relative w-full md:max-w-md lg:max-w-lg mx-auto aspect-[4/3] bg-gray-900 rounded-2xl overflow-hidden shadow-lg border-2 border-violet-500/80">
           <video
             ref={videoRef}
             playsInline

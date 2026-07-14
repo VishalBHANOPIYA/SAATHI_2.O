@@ -44,18 +44,18 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
     };
 
     return (
-      <aside className="hidden md:flex flex-col w-[260px] lg:w-[280px] bg-[#1E1B4B] shrink-0 h-[100dvh] sticky top-0 z-40 text-left border-r border-white/10">
+      <aside className="hidden md:flex flex-col w-[260px] lg:w-[280px] bg-white shrink-0 h-[100dvh] sticky top-0 z-40 text-left border-r border-gray-200">
         {/* Logo + Tagline */}
-        <div className="px-4 py-5 border-b border-white/10 overflow-hidden">
+        <div className="px-4 py-5 border-b border-gray-200 overflow-hidden">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg shrink-0">
               <Heart className="w-5 h-5 text-white fill-white/20 animate-pulse" />
             </div>
             <div className="min-w-0">
-              <span className="font-extrabold text-xl tracking-tight text-white block leading-tight truncate">
+              <span className="font-extrabold text-xl tracking-tight text-gray-900 block leading-tight truncate">
                 Saathi
               </span>
-              <p className="text-[9px] text-purple-300 font-extrabold uppercase tracking-widest mt-0.5 truncate">
+              <p className="text-[9px] text-purple-600 font-extrabold uppercase tracking-widest mt-0.5 truncate">
                 AI Health Companion
               </p>
             </div>
@@ -72,14 +72,14 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
                 onClick={() => setActiveTab(key)}
                 className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-2xl transition-all duration-300 relative ${
                   isActive
-                    ? "bg-purple-600 text-white font-black shadow-md scale-[1.02] pl-6 before:absolute before:left-1.5 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-purple-400 before:rounded-full"
-                    : "text-purple-200 hover:text-white hover:bg-white/5 font-semibold"
+                    ? "bg-violet-100 text-violet-750 font-black shadow-sm scale-[1.02] pl-6 border-l-4 border-violet-600"
+                    : "text-gray-600 hover:text-violet-700 hover:bg-violet-50 font-semibold"
                 }`}
               >
-                <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? "text-white" : "text-purple-300"}`} />
+                <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? "text-violet-600" : "text-gray-400"}`} />
                 <span className="text-[13px]">{tabLabels[key]}</span>
                 {isActive && (
-                  <Sparkles className="w-3.5 h-3.5 ml-auto opacity-80 animate-pulse text-purple-200" />
+                  <Sparkles className="w-3.5 h-3.5 ml-auto opacity-80 animate-pulse text-violet-500" />
                 )}
               </button>
             );
@@ -87,20 +87,20 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
         </nav>
 
         {/* Bottom section: profile + settings */}
-        <div className="sticky bottom-0 bg-[#1E1B4B] z-10 px-3 py-4 border-t border-white/10 space-y-2">
+        <div className="sticky bottom-0 bg-white z-10 px-3 py-4 border-t border-gray-150 space-y-2">
           {userProfile && (
             <button
               onClick={onOpenProfile}
-              className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white/5 transition-all text-left min-h-[44px] group"
+              className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-violet-50 transition-all text-left min-h-[44px] group"
             >
               <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white font-black text-sm shrink-0 shadow-md">
                 {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-black text-white truncate">
+                <p className="text-[13px] font-black text-gray-800 truncate">
                   {userProfile.name}
                 </p>
-                <p className="text-[11px] text-purple-300 font-semibold truncate">
+                <p className="text-[11px] text-gray-500 font-semibold truncate">
                   {userProfile.age}y • {userProfile.gender}
                 </p>
               </div>
@@ -109,9 +109,9 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
 
           <button
             onClick={onOpenSettings}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-purple-300 hover:text-white hover:bg-white/5 transition-all text-[13px] font-bold min-h-[44px]"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-600 hover:text-violet-700 hover:bg-violet-50 transition-all text-[13px] font-bold min-h-[44px]"
           >
-            <Settings className="w-[18px] h-[18px] shrink-0 text-purple-400" />
+            <Settings className="w-[18px] h-[18px] shrink-0 text-gray-400 hover:text-violet-650" />
             <span>Settings</span>
           </button>
         </div>
