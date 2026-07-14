@@ -1154,7 +1154,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
                   : "bg-white text-slate-500 border-slate-200 hover:bg-violet-50/50 hover:text-violet-750"
               }`}
             >
-              {langCode === "en" ? "🇺🇸 English" : langCode === "hi" ? "🇮🇳 हिंदी" : "🇮🇳 ગુજરાતી"}
+              {langCode === "en" ? "🇮🇳 English" : langCode === "hi" ? "🇮🇳 हिंदी" : "🇮🇳 ગુજરાતી"}
             </button>
           ))}
         </div>
