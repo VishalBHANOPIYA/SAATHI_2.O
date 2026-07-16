@@ -496,6 +496,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     doc.text(pBmiCategory || "N/A", 148, 96);
 
     // Vitals Section (shifted y by 8mm)
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240);
     doc.roundedRect(10, 112, 190, 34, 4, 4, "FD");
     doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
@@ -531,6 +533,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
     }
 
     // Screenings Section (shifted y by 4mm)
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240);
     doc.roundedRect(10, 150, 190, 36, 4, 4, "FD");
     doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
@@ -563,6 +567,8 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
       doc.text(tPdf.noScreenings, 15, 166);
     }
 
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240);
     doc.roundedRect(10, 190, 190, 52, 4, 4, "FD");
     doc.setTextColor(124, 58, 237);
     doc.setFont("helvetica", "bold");
