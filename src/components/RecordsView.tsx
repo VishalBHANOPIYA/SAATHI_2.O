@@ -36,6 +36,7 @@ import { safeGetItem, safeSetItem, safeRemoveItem } from "@/utils/localStorageHe
 import { checkRateLimit } from "@/utils/rateLimit";
 import { calculateBMI } from "../utils/bmiCalculator";
 import { getLast7DaysSteps } from "@/utils/stepHistory";
+import ProfileAvatar from "./ProfileAvatar";
 
 interface RecordsViewProps {
   vitalsHistory: any[];
@@ -869,9 +870,18 @@ export const RecordsView: React.FC<RecordsViewProps> = React.memo(({
         <div className="glass-card p-5 space-y-4 relative">
           <div className="flex justify-between items-start flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white font-black flex items-center justify-center text-base shadow-primary-glow">
-                {userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "U"}
-              </div>
+              <ProfileAvatar
+                userProfile={userProfile}
+                size={56}
+                editable={true}
+                className="border-4 border-white/30"
+                onPhotoChange={(dataUrl) => {
+                  onUpdateProfile?.({
+                    ...userProfile,
+                    profilePhotoUrl: dataUrl
+                  });
+                }}
+              />
               <div className="space-y-0.5">
                 <h3 className="font-extrabold text-slate-800 text-base">{userProfile.name}</h3>
                 <p className="text-[11px] text-slate-400 font-semibold">

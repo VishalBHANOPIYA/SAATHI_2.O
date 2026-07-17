@@ -33,6 +33,7 @@ import { BMICard } from "./BMICard";
 import { calculateHealthPlan } from "@/utils/healthPlanCalculator";
 import { stepCalorieBurn, getWaterGoalFromWeight } from "@/utils/bmiCalculator";
 import { loadTodayTracker, saveTodayTracker, getStepGoalFromBMI, DailyTrackerData } from "@/utils/dailyTracker";
+import ProfileAvatar from "./ProfileAvatar";
 
 interface HomeViewProps {
   setActiveTab: (tab: string) => void;
@@ -42,6 +43,7 @@ interface HomeViewProps {
   recordsList: any[];
   vitalsHistory: any[];
   language?: string;
+  onProfileUpdate: (updated: any) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = React.memo(({
@@ -51,7 +53,8 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   onEditProfile,
   recordsList = [],
   vitalsHistory = [],
-  language: languageProp
+  language: languageProp,
+  onProfileUpdate
 }) => {
   const { language, setLanguage, t } = useLanguage();
 
@@ -380,12 +383,18 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       {/* 1. HEADER */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3.5">
-          <div 
-            onClick={onEditProfile}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-650 flex items-center justify-center text-white font-black text-base cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all"
-          >
-            {displayUserName.charAt(0).toUpperCase()}
-          </div>
+          <ProfileAvatar
+            userProfile={userProfile}
+            size={48}
+            editable={true}
+            onPhotoChange={(dataUrl) => {
+              const updated = {
+                ...userProfile,
+                profilePhotoUrl: dataUrl
+              };
+              onProfileUpdate(updated);
+            }}
+          />
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{getGreeting()}</span>
             <h2 className="text-lg font-black text-slate-800 leading-tight">

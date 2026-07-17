@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import ProfileAvatar from "./ProfileAvatar";
 
 interface SidebarProps {
   activeTab: string;
@@ -93,9 +94,11 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
               onClick={onOpenProfile}
               className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-violet-50 transition-all text-left min-h-[44px] group"
             >
-              <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white font-black text-sm shrink-0 shadow-md">
-                {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-              </div>
+              <ProfileAvatar
+                userProfile={userProfile}
+                size={40}
+                editable={false}
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-black text-gray-800 truncate">
                   {userProfile.name}

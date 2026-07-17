@@ -30,6 +30,7 @@ import {
   demoVitalsHistory,
   demoRecords
 } from "../utils/demoData";
+import ProfileAvatar from "@/components/ProfileAvatar";
 
 // Dynamically import heavy subcomponents to optimize bundle size and prevent SSR issues
 const HomeView = dynamic(() => import("@/components/HomeView").then(m => m.HomeView), { ssr: false });
@@ -331,7 +332,8 @@ export default function MainApp() {
     heightUnit: "cm" as "cm" | "ft",
     weight: "",
     weightUnit: "kg" as "kg" | "lbs",
-    activityLevel: "sedentary" as "sedentary" | "light" | "moderate" | "active" | "very_active"
+    activityLevel: "sedentary" as "sedentary" | "light" | "moderate" | "active" | "very_active",
+    profilePhotoUrl: null as string | null
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -410,7 +412,8 @@ export default function MainApp() {
           heightUnit: "cm",
           weight: parsed.weightKg ? String(Math.round(parsed.weightKg * 10) / 10) : "",
           weightUnit: "kg",
-          activityLevel: parsed.activityLevel || "sedentary"
+          activityLevel: parsed.activityLevel || "sedentary",
+          profilePhotoUrl: parsed.profilePhotoUrl || null
         });
       } catch (e) {
         console.error("Failed to parse saved user profile:", e);
@@ -1023,7 +1026,8 @@ export default function MainApp() {
       bmiUpdatedAt: hasBmiData ? new Date().toISOString() : undefined,
       activityLevel: profileForm.activityLevel || "sedentary",
       waterGoalLiters: calculatedWaterGoalLiters,
-      waterGoalGlasses: calculatedWaterGoalGlasses
+      waterGoalGlasses: calculatedWaterGoalGlasses,
+      profilePhotoUrl: profileForm.profilePhotoUrl || null
     };
 
     safeSetItem("saathi_user_profile", JSON.stringify(finalProfile));
@@ -1494,6 +1498,29 @@ export default function MainApp() {
               {profileSubStep === "A" ? (
                 /* SUB-STEP A */
                 <div className="space-y-4 animate-scaleUp">
+                  {/* Live Avatar Preview */}
+                  <div className="flex flex-col items-center gap-2 pb-2">
+                    <ProfileAvatar
+                      userProfile={{
+                        name: profileForm.name,
+                        gender: profileForm.gender,
+                        profilePhotoUrl: profileForm.profilePhotoUrl
+                      }}
+                      size={80}
+                      editable={true}
+                      onPhotoChange={(dataUrl) => {
+                        setProfileForm(p => ({ ...p, profilePhotoUrl: dataUrl }));
+                      }}
+                    />
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-gray-700">
+                        {profileForm.name || "Your Name"}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-semibold">
+                        Click photo to customize avatar or upload photo
+                      </p>
+                    </div>
+                  </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-textsecondary uppercase tracking-wide">
                       {t.fullName} <span className="text-danger font-bold">*</span>
@@ -2019,6 +2046,30 @@ export default function MainApp() {
               <span className="text-[10px] font-bold text-textsecondary uppercase tracking-widest block">
                 {t.basicInformation}
               </span>
+
+              {/* Live Avatar Preview */}
+              <div className="flex flex-col items-center gap-2 pb-2">
+                <ProfileAvatar
+                  userProfile={{
+                    name: profileForm.name,
+                    gender: profileForm.gender,
+                    profilePhotoUrl: profileForm.profilePhotoUrl
+                  }}
+                  size={80}
+                  editable={true}
+                  onPhotoChange={(dataUrl) => {
+                    setProfileForm(p => ({ ...p, profilePhotoUrl: dataUrl }));
+                  }}
+                />
+                <div className="text-center">
+                  <p className="text-xs font-bold text-gray-700">
+                    {profileForm.name || "Your Name"}
+                  </p>
+                  <p className="text-[10px] text-gray-500 font-semibold">
+                    Click photo to customize avatar or upload photo
+                  </p>
+                </div>
+              </div>
               
               <div className="space-y-1">
                 <label className="text-[9px] font-bold text-textsecondary uppercase tracking-wide">
@@ -2701,6 +2752,10 @@ export default function MainApp() {
               recordsList={recordsList}
               vitalsHistory={vitalsHistory}
               language={language}
+              onProfileUpdate={(updated) => {
+                setUserProfile(updated);
+                safeSetItem('saathi_user_profile', JSON.stringify(updated));
+              }}
               onEditProfile={() => {
                   setProfileForm({
                     name: userProfile.name || "",
@@ -2721,7 +2776,8 @@ export default function MainApp() {
                     heightUnit: "cm",
                     weight: userProfile.weightKg ? String(Math.round(userProfile.weightKg * 10) / 10) : "",
                     weightUnit: "kg",
-                    activityLevel: userProfile.activityLevel || "sedentary"
+                    activityLevel: userProfile.activityLevel || "sedentary",
+                    profilePhotoUrl: userProfile.profilePhotoUrl || null
                   });
                 setFormErrors({});
                 setProfileSubStep("A");
