@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Heart,
   ChevronRight,
@@ -23,7 +23,8 @@ import {
   Apple,
   Dumbbell,
   Target,
-  Clock
+  Clock,
+  Info
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
@@ -125,6 +126,38 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
 
   const displayUserName = userProfile?.name?.split(" ")[0] || "Vishal";
 
+  // ── Water goal from BMI/weight ──────────
+  const waterGoalLiters = useMemo(() => {
+    const weight = Number(userProfile?.weightKg);
+    if (!weight || isNaN(weight) || weight <= 0) {
+      return 2.5; // safe default if no profile
+    }
+    const activity = userProfile?.activityLevel
+      || 'light';
+    const activityMl: Record<string, number> = {
+      sedentary: 0,
+      light: 300,
+      moderate: 500,
+      active: 700,
+      very_active: 900,
+    };
+    const base = weight * 35;
+    const extra = activityMl[activity] ?? 300;
+    const climate = 300; // India hot climate
+    const total = Math.min(4000,
+      Math.max(1500, base + extra + climate));
+    // Round to nearest 0.1
+    return Math.round(total / 100) / 10;
+  }, [userProfile?.weightKg,
+      userProfile?.activityLevel]);
+
+  // ── Water goal in glasses (250ml each) ──
+  const waterGoalGlasses = useMemo(() =>
+    Math.round(waterGoalLiters * 4),
+    [waterGoalLiters]
+  );
+
+
   const calendarDays = React.useMemo(() => {
     if (!currentDate) return [];
     const today = currentDate;
@@ -202,12 +235,6 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   // Water Intake Interactive State (Auto-goal from BMI based on weight & activity)
   const weightKg = Number(userProfile?.weightKg) || 70;
   const activityLevel = userProfile?.activityLevel || "light";
-  const waterGoalLiters = React.useMemo(() => {
-    return getWaterGoalFromWeight(weightKg, activityLevel) / 1000;
-  }, [weightKg, activityLevel]);
-  const waterGoalGlasses = React.useMemo(() => {
-    return Math.round(waterGoalLiters / 0.25);
-  }, [waterGoalLiters]);
 
   const [tracker, setTracker] = useState<DailyTrackerData>(() => {
     return loadTodayTracker({
@@ -218,6 +245,26 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
     });
   });
 
+  const [waterIntake, setWaterIntake] = useState(() => {
+    const storedStr = localStorage.getItem("saathi_water_intake");
+    if (storedStr !== null) {
+      const stored = Number(storedStr);
+      return isNaN(stored) || stored < 0 ? 0 : stored;
+    }
+    return (tracker.waterGlasses || 0) * 0.25;
+  });
+
+  // Reset water intake at midnight
+  useEffect(() => {
+    const lastDate = localStorage.getItem("saathi_water_date");
+    const today = new Date().toISOString().split("T")[0];
+    if (lastDate !== today) {
+      setWaterIntake(0);
+      localStorage.setItem("saathi_water_intake", "0");
+      localStorage.setItem("saathi_water_date", today);
+    }
+  }, []);
+
   React.useEffect(() => {
     const loaded = loadTodayTracker({
       stepGoal: getStepGoalFromBMI(userProfile?.bmiCategory || 'normal'),
@@ -226,13 +273,28 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       waterGoalLiters,
     });
     setTracker(loaded);
+    // Sync waterIntake state with loaded tracker if not explicitly set in storage
+    const loadedWater = (loaded.waterGlasses || 0) * 0.25;
+    setWaterIntake(prev => {
+      const storedStr = localStorage.getItem("saathi_water_intake");
+      if (storedStr !== null) {
+        const stored = Number(storedStr);
+        return isNaN(stored) || stored < 0 ? 0 : stored;
+      }
+      return loadedWater;
+    });
   }, [userProfile, waterGoalGlasses, waterGoalLiters]);
 
   const addWater = () => {
+    const current = isNaN(waterIntake) ? 0 : waterIntake;
+    const nextWater = Math.min(4.0, Number((current + 0.25).toFixed(2)));
+    setWaterIntake(nextWater);
+    localStorage.setItem("saathi_water_intake", String(nextWater));
+
     setTracker(prev => {
       const updated = {
         ...prev,
-        waterGlasses: prev.waterGlasses + 1,
+        waterGlasses: Math.round(nextWater / 0.25),
         waterGoalGlasses,
         waterGoalLiters,
       };
@@ -242,10 +304,15 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
   };
 
   const removeWater = () => {
+    const current = isNaN(waterIntake) ? 0 : waterIntake;
+    const nextWater = Math.max(0.0, Number((current - 0.25).toFixed(2)));
+    setWaterIntake(nextWater);
+    localStorage.setItem("saathi_water_intake", String(nextWater));
+
     setTracker(prev => {
       const updated = {
         ...prev,
-        waterGlasses: Math.max(0, prev.waterGlasses - 1),
+        waterGlasses: Math.round(nextWater / 0.25),
         waterGoalGlasses,
         waterGoalLiters,
       };
@@ -253,6 +320,7 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
       return updated;
     });
   };
+
 
   // States for manual logs
   const [showCalorieInput, setShowCalorieInput] = useState(false);
@@ -532,14 +600,32 @@ export const HomeView: React.FC<HomeViewProps> = React.memo(({
               </button>
             </div>
           </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black text-slate-800">{(tracker.waterGlasses * 0.25).toFixed(2)}</span>
-            <span className="text-xs text-slate-400 font-bold">{t.homeLiters} / {waterGoalLiters.toFixed(1)} {t.homeLiters}</span>
+          <div className="space-y-0.5">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black text-slate-800">
+                {waterIntake.toFixed(2)}
+              </span>
+              <span className="text-xs text-slate-400 font-bold">
+                Liters / {waterGoalLiters.toFixed(1)} Liters
+              </span>
+            </div>
+            <div className="text-[10px] text-slate-400">
+              {Math.round(waterIntake / 0.25)} / {waterGoalGlasses} glasses (250ml each)
+              {userProfile?.weightKg ? (
+                <span className="ml-1 text-blue-500">
+                  • Based on {userProfile.weightKg}kg
+                </span>
+              ) : (
+                <span className="ml-1 text-amber-500">
+                  • Add weight in profile for personalized goal
+                </span>
+              )}
+            </div>
           </div>
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
             <div 
               className="h-full bg-gradient-to-r from-violet-600 to-purple-500 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, ((tracker.waterGlasses * 0.25) / waterGoalLiters) * 100)}%` }}
+              style={{ width: `${Math.min(100, (waterIntake / waterGoalLiters) * 100)}%` }}
             />
           </div>
         </div>

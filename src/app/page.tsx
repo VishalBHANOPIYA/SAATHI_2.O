@@ -978,6 +978,25 @@ export default function MainApp() {
     const hasBmiData = hCm >= 50 && hCm <= 250 && wKg >= 2 && wKg <= 300;
     const bmiResult = hasBmiData ? calculateBMI(wKg, hCm) : null;
 
+    // Pre-calculate water goal from weight
+    const weight = Number(wKg || 0);
+    const activity = profileForm.activityLevel || 'light';
+    const actMl: Record<string, number> = {
+      sedentary: 0, light: 300,
+      moderate: 500, active: 700,
+      very_active: 900
+    };
+    let calculatedWaterGoalLiters = 2.5;
+    let calculatedWaterGoalGlasses = 10;
+    if (weight > 0) {
+      const base = weight * 35;
+      const extra = actMl[activity] ?? 300;
+      const total = Math.min(4000,
+        Math.max(1500, base + extra + 300));
+      calculatedWaterGoalLiters = Math.round(total / 100) / 10;
+      calculatedWaterGoalGlasses = Math.round(calculatedWaterGoalLiters * 4);
+    }
+
     const existingProfile = userProfile || {};
     const finalProfile = {
       name: profileForm.name.trim(),
@@ -1002,7 +1021,9 @@ export default function MainApp() {
       bmi: bmiResult ? Math.round(bmiResult.bmi * 10) / 10 : undefined,
       bmiCategory: bmiResult ? bmiResult.category : undefined,
       bmiUpdatedAt: hasBmiData ? new Date().toISOString() : undefined,
-      activityLevel: profileForm.activityLevel || "sedentary"
+      activityLevel: profileForm.activityLevel || "sedentary",
+      waterGoalLiters: calculatedWaterGoalLiters,
+      waterGoalGlasses: calculatedWaterGoalGlasses
     };
 
     safeSetItem("saathi_user_profile", JSON.stringify(finalProfile));
