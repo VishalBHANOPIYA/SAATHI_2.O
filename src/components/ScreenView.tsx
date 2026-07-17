@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { ClinicalDisclaimer } from "./ClinicalDisclaimer";
+import ImagePickerModal from "./ImagePickerModal";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { speakText, stopSpeaking, isSpeechSupported } from "../utils/textToSpeech";
 import { shareHealthReport } from "@/utils/shareHelper";
@@ -342,6 +343,7 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
   const [screenToast, setScreenToast] = useState<{ message: string; type: "error" | "success" | "info" } | null>(null);
   const [isCapturingMulti, setIsCapturingMulti] = useState(false);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  const [showImagePicker, setShowImagePicker] = useState(false);
 
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -535,35 +537,41 @@ export const ScreenView: React.FC<ScreenViewProps> = React.memo(({
     setScreenStep("roi");
   };
 
+  const handleScreenImageFile = (file: File) => {
+    isStaticUploadRef.current = true;
+    setIsSampleImage(false);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setScreenImage(dataUrl);
+      setScreenStep("roi");
+
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        const canvases: HTMLCanvasElement[] = [];
+        for (let i = 0; i < 5; i++) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 320;
+          canvas.height = 320;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, 320, 320);
+          }
+          canvases.push(canvas);
+        }
+        capturedFramesRef.current = canvases;
+      };
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     isStaticUploadRef.current = true;
     setIsSampleImage(false);
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        setScreenImage(dataUrl);
-        setScreenStep("roi");
-
-        const img = new Image();
-        img.src = dataUrl;
-        img.onload = () => {
-          const canvases: HTMLCanvasElement[] = [];
-          for (let i = 0; i < 5; i++) {
-            const canvas = document.createElement("canvas");
-            canvas.width = 320;
-            canvas.height = 320;
-            const ctx = canvas.getContext("2d");
-            if (ctx) {
-              ctx.drawImage(img, 0, 0, 320, 320);
-            }
-            canvases.push(canvas);
-          }
-          capturedFramesRef.current = canvases;
-        };
-      };
-      reader.readAsDataURL(file);
+      handleScreenImageFile(file);
     }
   };
 
@@ -1275,24 +1283,14 @@ Risk Level: Moderate. Monitor symptoms, stay hydrated, and rest.`;
               </div>
 
               {/* Capture or Upload Options */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-2">
                 <button
-                  onClick={startScreenCamera}
+                  onClick={() => setShowImagePicker(true)}
                   className="flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-black text-xs py-3 rounded-full hover:from-violet-750 hover:to-purple-750 shadow-soft active:scale-[0.98] transition-all min-h-[44px]"
                 >
                   <Camera className="w-4 h-4" />
-                  {sTrans.startCamera}
+                  {language === "hi" ? "फोटो जोड़ें" : language === "gu" ? "ફોટો ઉમેરો" : "Add Photo"}
                 </button>
-                <label className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs py-3 rounded-full border border-slate-200 cursor-pointer shadow-soft active:scale-[0.98] transition-all text-center min-h-[44px]">
-                  <UploadCloud className="w-4 h-4 text-slate-500" />
-                  <span>{sTrans.uploadImage}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
               </div>
 
               {/* Try with sample */}
@@ -1866,6 +1864,18 @@ Shared via Saathi.`;
 
       {/* Collapsible Clinical Disclaimer */}
       <ClinicalDisclaimer />
+
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        isOpen={showImagePicker}
+        onClose={() => setShowImagePicker(false)}
+        onImageSelected={(file) => {
+          setShowImagePicker(false);
+          handleScreenImageFile(file);
+        }}
+        title="Add Photo for Screening"
+        subtitle="Upload from gallery or capture with camera"
+      />
     </div>
   );
 });

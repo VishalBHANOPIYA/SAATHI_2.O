@@ -8,11 +8,13 @@ import {
   Trash2,
   Bell,
   CheckCircle,
-  Info
+  Info,
+  X
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { safeGetItem, safeSetItem } from "@/utils/localStorageHelper";
 import { checkRateLimit } from "@/utils/rateLimit";
+import ImagePickerModal from "./ImagePickerModal";
 
 interface MedicinesViewProps {
   medicinesList: any[];
@@ -45,6 +47,8 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
   const [isOcrLoading, setIsOcrLoading] = useState(false);
   const [isParsingPrescription, setIsParsingPrescription] = useState(false);
   const [caregiverContact, setCaregiverContact] = useState("");
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [prescriptionImage, setPrescriptionImage] = useState<File | null>(null);
 
   useEffect(() => {
     // Prefill caregiver contact from profile emergency contact if available and not already set
@@ -180,10 +184,7 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
     }
   };
 
-  const handlePrescriptionUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processPrescriptionFile = async (file: File) => {
     setIsOcrLoading(true);
     setOcrProgress("Downscaling and compressing image...");
     try {
@@ -266,24 +267,71 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
           </div>
         </div>
 
-        <div className="relative border-2 border-dashed border-violet-300 bg-violet-50/50 hover:bg-violet-100/50 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer">
-          <UploadCloud className="w-9 h-9 text-violet-650" />
-          <span className="text-[10px] font-bold text-violet-700">
-            {isOcrLoading ? ocrProgress : (language === "hi" ? "फ़ाइल चुनें या कैमरा खोलें" : language === "gu" ? "ફાઇલ પસંદ કરો અથવા કેમેરો ખોલો" : "Choose File or Capture Image")}
-          </span>
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePrescriptionUpload}
-            disabled={isOcrLoading || isParsingPrescription}
-            className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-          />
+        <div className="border-2 border-dashed border-violet-300 rounded-2xl p-6 text-center bg-violet-50/50 hover:bg-violet-50 transition-colors relative">
           {isOcrLoading && (
             <div className="absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center gap-2 z-10">
               <Loader2 className="w-8 h-8 text-violet-600 animate-spin" />
               <span className="text-[10px] font-extrabold text-violet-750 uppercase tracking-wider animate-pulse">{ocrProgress}</span>
             </div>
+          )}
+
+          {/* Preview if image selected */}
+          {prescriptionImage ? (
+            <div className="space-y-3">
+              <img
+                src={URL.createObjectURL(prescriptionImage)}
+                alt="Prescription"
+                className="w-full max-h-48 object-contain rounded-xl border border-gray-200"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowImagePicker(true)}
+                  className="flex-1 py-2 text-sm text-violet-600 border border-violet-300 rounded-xl hover:bg-violet-50"
+                  disabled={isOcrLoading}
+                >
+                  Change Image
+                </button>
+                <button
+                  onClick={() => {
+                    setPrescriptionImage(null);
+                  }}
+                  className="px-3 py-2 text-sm text-red-500 border border-red-200 rounded-xl hover:bg-red-50"
+                  disabled={isOcrLoading}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* No image yet — show picker trigger */
+            <button
+              onClick={() => setShowImagePicker(true)}
+              className="w-full space-y-3 active:scale-[0.98] transition-transform"
+              disabled={isOcrLoading}
+            >
+              <div className="w-14 h-14 bg-violet-100 rounded-2xl flex items-center justify-center mx-auto">
+                <UploadCloud className="w-7 h-7 text-violet-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-violet-700">
+                  Add Prescription
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Tap to upload from gallery or take a photo
+                </p>
+              </div>
+              {/* Show both options as chips */}
+              <div className="flex gap-2 justify-center flex-wrap">
+                <span className="flex items-center gap-1 text-[10px] bg-white border border-gray-205 rounded-full px-3 py-1 text-gray-600">
+                  <UploadCloud className="w-3 h-3 text-violet-500" />
+                  Gallery
+                </span>
+                <span className="flex items-center gap-1 text-[10px] bg-white border border-gray-205 rounded-full px-3 py-1 text-gray-600">
+                  <Camera className="w-3 h-3 text-purple-500" />
+                  Camera
+                </span>
+              </div>
+            </button>
           )}
         </div>
       </div>
@@ -493,6 +541,18 @@ export const MedicinesView: React.FC<MedicinesViewProps> = React.memo(({
           </div>
         </div>
       )}
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        isOpen={showImagePicker}
+        onClose={() => setShowImagePicker(false)}
+        onImageSelected={(file) => {
+          setPrescriptionImage(file);
+          setShowImagePicker(false);
+          processPrescriptionFile(file);
+        }}
+        title="Add Prescription"
+        subtitle="Upload an existing photo or take a new one"
+      />
     </div>
   );
 });
