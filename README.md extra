@@ -1,0 +1,231 @@
+# SAATHI 2.0 — Comprehensive AI Family Health & Emergency Companion 🏥⚡
+
+[![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![React 18](https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Groq LLM](https://img.shields.io/badge/LLM-Groq%20Llama%203.3--70B-orange?style=flat-square)](https://groq.com/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Offline--First-emerald?style=flat-square)](https://web.dev/progressive-web-apps/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+
+> **SAATHI 2.0 (सार्थी)** is an advanced, offline-first, multi-profile preventive healthcare platform designed to deliver accessible digital health screening, emergency triage, vitals tracking, drug-drug interaction safety, lab report analysis, and community health management.
+
+---
+
+## 📑 Table of Contents
+1. [Executive Summary & Core Mission](#-executive-summary--core-mission)
+2. [Comprehensive Feature Matrix](#-comprehensive-feature-matrix)
+3. [Core Systems Architecture](#-core-systems-architecture)
+   - [1. Multi-Profile Family Health Hub](#1-multi-profile-family-health-hub)
+   - [2. Emergency Triage Engine & P2P Rescue Network](#2-emergency-triage-engine--p2p-rescue-network)
+   - [3. Multimodal OCR & AI Clinical Assistants](#3-multimodal-ocr--ai-clinical-assistants)
+   - [4. Proactive Preventive Health Suite](#4-proactive-preventive-health-suite)
+   - [5. Non-Invasive Digital Diagnostics](#5-non-invasive-digital-diagnostics)
+   - [6. Community Health & ASHA Worker Portal](#6-community-health--asha-worker-portal)
+   - [7. Full Multi-Language i18n System](#7-full-multi-language-i18n-system)
+4. [Technology Stack](#-technology-stack)
+5. [Directory Structure](#-directory-structure)
+6. [Installation & Setup](#-installation--setup)
+7. [Production Build & Cloudflare Live Tunneling](#-production-build--cloudflare-live-tunneling)
+8. [Clinical Disclaimer & Safety](#-clinical-disclaimer--safety)
+
+---
+
+## 💡 Executive Summary & Core Mission
+
+Healthcare access in underserved and rural areas often suffers from delays in emergency triage, language barriers, and fragmented patient records. **SAATHI 2.0** bridges this gap by turning any smartphone into an intelligent, multi-user digital health companion capable of:
+- Performing non-invasive vitals estimations (rPPG/PPG heart rate & oxygen).
+- Running rule-based & AI-driven emergency symptom triage.
+- Analyzing physical paper lab reports via client-side OCR and Groq LLM.
+- Maintaining segregated electronic health records for entire families.
+- Operating offline seamlessly in low-connectivity environments.
+
+---
+
+## ✨ Comprehensive Feature Matrix
+
+| Module | Component / Engine | Description |
+| :--- | :--- | :--- |
+| **Family Hub** | `ProfileContext.tsx`, `ProfileSwitcher.tsx`, `AddMemberModal.tsx` | Multi-user account segregation (*Self, Father, Mother, Spouse, Child, Grandparent*) with isolated vitals, lab records, and 1-click switcher. |
+| **Emergency Triage** | `emergencyTriage.ts`, `EmergencyModal.tsx` | Parallel rule-based bypass for critical cardiac, stroke, and sepsis red flags with immediate 108 ambulance triggering. |
+| **SOS Rescue** | `useEmergencyTrigger.ts`, `rescueNetwork.ts` | 5-key rapid hardware SOS trigger (`VolumeDown`, `E`, `Esc`) broadcasting P2P GPS alerts to nearby Saathi instances. |
+| **CPR Resuscitation** | `CPRGuide.tsx` | Web Audio API visual & sound metronome calibrated to **110 BPM** for hands-only CPR resuscitation. |
+| **Report AI** | `ReportAnalysisView.tsx`, `ImageUploader.tsx` | Tesseract.js client-side OCR + Groq LLM breakdown of CBC, HbA1c, and lipid lab reports into simple language with dietary advice. |
+| **Medicine Safety** | `MedicineInteractionView.tsx`, `MedicinesView.tsx` | Rx drug-drug interaction checker evaluating pregnancy risks, alcohol/driving warnings, and food limitations in target language. |
+| **Preventive Plan** | `PreventiveTimelineView.tsx`, `healthPlanCalculator.ts` | Smart 30-Day Health Plan customized for user's BMI, sleep hygiene, hydration calculator, and iron/anemia superfood guides. |
+| **Mental Health** | `MentalHealthView.tsx` | Web Speech API acoustic voice tone analyzer (pitch, speed, pauses) paired with an animated **4-4-4-4 Box Breathing** visual metronome. |
+| **Hospital Locator** | `HospitalLocator.tsx`, `GeospatialMap.tsx` | Seasonal & Proximity locator for Govt PHC, CHC, and District Hospitals featuring live bed availability, 24x7 ER badges, and 1-tap navigation. |
+| **Neurology Screener** | `NeurologyView.tsx`, `tremorEngine.ts` | Gyroscope and accelerometer micro-tremor frequency analysis for Parkinson's & Essential Tremor screening. |
+| **Respiratory Screener**| `RespiratoryView.tsx`, `audioAiEngine.ts` | Web Audio API spectrum analysis of forced cough sounds to identify wheezing and airway constriction markers. |
+| **Vision Screener** | `VisionView.tsx`, `visionEngine.ts` | Tumbling E visual acuity chart test with distance-checking camera validation. |
+| **Infant Care** | `InfantCareView.tsx`, `infantCareEngine.ts` | WHO growth percentile curves tracking and automated WHO/IAP child vaccination reminders. |
+| **Vitals Tracker** | `VitalsView.tsx`, `vitalsContactPpg.ts` | Heart rate (BPM), SpO2 oxygen, blood pressure, temperature, and blood glucose tracking with historical Recharts trend graphs. |
+| **ASHA Worker Mode** | `AshaView.tsx` | Specialized portal for community healthcare workers to conduct door-to-door screenings, flag high-risk cases, and queue offline records. |
+| **Community Outbreak**| `CommunityAnalyticsView.tsx` | Geospatial outbreak heatmap, disease cluster tracking, and real-time Air Quality Index (AQI) environmental health risk monitor. |
+| **EHR & ABHA Card** | `RecordsView.tsx`, `ReportGeneratorView.tsx` | Electronic Health Record vault, 14-digit Ayushman Bharat Health Account (ABHA) card generator, and jsPDF clinical summary exporter. |
+| **Voice AI Companion**| `TalkView.tsx`, `textToSpeech.ts` | Multi-turn conversational AI medical assistant with Speech-to-Text (STT) voice input and multi-language Speech Synthesis (TTS). |
+
+---
+
+## 🏗️ Core Systems Architecture
+
+### 1. Multi-Profile Family Health Hub
+The platform manages multi-user state via `ProfileContext.tsx`. Every data point (vitals, uploaded lab PDF/images, prescription lists, 30-day timeline tasks) is tagged with a `profileId`. Switching profiles via `ProfileSwitcher.tsx` dynamically filters dashboard widgets, score gauges, and records views without data leak between family members.
+
+### 2. Emergency Triage Engine & P2P Rescue Network
+When symptoms are entered via voice or text, the platform runs a dual-layer triage check:
+1. **Rule-Based Engine (`emergencyTriage.ts`)**: Evaluates life-threatening patterns (*Chest Pain + Left Arm Pain → Cardiac*, *Slurred Speech → Stroke*, *High Fever + Confusion → Sepsis*) for instant zero-latency red-flag overlays.
+2. **Groq AI Triage (`/api/triage`)**: For non-acute symptoms, multi-turn AI triage gathers clinical context and calculates risk severity (*Green, Yellow, Red*).
+3. **Hardware SOS & P2P Broadcast**: Detecting 5 rapid keypresses fires a Web BroadcastChannel P2P alert transmitting GPS coordinates to surrounding Saathi devices.
+
+### 3. Multimodal OCR & AI Clinical Assistants
+- **Tesseract.js OCR**: Executes 100% in the client browser, parsing physical report text from camera snapshots or file drops.
+- **Groq LLM Engine (`llama-3.3-70b-versatile`)**: Processes extracted text or medicine lists, producing structured, schema-validated JSON outputs covering safety ratings, pregnancy warnings, food restrictions, and patient guidance.
+
+### 4. Proactive Preventive Health Suite
+- **30-Day Health Plan**: Computes caloric requirements, iron absorption pairings (*Spinach/Lentils + Vitamin C*), circadian sleep hygiene rules, and hydration targets.
+- **Acoustic Voice Stress Analyzer**: Analyzes voice pauses and speech cadence to detect elevated stress markers, triggering an instant 4-4-4-4 Box Breathing exercise modal.
+
+### 5. Non-Invasive Digital Diagnostics
+- **Contact & Remote rPPG**: Processes subtle facial or fingertip color variations over video frames to estimate Heart Rate and Oxygen saturation.
+- **Micro-Tremor Sensor**: Captures raw accelerometer data at 60 Hz to plot frequency power spectrums ($Hz$) and detect resting vs. postural tremors.
+- **Cough Audio Spectrum**: Analyzes audio frequencies between 200 Hz and 2000 Hz to evaluate airway obstruction characteristics.
+
+### 6. Community Health & ASHA Worker Portal
+Designed for frontline health workers (ASHA) in rural India to perform offline household censuses, track maternal/child immunization, and sync queued patient records whenever internet connectivity is restored.
+
+### 7. Full Multi-Language i18n System
+All UI components use `useLanguage()` to render text in **English (`en`)**, **Hindi (`hi`)**, or **Gujarati (`gu`)**. Server-side Groq API routes read the user's active language parameter to ensure generated medical analysis is returned strictly in that language.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Core Framework** | [Next.js 14 (App Router)](https://nextjs.org/) | Server-side rendering, API routes, and optimized routing |
+| **Frontend UI** | React 18, TailwindCSS, Glassmorphism CSS | Responsive, mobile-first accessible interface |
+| **Language & Types** | TypeScript 5 | End-to-end static type safety |
+| **AI LLM Engine** | [Groq API](https://groq.com/) (`llama-3.3-70b-versatile`) | High-speed structured clinical reasoning & triage |
+| **Client-Side OCR** | [Tesseract.js](https://tesseract.projectnaptha.com/) | Optical Character Recognition for prescriptions & reports |
+| **Sensors & Audio** | Web Audio API, Web Speech API, Device Motion API | Tremor sensor, cough spectrum, voice stress, CPR metronome |
+| **Data Charts** | [Recharts](https://recharts.org/) | Interactive vitals and 30-day compliance graphs |
+| **PDF Compiler** | [jsPDF](https://github.com/parallax/jsPDF) | Client-side ABHA card and medical summary export |
+| **Icons** | Lucide React | Modern vector icon set |
+| **PWA & Offline** | Service Worker (`sw.js`), LocalStorage Helper | Offline caching and data queueing |
+| **Live Tunneling** | Cloudflare Tunnels (`cloudflared`) | Secure public deployment for remote testing |
+
+---
+
+## 📂 Directory Structure
+
+```
+SAATHI_2.O-main/
+├── public/
+│   ├── manifest.json              # Progressive Web App manifest
+│   └── sw.js                      # Offline caching Service Worker
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── medicine-check/    # Groq LLM Rx safety API route
+│   │   │   ├── report-analysis/   # Groq LLM Lab report analysis API route
+│   │   │   └── triage/            # Groq LLM Symptom triage API route
+│   │   ├── globals.css            # Custom CSS animations & tokens
+│   │   ├── layout.tsx             # Root layout with Language & Profile Providers
+│   │   └── page.tsx               # Main application hub & router
+│   ├── components/
+│   │   ├── AddMemberModal.tsx     # Family member creation wizard
+│   │   ├── AshaView.tsx           # ASHA community worker portal
+│   │   ├── BMICard.tsx            # Unit-flexible BMI calculator
+│   │   ├── BottomNav.tsx          # Mobile bottom navigation bar
+│   │   ├── CPRGuide.tsx           # 110 BPM metronome CPR guide
+│   │   ├── CommunityAnalyticsView.tsx # Disease heatmap & AQI monitor
+│   │   ├── EmergencyModal.tsx     # Emergency risk overlay
+│   │   ├── HomeView.tsx           # Wellness score dashboard & vitals
+│   │   ├── HospitalLocator.tsx    # Govt PHC/CHC hospital locator
+│   │   ├── ImageUploader.tsx      # Tesseract.js OCR uploader component
+│   │   ├── InfantCareView.tsx     # WHO child growth & vaccine tracker
+│   │   ├── MedicineInteractionView.tsx # Rx Drug safety checker
+│   │   ├── MentalHealthView.tsx   # Voice stress & Box breathing
+│   │   ├── Navbar.tsx             # Responsive header & Hamburger drawer
+│   │   ├── NeurologyView.tsx      # Micro-tremor sensor screener
+│   │   ├── OnboardingGuide.tsx    # First-time user guided setup
+│   │   ├── PreventiveTimelineView.tsx # Smart 30-Day Health Plan
+│   │   ├── ProfileSwitcher.tsx    # Multi-profile dropdown switcher
+│   │   ├── RecordsView.tsx        # EHR vault & ABHA card generator
+│   │   ├── ReportAnalysisView.tsx # Lab report AI interpreter
+│   │   ├── RespiratoryView.tsx    # Cough spectrum screener
+│   │   ├── Sidebar.tsx            # Desktop navigation sidebar
+│   │   ├── TalkView.tsx           # Multi-turn voice AI assistant
+│   │   ├── VisionView.tsx         # Tumbling E vision acuity test
+│   │   └── VitalsView.tsx         # Vitals history & Recharts trend graphs
+│   ├── context/
+│   │   ├── LanguageContext.tsx    # i18n context (English, Hindi, Gujarati)
+│   │   └── ProfileContext.tsx     # Family multi-profile state management
+│   └── utils/
+│       ├── audioAiEngine.ts       # Cough spectrum analysis calculations
+│       ├── bmiCalculator.ts       # Indian standard BMI formulas
+│       ├── emergencyTriage.ts     # Critical red-flag emergency rule engine
+│       ├── healthScore.ts         # Multi-parameter wellness score algorithm
+│       ├── infantCareEngine.ts    # WHO child growth percentile calculations
+│       ├── rescueNetwork.ts      # Web BroadcastChannel SOS network
+│       ├── tremorEngine.ts        # Accelerometer FFT tremor analyzer
+│       └── vitalsContactPpg.ts    # Camera PPG heart rate algorithm
+└── package.json
+```
+
+---
+
+## ⚡ Installation & Setup
+
+### Prerequisites
+- **Node.js**: `v18.0.0` or higher
+- **npm**: `v9.0.0` or higher
+
+### 1. Clone & Install Dependencies
+```bash
+cd SAATHI_2.O-main
+npm install
+```
+
+### 2. Configure Environment Variables
+Create a `.env.local` file in the project root:
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### 3. Run Development Server
+```bash
+npm run dev
+```
+Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 🚀 Production Build & Cloudflare Live Tunneling
+
+### 1. Compile Production Build
+```bash
+npm run build
+```
+
+### 2. Launch Production Server
+```bash
+npm run start
+```
+
+### 3. Start Cloudflare Live Public Tunnel
+```bash
+npm run tunnel
+```
+This command exposes your local server (`http://localhost:3000`) over a secure HTTPS Cloudflare Tunnel (e.g., `https://your-tunnel-name.trycloudflare.com`) for remote testing on mobile devices.
+
+---
+
+## ⚠️ Clinical Disclaimer & Safety
+
+> **MANDATORY MEDICAL DISCLAIMER**: SAATHI 2.0 is developed strictly for health awareness, preventive screening, emergency triage guidance, and electronic record organization. It **does not** replace professional clinical diagnosis, prescription, or treatment by a registered medical practitioner. In case of acute chest pain, severe breathing difficulty, sudden weakness, or major trauma, immediately call **108 (India Emergency Ambulance)** or proceed to the nearest hospital Emergency Department.
+
+---
+
+### 📄 License
+This project is licensed under the [MIT License](LICENSE).
